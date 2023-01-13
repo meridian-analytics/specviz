@@ -24,17 +24,29 @@ function Visualization(props: tprops) {
   const [imageElem, imageStatus] = useImage(imageUrl)
 
   const onWheel = useCallback(
-    (e: any) => {
+    (e: any) => { // KonvaEventObject<WheelEvent>
       if (e.evt) {
         e.evt.preventDefault()
         if (e.evt.altKey) {
           setScroll(s => ({
-            x: clamp(s.x + e.evt.deltaX ?? 0, 0, dimensions.width * (zoom - 1)),
-            y: clamp(s.y + e.evt.deltaY ?? 0, 0, dimensions.height * (zoom - 1)),
+            x: clamp(
+              s.x + (e.evt.deltaX ?? 0),
+              0,
+              dimensions.width * (zoom - 1)
+            ),
+            y: clamp(
+              s.y + (e.evt.deltaY ?? 0),
+              0,
+              dimensions.height * (zoom - 1)
+            ),
           }))
         }
         if (e.evt.metaKey) {
-          setZoom(z => clamp(z + e.evt.deltaY / -100, 1, 2))
+          setZoom(z => clamp(
+            z + (e.evt.deltaY ?? 0) / -100,
+            1,
+            2
+          ))
         }
       }
     },
