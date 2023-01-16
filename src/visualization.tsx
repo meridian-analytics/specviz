@@ -89,12 +89,21 @@ function Visualization(props: {
   }
 }
 
-const Canvas = memo(function Canvas(props: {
+type tcanvasprops = {
   image: HTMLImageElement,
   width: number,
   height: number,
   onWheel: (e: any) => void
-}) {
+}
+
+function canvasEqual(a: tcanvasprops, b: tcanvasprops) {
+  return a.image === b.image
+    && a.width === b.width
+    && a.height === b.height
+    && a.onWheel === b.onWheel
+}
+
+const Canvas = memo(function Canvas(props: tcanvasprops) {
   const { image, width, height, onWheel } = props
   return <Stage
     width={width}
@@ -109,6 +118,6 @@ const Canvas = memo(function Canvas(props: {
       />
     </Layer>
   </Stage>
-})
+}, canvasEqual)
 
 export default Visualization
