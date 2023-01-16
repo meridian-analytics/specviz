@@ -3,12 +3,6 @@ import { useDimensions } from "./hooks"
 import { clamp } from "./mathx"
 import { useSpecviz } from "./specviz"
 
-// scroll reference
-// https://dev.to/sip3/how-to-achieve-top-notch-scrolling-performance-using-html5-canvas-k49
-//
-// zoom reference
-// https://stackoverflow.com/questions/52054848/how-to-react-konva-zooming-on-scroll
-
 function Visualization(props: {
   height: number,
   imageUrl: string,
@@ -48,7 +42,7 @@ function Visualization(props: {
   return <div
     ref={ref}
     style={{height}}
-    className="specviz-canvas"
+    className="specviz-visualization"
     onWheel={onWheel}
   >
     <svg
