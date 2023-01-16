@@ -1,4 +1,4 @@
-import { useLayoutEffect, useCallback, useRef, memo } from "react"
+import { memo, useLayoutEffect, useCallback, useRef } from "react"
 import { Image, Layer, Stage } from "react-konva"
 import useImage from "use-image"
 import { useDimensions } from "./hooks"
@@ -78,7 +78,12 @@ function Visualization(props: {
     case "failed":
       return <div>Failed to load image</div>
     default:
-      return <div ref={ref} style={{overflow: "auto", height}} className="specviz-canvas">
+      return <div ref={ref} style={{position: "relative", overflow: "auto", height}} className="specviz-canvas">
+        <Playhead
+          width={dimensions.width}
+          height={dimensions.height}
+          position={10}
+        />
         <Canvas
           image={imageElem!}
           width={dimensions.width * zoom}
@@ -87,6 +92,29 @@ function Visualization(props: {
         />
       </div>
   }
+}
+
+function Playhead(props: {
+  width: number,
+  height: number,
+  position: number,
+}) {
+  const { width, height, position } = props
+  return <svg
+    style={{position: "absolute", top: 0, left: 0, pointerEvents: "none", zIndex: 3}}
+    width={width}
+    height={height}
+    viewBox={`0 0 ${width} ${height}`}
+  >
+    <line
+      stroke="cyan"
+      strokeWidth={1}
+      x1={position}
+      y1="0"
+      x2={position}
+      y2={height}
+    />
+  </svg>
 }
 
 type tcanvasprops = {

@@ -1,37 +1,49 @@
-import React from "react"
-import ReactDOM from "react-dom/client"
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
+import { Specviz, useSpecviz } from "./specviz"
+import Visualization from "./visualization"
+import Audio from "./audio"
 import "./index.css"
 
-import { Specviz } from "./specviz"
-import Visualization from "./visualization"
+function MyComponent(props: {
+  id: number,
+}) {
+  return <Specviz>
+    <h3>specviz instance {props.id}</h3>
+    <p>spectrogram</p>
+    <Visualization height={200} imageUrl="./spectrogram.png" />
+    <p>waveform</p>
+    <Visualization height={200} imageUrl="./waveform.png" />
+    <Audio url="./audio.wav" />
+    <MyAudioControls />
+  </Specviz>
+}
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <div style={{padding: 20, backgroundColor: "#cff" }}>
-      <Specviz>
-        <h3>specviz instance 1</h3>
-        <p>spectrogram</p>
-        <div style={{flex: 1, display: "flex", flexDirection: "column"}}>
-          <Visualization height={200} imageUrl="./spectrogram.png" />
-        <div>
-        <p>waveform</p>
-        </div>
-          <Visualization height={200} imageUrl="./waveform.png" />
-        </div>
-      </Specviz>
+function MyAudioControls() {
+  const { transport } = useSpecviz()
+  return <p>
+    <button
+      type="button"
+      onClick={_ => transport.play()}
+      children="Play"
+    />
+    <button
+      type="button"
+      onClick={_ => transport.pause()}
+      children="Stop"
+    />
+  </p>
+}
+
+createRoot(document.getElementById("root") as HTMLElement).render(
+  <StrictMode>
+    <div style={{flex: 1, display: "flex", flexDirection: "column"}}>
+      <div style={{padding: 20, backgroundColor: "#cff" }}>
+        <MyComponent id={1} />
+      </div>
+      <div style={{padding: 20, backgroundColor: "#fcf" }}>
+        <MyComponent id={2} />
+      </div>
     </div>
-    <div style={{padding: 20, backgroundColor: "#fcf" }}>
-      <Specviz>
-        <h3>specviz instance 2</h3>
-        <p>spectrogram</p>
-        <div style={{flex: 1, display: "flex", flexDirection: "column"}}>
-          <Visualization height={200} imageUrl="./spectrogram.png" />
-        <div>
-        <p>waveform</p>
-        </div>
-          <Visualization height={200} imageUrl="./waveform.png" />
-        </div>
-      </Specviz>
-    </div>
-  </React.StrictMode>,
+  </StrictMode>
 )
