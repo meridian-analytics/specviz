@@ -1,14 +1,9 @@
-import { useLayoutEffect, useCallback, useRef } from "react"
+import { useLayoutEffect, useCallback, useRef, memo } from "react"
 import { Image, Layer, Stage } from "react-konva"
 import useImage from "use-image"
 import { useDimensions } from "./hooks"
 import { clamp } from "./mathx"
 import { useSpecviz } from "./specviz"
-
-type tprops = {
-  height: number,
-  imageUrl: string,
-}
 
 // scroll reference
 // https://dev.to/sip3/how-to-achieve-top-notch-scrolling-performance-using-html5-canvas-k49
@@ -16,7 +11,10 @@ type tprops = {
 // zoom reference
 // https://stackoverflow.com/questions/52054848/how-to-react-konva-zooming-on-scroll
 
-function Visualization(props: tprops) {
+function Visualization(props: {
+  height: number,
+  imageUrl: string,
+}) {
   const { height, imageUrl } = props
   const { scroll, zoom, setScroll, setZoom } = useSpecviz()
   const ref = useRef<HTMLDivElement>(null)
@@ -81,21 +79,36 @@ function Visualization(props: tprops) {
       return <div>Failed to load image</div>
     default:
       return <div ref={ref} style={{overflow: "auto", height}} className="specviz-canvas">
-        <Stage
-          width={dimensions.width*zoom}
-          height={dimensions.height*zoom}
+        <Canvas
+          image={imageElem!}
+          width={dimensions.width * zoom}
+          height={dimensions.height * zoom}
           onWheel={onWheel}
-        >
-          <Layer>
-            <Image
-              image={imageElem}
-              width={dimensions.width*zoom}
-              height={dimensions.height*zoom}
-            />
-          </Layer>
-        </Stage>
+        />
       </div>
   }
 }
+
+const Canvas = memo(function Canvas(props: {
+  image: HTMLImageElement,
+  width: number,
+  height: number,
+  onWheel: (e: any) => void
+}) {
+  const { image, width, height, onWheel } = props
+  return <Stage
+    width={width}
+    height={height}
+    onWheel={onWheel}
+  >
+    <Layer>
+      <Image
+        image={image}
+        width={width}
+        height={height}
+      />
+    </Layer>
+  </Stage>
+})
 
 export default Visualization
