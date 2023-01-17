@@ -36,7 +36,7 @@ function Visualization(props: {
         }))
       }
     },
-    [scrollLimit]
+    [scrollLimit.x, scrollLimit.y]
   )
 
   return <div
