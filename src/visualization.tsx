@@ -67,8 +67,7 @@ function Visualization(props: {
         y={-scroll.y}
       />
       <line
-        stroke="cyan"
-        strokeWidth={1}
+        className="specviz-playhead"
         x1={20}
         y1={0}
         x2={20}

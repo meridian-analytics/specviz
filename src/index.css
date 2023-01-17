@@ -1,3 +1,9 @@
 .specviz-visualization {
   background-color: #ffc;
 }
+
+.specviz-playhead {
+  stroke: cyan;
+  stroke-width: 3;
+  opacity: 0.5;
+}
