@@ -6,28 +6,24 @@ function Audio(props: {
   url: string,
 }) {
   const { url } = props
-  const { sound, setSound } = useSpecviz()
+  const { setSound } = useSpecviz()
 
-  // load sound when url changes
   useEffect(
     () => {
-      const newSound = new Sound(url, () => {
-        setSound(newSound)
-      })
-    },
-    [url]
-  )
-
-  // stop sound when component unmounts
-  useEffect(
-    () => {
-      return () => {
-        if (sound) {
-          sound.stop()
+      const sound = new Sound(
+        url,
+        err => {
+          if (err)
+            console.error(err)
+          else
+            setSound(sound)
         }
+      )
+      return () => {
+        sound.stop()
       }
     },
-    [sound]
+    [url]
   )
 
   return <></>
