@@ -1,4 +1,5 @@
 import type { WheelEvent } from "react"
+import { useCallback, useId, useMemo, useRef } from "react"
 import { useDimensions } from "./hooks"
 import { clamp } from "./mathx"
 import { useSpecviz } from "./specviz"
@@ -7,6 +8,7 @@ function Visualization(props: {
   height: number,
   imageUrl: string,
 }) {
+  const id = useId()
   const { height, imageUrl } = props
   const { scroll, zoom, setScroll, setZoom } = useSpecviz()
   const ref = useRef<HTMLDivElement>(null)
@@ -49,11 +51,18 @@ function Visualization(props: {
       width={dimensions.width}
       height={dimensions.height}
     >
-      <image
-        preserveAspectRatio="none"
-        href={imageUrl}
-        width={dimensions.width * zoom}
-        height={dimensions.height * zoom}
+      <defs>
+        {/* todo: memoizing image may improve performance  */}
+        <image
+          id={id}
+          preserveAspectRatio="none"
+          href={imageUrl}
+          width={dimensions.width * zoom}
+          height={dimensions.height * zoom}
+        />
+      </defs>
+      <use
+        href={`#${id}`}
         x={-scroll.x}
         y={-scroll.y}
       />
