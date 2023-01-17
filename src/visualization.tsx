@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from "react"
+import type { WheelEvent } from "react"
 import { useDimensions } from "./hooks"
 import { clamp } from "./mathx"
 import { useSpecviz } from "./specviz"
@@ -21,15 +21,15 @@ function Visualization(props: {
   )
 
   const onWheel = useCallback(
-    (e: any) => {
+    (e: WheelEvent<HTMLDivElement>) => {
       if (e.altKey) {
         setScroll(s => ({
-          x: clamp(s.x + (e.deltaX ?? 0), 0, scrollLimit.x),
-          y: clamp(s.y + (e.deltaY ?? 0), 0, scrollLimit.y),
+          x: clamp(s.x + e.deltaX, 0, scrollLimit.x),
+          y: clamp(s.y + e.deltaY, 0, scrollLimit.y),
         }))
       }
       if (e.metaKey) {
-        setZoom(z => clamp(z + (e.deltaY ?? 0) / -100, 1, 2))
+        setZoom(z => clamp(z + e.deltaY / -100, 1, 2))
         setScroll(s => ({
           x: clamp(s.x, 0, scrollLimit.x),
           y: clamp(s.y, 0, scrollLimit.y),
