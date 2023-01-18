@@ -31,3 +31,5 @@
 - [ ] tools: pan tool
 - [ ] minimap: show selected region
 - [ ] ux: keybindings
+- [x] ux: declarative audio/visual loading
+- [ ] ux: reset zoom/pan when changing audio/visual?

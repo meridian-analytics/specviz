@@ -19,6 +19,7 @@ function Visualization(props: {
   imageUrl: string,
   duration: number,
 }) {
+  console.log("rendering visualization")
   const { height, imageUrl, duration } = props
   const { scrollZoom, transport, transportState } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
