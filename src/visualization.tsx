@@ -43,13 +43,6 @@ function Visualization(props: {
     [scrollLimit.x, scrollLimit.y]
   )
 
-  const timeToCoord = useCallback(
-    (time: number) => {
-      return ((dimensions.width * zoom * time / duration) - scroll.x).toFixed(0)
-    },
-    [dimensions.width, zoom, duration, scroll.x]
-  )
-
   const onFrame = useCallback(
     () => {
       switch (transportState.type) {
@@ -58,13 +51,13 @@ function Visualization(props: {
           return
         case "play":
           const delta = (Date.now() - transportState.timeRef) / 1000
-          const x = timeToCoord(transportState.offset + delta)
-          playheadRef.current!.setAttribute("x1", x)
-          playheadRef.current!.setAttribute("x2", x)
-          break
+          const progress = ((transportState.offset + delta) / duration * 100).toFixed(2) + "%"
+          playheadRef.current!.setAttribute("x1", progress)
+          playheadRef.current!.setAttribute("x2", progress)
+          return
       }
     },
-    [playheadRef, transportState, timeToCoord]
+    [playheadRef, transportState, duration]
   )
 
   useAnimationFrame(onFrame, transportState.type === "play")
@@ -85,23 +78,26 @@ function Visualization(props: {
           id={id}
           preserveAspectRatio="none"
           href={imageUrl}
-          width={dimensions.width * zoom}
-          height={dimensions.height * zoom}
+          width="100%"
+          height="100%"
         />
       </defs>
-      <use
-        href={`#${id}`}
-        x={-scroll.x}
-        y={-scroll.y}
-      />
-      <line
-        ref={playheadRef}
-        className="specviz-playhead"
-        x1={0}
-        y1={0}
-        x2={0}
-        y2={dimensions.height}
-      />
+      <svg
+        x={-1 * scroll.x}
+        y={-1 * scroll.y}
+        width={dimensions.width * zoom}
+        height={dimensions.height * zoom}
+      >
+        <use href={`#${id}`} />
+        <line
+          ref={playheadRef}
+          className="specviz-playhead"
+          x1={0}
+          y1={0}
+          x2={0}
+          y2="100%"
+        />
+      </svg>
     </svg>
   </div>
 }
