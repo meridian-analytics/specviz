@@ -11,9 +11,9 @@ function MyComponent(props: {
   return <Specviz>
     <h3>specviz instance {props.id}</h3>
     <p>spectrogram</p>
-    <Visualization height={200} imageUrl="./spectrogram.png" />
+    <Visualization height={200} imageUrl="./spectrogram.png" duration={44.416} />
     <p>waveform</p>
-    <Visualization height={200} imageUrl="./waveform.png" />
+    <Visualization height={200} imageUrl="./waveform.png" duration={44.416} />
     <Audio url="./audio.wav" />
     <MyAudioControls />
   </Specviz>

@@ -4,7 +4,8 @@
 // naive solution, react <= 17
 // https://stackoverflow.com/a/60978633
 
-import { RefObject, useMemo, useSyncExternalStore } from "react"
+import type { RefObject } from "react"
+import { useEffect, useMemo, useSyncExternalStore } from "react"
 
 function resizeSubscription(callback: (e: Event) => void) {
   window.addEventListener("resize", callback)
@@ -24,4 +25,22 @@ function useDimensions(ref: RefObject<HTMLElement>) {
   return useMemo(() => JSON.parse(dimensions), [dimensions])
 }
 
-export { useDimensions }
+function useAnimationFrame(callback: (frameId: number) => void, enabled: boolean) {
+  useEffect(
+    () => {
+      if (!enabled) return
+      let frame: number
+      function onFrame(frameId: number) {
+        callback(frameId)
+        frame = requestAnimationFrame(onFrame)
+      }
+      frame = requestAnimationFrame(onFrame)
+      return () => {
+        cancelAnimationFrame(frame)
+      }
+    },
+    [callback, enabled]
+  )
+}
+
+export { useAnimationFrame, useDimensions }
