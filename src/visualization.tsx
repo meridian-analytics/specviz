@@ -69,8 +69,8 @@ function Visualization(props: {
     onWheel={onWheel}
   >
     <svg
-      width={dimensions.width}
-      height={dimensions.height}
+      width="100%"
+      height="100%"
     >
       <defs>
         {/* todo: memoizing image may improve performance  */}
