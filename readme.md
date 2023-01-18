@@ -30,6 +30,4 @@
 - [ ] tools: pan tool
 - [ ] minimap: show selected region
 - [ ] ux: keybindings
-- [ ] ux: optimize svg render calls
 - [ ] dx: co-locate transport controls with audio component
-- [ ] bug: playhead incorrect when scrolling stopped/paused audio
