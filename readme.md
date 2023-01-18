@@ -4,6 +4,7 @@
 
 |action|control|
 |--|--|
+|seek|mouse click|
 |zoom|`meta` + scroll|
 |pan (trackpad)|`alt` + scroll|
 |pan vertical (mousewheel)|`alt` + scroll|
@@ -21,7 +22,7 @@
 - [ ] visualization: nonlinear freq axis
 - [x] audio: playback
 - [x] audio: resume at playhead
-- [ ] audio: seek to location
+- [x] audio: seek to location
 - [ ] annotation: create
 - [ ] annotation: playback region
 - [ ] annotation: playback filter

@@ -1,7 +1,18 @@
+import type { MouseEvent, RefObject } from "react"
+import type { tvector2 } from "./types"
 import { useCallback, useEffect, useRef } from "react"
 import { useAnimationFrame, useDimensions } from "./hooks"
 import { clamp } from "./mathx"
 import { useSpecviz } from "./specviz"
+import { subtract } from "./vector2"
+
+function getRelativeMousePosition(ref: RefObject<HTMLElement>, e: MouseEvent): tvector2 {
+  const elem = ref.current!
+  return {
+    x: e.clientX - elem.offsetLeft,
+    y: e.clientY - elem.offsetTop,
+  }
+}
 
 function Visualization(props: {
   height: number,
@@ -9,17 +20,25 @@ function Visualization(props: {
   duration: number,
 }) {
   const { height, imageUrl, duration } = props
-  const { transportState, scrollZoom } = useSpecviz()
+  const { scrollZoom, transport, transportState } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const layerRef = useRef<SVGSVGElement>(null)
   const playheadRef = useRef<SVGLineElement>(null)
   const dimensions = useDimensions(containerRef)
 
-  const derivePlayheadProgress = useCallback(
+  const derivePlayheadFromTime = useCallback(
     (time: number) => {
       return (time / duration * 100).toFixed(2) + "%"
     },
     [duration]
+  )
+
+  const deriveTimeFromPoint = useCallback(
+    (pt: tvector2) => {
+      const state = scrollZoom.current!
+      return (state.x + pt.x) / dimensions.width / state.z * duration
+    },
+    [scrollZoom, dimensions.width, duration]
   )
 
   const updateScrollZoom = useCallback(
@@ -47,13 +66,13 @@ function Visualization(props: {
           return
         case "play":
           const delta = (Date.now() - transportState.timeRef) / 1000
-          const progress = derivePlayheadProgress(transportState.offset + delta)
+          const progress = derivePlayheadFromTime(transportState.offset + delta)
           ref.setAttribute("x1", progress)
           ref.setAttribute("x2", progress)
           return
       }
     },
-    [playheadRef, transportState, derivePlayheadProgress]
+    [playheadRef, transportState, derivePlayheadFromTime]
   )
 
   const onWheel = useCallback(
@@ -87,10 +106,40 @@ function Visualization(props: {
     [updateScrollZoom, updatePlayhead]
   ))
 
+  const lastMousePosition = useRef<tvector2>({x: 0, y: 0})
+
+  const onMouseDown = useCallback(
+    (e: MouseEvent) => {
+      const pt = getRelativeMousePosition(containerRef, e)
+      lastMousePosition.current.x = pt.x
+      lastMousePosition.current.y = pt.y
+    },
+    [containerRef, lastMousePosition]
+  )
+
+  const onMouseUp = useCallback(
+    (e: MouseEvent) => {
+      e.preventDefault
+      const pt = getRelativeMousePosition(containerRef, e)
+      const delta = subtract(pt, lastMousePosition.current)
+      // click
+      if (Math.max(Math.abs(delta.x), Math.abs(delta.y)) < 3) {
+        transport.seek(deriveTimeFromPoint(pt))
+      }
+      // drag
+      else {
+        console.log("drag", delta)
+      }
+    },
+    [containerRef, lastMousePosition, transport, deriveTimeFromPoint]
+  )
+
   return <div
     ref={containerRef}
     style={{height}}
     className="specviz-visualization"
+    onMouseDown={onMouseDown}
+    onMouseUp={onMouseUp}
   >
     <svg
       width="100%"
@@ -104,6 +153,7 @@ function Visualization(props: {
         height={dimensions.height * scrollZoom.current!.z}
       >
         <image
+          // style={{pointerEvents: "none"}}
           preserveAspectRatio="none"
           href={imageUrl}
           width="100%"
@@ -112,9 +162,9 @@ function Visualization(props: {
         <line
           ref={playheadRef}
           className="specviz-playhead"
-          x1={derivePlayheadProgress(transportState.offset)}
+          x1={derivePlayheadFromTime(transportState.offset)}
           y1={0}
-          x2={derivePlayheadProgress(transportState.offset)}
+          x2={derivePlayheadFromTime(transportState.offset)}
           y2="100%"
         />
       </svg>

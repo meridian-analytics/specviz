@@ -1,26 +1,6 @@
-import type { ReactNode, RefObject } from "react"
+import type { ReactNode } from "react"
+import type { tvector3, ttransport, ttransportstate, tcontext } from "./types"
 import { createContext, useContext, useRef, useState } from "react"
-
-type tvector3 = { x: number, y: number, z: number }
-
-type tfunctional<T> = T | ((prevState: T) => T)
-
-type tcontext = {
-  scrollZoom: RefObject<tvector3>,
-  transport: ttransport,
-  transportState: ttransportstate
-  setTransport: (func: tfunctional<ttransport>) => void,
-  setTransportState: (func: tfunctional<ttransportstate>) => void,
-}
-
-type ttransportstate =
-  | { type: "play", offset: number, timeRef: number }
-  | { type: "stop", offset: number }
-
-type ttransport = {
-  play: () => void,
-  stop: () => void,
-}
 
 const STOP: ttransportstate = { type: "stop", offset: 0 }
 const NOOP = () => {}
@@ -30,6 +10,7 @@ const SpecvizContext = createContext<tcontext>({
   transport: {
     play: () => { console.error("transport.play called outside of Specviz context") },
     stop: () => { console.error("transport.stop called outside of Specviz context") },
+    seek: () => { console.error("transport.seek called outside of Specviz context") },
   },
   transportState: STOP,
   setTransport: _ => { console.error("setTransport called outside of Specviz context") },
@@ -42,6 +23,7 @@ function Specviz(props: { children: ReactNode }) {
   const [transport, setTransport] = useState<ttransport>({
     play: NOOP,
     stop: NOOP,
+    seek: NOOP,
   })
 
   const [transportState, setTransportState] = useState<ttransportstate>(STOP)
