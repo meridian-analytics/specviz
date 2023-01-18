@@ -10,7 +10,7 @@
 |pan vertical (mousewheel)|`alt` + scroll|
 |pan horizontal (mousewheel)|`alt` + `shift` + scroll|
 
-### milestones
+### tasks
 
 - [x] visualization: spectrogram
 - [x] visualization: waveform
@@ -29,7 +29,11 @@
 - [ ] tools: annotation tool
 - [ ] tools: zoom tool
 - [ ] tools: pan tool
-- [ ] minimap: show selected region
+- [x] navigator: show visible region
+- [x] navigator: playhead
+- [ ] navigator: wheel to zoom
+- [ ] navigator: click to scroll
+- [ ] navigator: code duplication from visualization
 - [ ] ux: keybindings
 - [x] ux: declarative audio/visual loading
 - [ ] ux: reset zoom/pan when changing audio/visual?

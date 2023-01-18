@@ -7,3 +7,16 @@
   stroke-width: 3;
   opacity: 0.5;
 }
+
+.specviz-minimap {
+  background-color: #ffc;
+}
+
+.specviz-minimap-playhead {
+  stroke: cyan;
+  stroke-width: 1;
+}
+
+.specviz-minimap-mask{
+  fill: rgba(0, 0, 0, 0.5);
+}

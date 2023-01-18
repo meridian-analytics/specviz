@@ -2,6 +2,7 @@ import { StrictMode, useState } from "react"
 import { createRoot } from "react-dom/client"
 import { Specviz, useSpecviz } from "./specviz"
 import Visualization from "./visualization"
+import Navigator from "./navigator"
 import Audio from "./audio"
 import "./index.css"
 
@@ -36,8 +37,10 @@ function MyComponent(props: {
       children={segment2.audio}
     />
     <p>{data.audio} ({data.duration} seconds)</p>
+    <Navigator height={30} imageUrl={data.spectrogram} mappingHeight={200} duration={data.duration} />
     <Visualization height={200} imageUrl={data.spectrogram} duration={data.duration} />
     <Visualization height={200} imageUrl={data.waveform} duration={data.duration} />
+    <Navigator height={30} imageUrl={data.waveform} mappingHeight={200} duration={data.duration} />
     <Audio url={data.audio} />
     <MyAudioControls />
   </Specviz>
