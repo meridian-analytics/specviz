@@ -1,5 +1,4 @@
-import type { WheelEvent } from "react"
-import { useCallback, useId, useMemo, useRef } from "react"
+import { useCallback, useEffect, useId, useMemo, useRef } from "react"
 import { useAnimationFrame, useDimensions } from "./hooks"
 import { clamp } from "./mathx"
 import { useSpecviz } from "./specviz"
@@ -25,7 +24,8 @@ function Visualization(props: {
   )
 
   const onWheel = useCallback(
-    (e: WheelEvent<HTMLDivElement>) => {
+    (e: WheelEvent) => {
+      e.preventDefault()
       if (e.altKey) {
         setScroll(s => ({
           x: clamp(s.x + e.deltaX, 0, scrollLimit.x),
@@ -41,6 +41,20 @@ function Visualization(props: {
       }
     },
     [scrollLimit.x, scrollLimit.y]
+  )
+
+  // react uses passive event listeners by default
+  // to stop propagation, use a non-passive listener
+  // https://stackoverflow.com/a/67258046
+  useEffect(
+    () => {
+      const container = containerRef.current!
+      container.addEventListener("wheel", onWheel, { passive: false })
+      return () => {
+        container.removeEventListener("wheel", onWheel)
+      }
+    },
+    [containerRef, onWheel]
   )
 
   const onFrame = useCallback(
@@ -66,7 +80,6 @@ function Visualization(props: {
     ref={containerRef}
     style={{height}}
     className="specviz-visualization"
-    onWheel={onWheel}
   >
     <svg
       width="100%"
