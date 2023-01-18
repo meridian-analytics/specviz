@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useAnimationFrame, useDimensions } from "./hooks"
 import { clamp } from "./mathx"
 import { useSpecviz } from "./specviz"
@@ -8,7 +8,6 @@ function Visualization(props: {
   imageUrl: string,
   duration: number,
 }) {
-  const id = useId()
   const { height, imageUrl, duration } = props
   const { transportState, scroll, zoom, setScroll, setZoom } = useSpecviz()
   const playheadRef = useRef<SVGLineElement>(null)
@@ -85,23 +84,18 @@ function Visualization(props: {
       width="100%"
       height="100%"
     >
-      <defs>
-        {/* todo: memoizing image may improve performance  */}
-        <image
-          id={id}
-          preserveAspectRatio="none"
-          href={imageUrl}
-          width="100%"
-          height="100%"
-        />
-      </defs>
       <svg
         x={-1 * scroll.x}
         y={-1 * scroll.y}
         width={dimensions.width * zoom}
         height={dimensions.height * zoom}
       >
-        <use href={`#${id}`} />
+        <image
+          preserveAspectRatio="none"
+          href={imageUrl}
+          width="100%"
+          height="100%"
+        />
         <line
           ref={playheadRef}
           className="specviz-playhead"
