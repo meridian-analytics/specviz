@@ -30,4 +30,3 @@
 - [ ] tools: pan tool
 - [ ] minimap: show selected region
 - [ ] ux: keybindings
-- [ ] dx: co-locate transport controls with audio component

@@ -44,7 +44,6 @@ function Visualization(props: {
       const ref = playheadRef.current!
       switch (transportState.type) {
         case "stop":
-        case "pause":
           return
         case "play":
           const delta = (Date.now() - transportState.timeRef) / 1000

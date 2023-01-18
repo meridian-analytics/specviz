@@ -29,7 +29,7 @@ function MyAudioControls() {
     />
     <button
       type="button"
-      onClick={_ => transport.pause()}
+      onClick={_ => transport.stop()}
       children="Stop"
     />
   </p>
