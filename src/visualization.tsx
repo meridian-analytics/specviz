@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { useAnimationFrame, useDimensions } from "./hooks"
 import { clamp } from "./mathx"
 import { useSpecviz } from "./specviz"
@@ -9,37 +9,61 @@ function Visualization(props: {
   duration: number,
 }) {
   const { height, imageUrl, duration } = props
-  const { transportState, scroll, zoom, setScroll, setZoom } = useSpecviz()
-  const playheadRef = useRef<SVGLineElement>(null)
+  const { transportState, scrollZoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
+  const layerRef = useRef<SVGSVGElement>(null)
+  const playheadRef = useRef<SVGLineElement>(null)
   const dimensions = useDimensions(containerRef)
 
-  const scrollLimit = useMemo(
-    () => ({
-      x: dimensions.width * (zoom - 1),
-      y: dimensions.height * (zoom - 1),
-    }),
-    [dimensions.width, dimensions.height, zoom]
+  const derivePlayheadProgress = useCallback(
+    (time: number) => {
+      return (time / duration * 100).toFixed(2) + "%"
+    },
+    [duration]
+  )
+
+  const updateScrollZoom = useCallback(
+    (x: number, y: number, z: number) => {
+      const state = scrollZoom.current!
+      const layer = layerRef.current!
+      const xLimit = dimensions.width * (state.z - 1)
+      const yLimit = dimensions.height * (state.z - 1)
+      state.x = clamp(state.x + x, 0, xLimit)
+      state.y = clamp(state.y + y, 0, yLimit)
+      state.z = clamp(state.z + z, 1, 2)
+      layer.setAttribute("x", String(-state.x))
+      layer.setAttribute("y", String(-state.y))
+      layer.setAttribute("width", String(dimensions.width * state.z))
+      layer.setAttribute("height", String(dimensions.height * state.z))
+    },
+    [scrollZoom, dimensions.width, dimensions.height]
+  )
+
+  const updatePlayhead = useCallback(
+    () => {
+      const ref = playheadRef.current!
+      switch (transportState.type) {
+        case "stop":
+        case "pause":
+          return
+        case "play":
+          const delta = (Date.now() - transportState.timeRef) / 1000
+          const progress = derivePlayheadProgress(transportState.offset + delta)
+          ref.setAttribute("x1", progress)
+          ref.setAttribute("x2", progress)
+          return
+      }
+    },
+    [playheadRef, transportState, derivePlayheadProgress]
   )
 
   const onWheel = useCallback(
     (e: WheelEvent) => {
       e.preventDefault()
-      if (e.altKey) {
-        setScroll(s => ({
-          x: clamp(s.x + e.deltaX, 0, scrollLimit.x),
-          y: clamp(s.y + e.deltaY, 0, scrollLimit.y),
-        }))
-      }
-      if (e.metaKey) {
-        setZoom(z => clamp(z + e.deltaY / -100, 1, 2))
-        setScroll(s => ({
-          x: clamp(s.x, 0, scrollLimit.x),
-          y: clamp(s.y, 0, scrollLimit.y),
-        }))
-      }
+      if (e.altKey) updateScrollZoom(e.deltaX, e.deltaY, 0) // scroll
+      if (e.metaKey) updateScrollZoom(0, 0, e.deltaY / -100) // zoom
     },
-    [scrollLimit.x, scrollLimit.y]
+    [updateScrollZoom]
   )
 
   // react uses passive event listeners by default
@@ -56,24 +80,13 @@ function Visualization(props: {
     [containerRef, onWheel]
   )
 
-  const onFrame = useCallback(
+  useAnimationFrame(useCallback(
     () => {
-      switch (transportState.type) {
-        case "stop":
-        case "pause":
-          return
-        case "play":
-          const delta = (Date.now() - transportState.timeRef) / 1000
-          const progress = ((transportState.offset + delta) / duration * 100).toFixed(2) + "%"
-          playheadRef.current!.setAttribute("x1", progress)
-          playheadRef.current!.setAttribute("x2", progress)
-          return
-      }
+      updateScrollZoom(0, 0, 0)
+      updatePlayhead()
     },
-    [playheadRef, transportState, duration]
-  )
-
-  useAnimationFrame(onFrame, transportState.type === "play")
+    [updateScrollZoom, updatePlayhead]
+  ))
 
   return <div
     ref={containerRef}
@@ -85,10 +98,11 @@ function Visualization(props: {
       height="100%"
     >
       <svg
-        x={-1 * scroll.x}
-        y={-1 * scroll.y}
-        width={dimensions.width * zoom}
-        height={dimensions.height * zoom}
+        ref={layerRef}
+        x={0}
+        y={0}
+        width={dimensions.width * scrollZoom.current!.z}
+        height={dimensions.height * scrollZoom.current!.z}
       >
         <image
           preserveAspectRatio="none"
@@ -99,9 +113,9 @@ function Visualization(props: {
         <line
           ref={playheadRef}
           className="specviz-playhead"
-          x1={0}
+          x1={derivePlayheadProgress(transportState.offset)}
           y1={0}
-          x2={0}
+          x2={derivePlayheadProgress(transportState.offset)}
           y2="100%"
         />
       </svg>

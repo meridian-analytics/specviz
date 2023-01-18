@@ -22,13 +22,15 @@ function useDimensions(ref: RefObject<HTMLElement>) {
       height: ref.current?.offsetHeight ?? 200,
     })
   )
-  return useMemo(() => JSON.parse(dimensions), [dimensions])
+  return useMemo<{ width: number, height: number }>(
+    () => JSON.parse(dimensions),
+    [dimensions]
+  )
 }
 
-function useAnimationFrame(callback: (frameId: number) => void, enabled: boolean) {
+function useAnimationFrame(callback: (frameId: number) => void) {
   useEffect(
     () => {
-      if (!enabled) return
       let frame: number
       function onFrame(frameId: number) {
         callback(frameId)
@@ -39,7 +41,7 @@ function useAnimationFrame(callback: (frameId: number) => void, enabled: boolean
         cancelAnimationFrame(frame)
       }
     },
-    [callback, enabled]
+    [callback]
   )
 }
 
