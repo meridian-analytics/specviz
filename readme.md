@@ -5,10 +5,11 @@
 |action|control|context|
 |--|--|--|
 |seek|mouse click|visualizer|
-|pan|mouse click|navigator|
-|pan (trackpad)|wheel|navigator|
-|pan vertical (mousewheel)|wheel|navigator|
-|pan horizontal (mousewheel)|`shift` + wheel|navigator|
+||||
+|pan|trackpad wheel|navigator|
+|pan jump|mouse click|navigator|
+|pan vertical|mouse wheel|navigator|
+|pan horizontal|`shift` + mouse wheel|navigator|
 |zoom|`alt` + wheel|navigator|
 
 ### tasks

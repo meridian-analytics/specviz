@@ -1,6 +1,6 @@
 import type { tvector2 } from "./types"
 import { useCallback, useRef } from "react"
-import { useAnimationFrame, useClickPoint, useDimensions } from "./hooks"
+import { useAnimationFrame, useClickPoint, useDimensions, useWheel } from "./hooks"
 import { useSpecviz } from "./specviz"
 
 function Visualization(props: {
@@ -72,8 +72,25 @@ function Visualization(props: {
   useClickPoint(
     containerRef,
     useCallback(
-      (pt) => { transport.seek(deriveTimeFromPoint(pt)) },
+      pt => {
+        transport.seek(deriveTimeFromPoint(pt))
+      },
       [transport, deriveTimeFromPoint]
+    )
+  )
+
+  useWheel(
+    containerRef,
+    useCallback(
+      e => {
+        e.preventDefault()
+        setScrollZoom(dimensions, state => ({
+          x: state.x + e.deltaX,
+          y: state.y + e.deltaY,
+          z: state.z
+        }))
+      },
+      [setScrollZoom, dimensions]
     )
   )
 
