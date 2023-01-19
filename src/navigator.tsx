@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
 import { useAnimationFrame, useClickDelta, useDimensions, useWheel } from "./hooks"
+import Playhead from "./playhead"
 
 function Navigator(props: {
   height: number,
@@ -9,41 +10,17 @@ function Navigator(props: {
   duration: number,
 }) {
   const { height, imageUrl, mappingHeight, duration } = props
-  const { scrollZoom, transportState, setScrollZoom } = useSpecviz()
+  const { scrollZoom, setScrollZoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(containerRef)
   const maskRef = useRef<SVGPathElement>(null)
-  const playheadRef = useRef<SVGLineElement>(null)
 
-  const derivePlayheadFromTime = useCallback(
-    (time: number) => {
-      return (time / duration * 100).toFixed(2) + "%"
-    },
-    [duration]
-  )
-
-  const updatePlayhead = useCallback(
+  useAnimationFrame(useCallback(
     () => {
-      const ref = playheadRef.current!
-      switch (transportState.type) {
-        case "stop":
-          return
-        case "play":
-          const delta = (Date.now() - transportState.timeRef) / 1000
-          const progress = derivePlayheadFromTime(transportState.offset + delta)
-          ref.setAttribute("x1", progress)
-          ref.setAttribute("x2", progress)
-          return
-      }
-    },
-    [playheadRef, transportState, derivePlayheadFromTime]
-  )
-
-  const mask = useCallback(
-    () => {
+      const elem = maskRef.current!
       const { x: width, y: height } = dimensions
       const { x: scrollX, y: scrollY, z: zoom } = scrollZoom.current!
-      return `
+      elem.setAttribute("d", `
         M 0 0
         h ${width}
         v ${height}
@@ -54,48 +31,10 @@ function Navigator(props: {
         h ${width / zoom}
         v ${-height / zoom}
         z
-      `
+      `)
     },
-    [dimensions, scrollZoom]
-  )
-
-  const updateMask = useCallback(
-    () => {
-      const ref = maskRef.current!
-      ref.setAttribute("d", mask())
-    },
-    [maskRef, mask]
-  )
-
-  useAnimationFrame(useCallback(
-    () => {
-      updatePlayhead()
-      updateMask()
-    },
-    [updatePlayhead, updateMask]
+    [maskRef, dimensions, scrollZoom, mappingHeight]
   ))
-
-  useWheel(
-    containerRef,
-    useCallback(
-      (e: WheelEvent) => {
-        e.preventDefault()
-        setScrollZoom(
-          {
-            x: dimensions.x,
-            y: mappingHeight,
-          },
-          state => {
-            if (e.altKey)
-              return { x: state.x, y: state.y, z: state.z - e.deltaY / 100 }
-            else
-              return { x: state.x - e.deltaX, y: state.y - e.deltaY, z: state.z }
-          }
-        )
-      },
-      [setScrollZoom, dimensions]
-    )
-  )
 
   useClickDelta(
     containerRef,
@@ -119,31 +58,46 @@ function Navigator(props: {
     )
   )
 
+  useWheel(
+    containerRef,
+    useCallback(
+      (e: WheelEvent) => {
+        e.preventDefault()
+        setScrollZoom(
+          {
+            x: dimensions.x,
+            y: mappingHeight,
+          },
+          state => {
+            if (e.altKey)
+              return { x: state.x, y: state.y, z: state.z + e.deltaY / 100 }
+            else
+              return { x: state.x - e.deltaX, y: state.y - e.deltaY, z: state.z }
+          }
+        )
+      },
+      [setScrollZoom, dimensions]
+    )
+  )
+
   return <div
     ref={containerRef}
     style={{height}}
-    className="specviz-minimap"
+    className="navigator"
   >
     <svg width="100%" height="100%">
       <image
-        preserveAspectRatio="none"
         href={imageUrl}
         width="100%"
         height="100%"
+        preserveAspectRatio="none"
       />
       <path
         ref={maskRef}
-        className="specviz-minimap-mask"
-        d={mask()}
+        className="mask"
+        d=""
       />
-      <line
-        ref={playheadRef}
-        className="specviz-minimap-playhead"
-        x1={derivePlayheadFromTime(transportState.offset)}
-        y1={0}
-        x2={derivePlayheadFromTime(transportState.offset)}
-        y2="100%"
-      />
+      <Playhead duration={duration} />
     </svg>
   </div>
 

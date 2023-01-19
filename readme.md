@@ -40,7 +40,6 @@
 - [x] navigator: wheel to zoom
 - [x] navigator: wheel to pan
 - [x] navigator: click to jump
-- [ ] navigator: code duplication from visualization
 - [x] bindings: keyboardevent
 - [ ] bindings: mouseevent
 - [ ] bindings: wheelevent

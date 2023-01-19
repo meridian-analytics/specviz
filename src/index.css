@@ -6,7 +6,7 @@ body > #root div ~ div {
   margin-top: 1rem;
 }
 
-.specviz-visualization {
+.visualization {
   background-color: #FBF1A9;
   border-radius: 0.25rem;
   border: 1px solid #000;
@@ -14,25 +14,25 @@ body > #root div ~ div {
   margin: 0.25rem 0;
 }
 
-.specviz-playhead {
+.visualization .playhead {
   stroke: white;
   stroke-width: 3;
   mix-blend-mode: difference;
 }
 
-.specviz-minimap {
+.navigator {
   background-color: #FBF1A9;
   border-radius: 0.25rem;
   border: 1px solid #000;
   overflow: hidden;
 }
 
-.specviz-minimap-playhead {
+.navigator .playhead {
   stroke: white;
   stroke-width: 1;
   mix-blend-mode: difference;
 }
 
-.specviz-minimap-mask{
+.navigator .mask {
   fill: rgba(0, 0, 0, 0.5);
 }
