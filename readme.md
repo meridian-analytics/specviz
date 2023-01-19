@@ -2,15 +2,18 @@
 
 ### HID bindings
 
-|action|control|context|
+|context|binding|action|
 |--|--|--|
-|seek|mouse click|visualizer|
+|global|<kbd>Z</kbd>|play|
+|global|<kbd>X</kbd>|stop|
 ||||
-|pan|trackpad wheel|navigator|
-|pan jump|mouse click|navigator|
-|pan vertical|mouse wheel|navigator|
-|pan horizontal|`shift` + mouse wheel|navigator|
-|zoom|`alt` + wheel|navigator|
+|visualizer|mouse click|seek|
+||||
+|navigator|trackpad wheel|pan|
+|navigator|mouse click|pan jump|
+|navigator|mouse wheel|pan vertical|
+|navigator|<kbd>shift</kbd> + mouse wheel|pan horizontal|
+|navigator|<kbd>alt</kbd> + wheel|zoom|
 
 ### tasks
 
@@ -37,6 +40,8 @@
 - [x] navigator: wheel to pan
 - [x] navigator: click to jump
 - [ ] navigator: code duplication from visualization
-- [ ] ux: keybindings
+- [x] bindings: keyboardevent
+- [ ] bindings: mouseevent
+- [ ] bindings: wheelevent
 - [x] ux: declarative audio/visual loading
 - [ ] ux: reset zoom/pan when changing audio/visual?
