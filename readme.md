@@ -9,6 +9,7 @@
 ||||
 |visualizer|mouse click|seek|
 |visualizer|trackpad|pan|
+|visualizer|<kbd>alt</kbd> + wheel|zoom|
 ||||
 |navigator|trackpad|pan|
 |navigator|mouse click|pan jump|

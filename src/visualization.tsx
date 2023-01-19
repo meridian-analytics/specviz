@@ -58,11 +58,12 @@ function Visualization(props: {
     useCallback(
       e => {
         e.preventDefault()
-        setScrollZoom(dimensions, state => ({
-          x: state.x + e.deltaX,
-          y: state.y + e.deltaY,
-          z: state.z
-        }))
+        setScrollZoom(dimensions, state => {
+          if (e.altKey)
+            return { x: state.x, y: state.y, z: state.z - e.deltaY / 100 }
+          else
+            return { x: state.x + e.deltaX, y: state.y + e.deltaY, z: state.z }
+        })
       },
       [setScrollZoom, dimensions]
     )
