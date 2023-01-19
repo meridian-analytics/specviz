@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
-import { useAnimationFrame, useDimensions } from "./hooks"
+import { useAnimationFrame, useClickPoint, useDimensions, useWheel } from "./hooks"
 
 function Navigator(props: {
   height: number,
@@ -9,7 +9,7 @@ function Navigator(props: {
   duration: number,
 }) {
   const { height, imageUrl, mappingHeight, duration } = props
-  const { scrollZoom, transportState } = useSpecviz()
+  const { scrollZoom, transportState, setScrollZoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensions = useDimensions(containerRef)
   const maskRef = useRef<SVGPathElement>(null)
@@ -41,22 +41,22 @@ function Navigator(props: {
 
   const mask = useCallback(
     () => {
-      const { width, height } = dimensions
-      const { x, y, z } = scrollZoom.current!
+      const { x: width, y: height } = dimensions
+      const { x: scrollX, y: scrollY, z: zoom } = scrollZoom.current!
       return `
         M 0 0
         h ${width}
         v ${height}
-        h${-width}
+        h ${-width}
         z
-        M ${x / z} ${y / mappingHeight * height / z}
-        v ${height / z}
-        h ${width / z}
-        v ${-height / z}
+        M ${scrollX / zoom} ${scrollY / mappingHeight * height / zoom}
+        v ${height / zoom}
+        h ${width / zoom}
+        v ${-height / zoom}
         z
       `
     },
-    [scrollZoom, dimensions.width, dimensions.height]
+    [dimensions, scrollZoom]
   )
 
   const updateMask = useCallback(
@@ -74,6 +74,50 @@ function Navigator(props: {
     },
     [updatePlayhead, updateMask]
   ))
+
+  useWheel(
+    containerRef,
+    useCallback(
+      (e: WheelEvent) => {
+        e.preventDefault()
+        setScrollZoom(
+          {
+            x: dimensions.x,
+            y: mappingHeight,
+          },
+          state => {
+            if (e.altKey)
+              return { x: state.x, y: state.y, z: state.z - e.deltaY / 100 }
+            else
+              return { x: state.x - e.deltaX, y: state.y - e.deltaY, z: state.z }
+          }
+        )
+      },
+      [setScrollZoom, dimensions]
+    )
+  )
+
+  useClickPoint(
+    containerRef,
+    useCallback(
+      (pt) => {
+        const { x: width, y: height } = dimensions
+        const { x: scrollX, y: scrollY, z: zoom } = scrollZoom.current!
+        setScrollZoom(
+          {
+            x: dimensions.x,
+            y: mappingHeight,
+          },
+          {
+            x: pt.x * zoom - width / 2,
+            y: pt.y / height * mappingHeight * zoom - mappingHeight / 2,
+            z: zoom,
+          }
+        )
+      },
+      [dimensions, scrollZoom, mappingHeight, setScrollZoom]
+    )
+  )
 
   return <div
     ref={containerRef}

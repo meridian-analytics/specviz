@@ -12,6 +12,7 @@ type tcontext = {
   scrollZoom: RefObject<tvector3>,
   transport: ttransport,
   transportState: ttransportstate
+  setScrollZoom: (dimensions: tvector2, func: tfunctional<tvector3>) => void,
   setTransport: (func: tfunctional<ttransport>) => void,
   setTransportState: (func: tfunctional<ttransportstate>) => void,
 }

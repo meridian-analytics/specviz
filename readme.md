@@ -2,13 +2,14 @@
 
 ### HID bindings
 
-|action|control|
-|--|--|
-|seek|mouse click|
-|zoom|`meta` + scroll|
-|pan (trackpad)|`alt` + scroll|
-|pan vertical (mousewheel)|`alt` + scroll|
-|pan horizontal (mousewheel)|`alt` + `shift` + scroll|
+|action|control|context|
+|--|--|--|
+|seek|mouse click|visualizer|
+|pan|mouse click|navigator|
+|pan (trackpad)|wheel|navigator|
+|pan vertical (mousewheel)|wheel|navigator|
+|pan horizontal (mousewheel)|`shift` + wheel|navigator|
+|zoom|`alt` + wheel|navigator|
 
 ### tasks
 
@@ -31,8 +32,9 @@
 - [ ] tools: pan tool
 - [x] navigator: show visible region
 - [x] navigator: playhead
-- [ ] navigator: wheel to zoom
-- [ ] navigator: click to scroll
+- [x] navigator: wheel to zoom
+- [x] navigator: wheel to pan
+- [x] navigator: click to jump
 - [ ] navigator: code duplication from visualization
 - [ ] ux: keybindings
 - [x] ux: declarative audio/visual loading

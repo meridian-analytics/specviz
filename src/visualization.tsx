@@ -1,27 +1,15 @@
-import type { MouseEvent, RefObject } from "react"
 import type { tvector2 } from "./types"
-import { useCallback, useEffect, useRef } from "react"
-import { useAnimationFrame, useDimensions } from "./hooks"
-import { clamp } from "./mathx"
+import { useCallback, useRef } from "react"
+import { useAnimationFrame, useClickPoint, useDimensions } from "./hooks"
 import { useSpecviz } from "./specviz"
-import { subtract } from "./vector2"
-
-function getRelativeMousePosition(ref: RefObject<HTMLElement>, e: MouseEvent): tvector2 {
-  const elem = ref.current!
-  return {
-    x: e.clientX - elem.offsetLeft,
-    y: e.clientY - elem.offsetTop,
-  }
-}
 
 function Visualization(props: {
   height: number,
   imageUrl: string,
   duration: number,
 }) {
-  console.log("rendering visualization")
   const { height, imageUrl, duration } = props
-  const { scrollZoom, transport, transportState } = useSpecviz()
+  const { scrollZoom, transport, transportState, setScrollZoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const layerRef = useRef<SVGSVGElement>(null)
   const playheadRef = useRef<SVGLineElement>(null)
@@ -36,27 +24,10 @@ function Visualization(props: {
 
   const deriveTimeFromPoint = useCallback(
     (pt: tvector2) => {
-      const state = scrollZoom.current!
-      return (state.x + pt.x) / dimensions.width / state.z * duration
+      const ref = scrollZoom.current!
+      return (ref.x + pt.x) / dimensions.x / ref.z * duration
     },
-    [scrollZoom, dimensions.width, duration]
-  )
-
-  const updateScrollZoom = useCallback(
-    (x: number, y: number, z: number) => {
-      const state = scrollZoom.current!
-      const layer = layerRef.current!
-      const xLimit = dimensions.width * (state.z - 1)
-      const yLimit = dimensions.height * (state.z - 1)
-      state.x = clamp(state.x + x, 0, xLimit)
-      state.y = clamp(state.y + y, 0, yLimit)
-      state.z = clamp(state.z + z, 1, 2)
-      layer.setAttribute("x", String(-state.x))
-      layer.setAttribute("y", String(-state.y))
-      layer.setAttribute("width", String(dimensions.width * state.z))
-      layer.setAttribute("height", String(dimensions.height * state.z))
-    },
-    [scrollZoom, dimensions.width, dimensions.height]
+    [scrollZoom, dimensions, duration]
   )
 
   const updatePlayhead = useCallback(
@@ -76,71 +47,40 @@ function Visualization(props: {
     [playheadRef, transportState, derivePlayheadFromTime]
   )
 
-  const onWheel = useCallback(
-    (e: WheelEvent) => {
-      e.preventDefault()
-      if (e.altKey) updateScrollZoom(e.deltaX, e.deltaY, 0) // scroll
-      if (e.metaKey) updateScrollZoom(0, 0, e.deltaY / -100) // zoom
-    },
-    [updateScrollZoom]
-  )
-
-  // react uses passive event listeners by default
-  // to stop propagation, use a non-passive listener
-  // https://stackoverflow.com/a/67258046
-  useEffect(
+  const updateLayer = useCallback(
     () => {
-      const container = containerRef.current!
-      container.addEventListener("wheel", onWheel, { passive: false })
-      return () => {
-        container.removeEventListener("wheel", onWheel)
-      }
+      const elem = layerRef.current!
+      const { x: width, y: height } = dimensions
+      const { x: scrollX, y: scrollY, z: scrollZ } = scrollZoom.current!
+      elem.setAttribute("x", String(-scrollX))
+      elem.setAttribute("y", String(-scrollY))
+      elem.setAttribute("width", String(width * scrollZ))
+      elem.setAttribute("height", String(height * scrollZ))
     },
-    [containerRef, onWheel]
+    [layerRef, dimensions, scrollZoom]
   )
 
   useAnimationFrame(useCallback(
     () => {
-      updateScrollZoom(0, 0, 0)
+      setScrollZoom(dimensions, state => state)
+      updateLayer()
       updatePlayhead()
     },
-    [updateScrollZoom, updatePlayhead]
+    [setScrollZoom, updateLayer, updatePlayhead]
   ))
 
-  const lastMousePosition = useRef<tvector2>({x: 0, y: 0})
-
-  const onMouseDown = useCallback(
-    (e: MouseEvent) => {
-      const pt = getRelativeMousePosition(containerRef, e)
-      lastMousePosition.current.x = pt.x
-      lastMousePosition.current.y = pt.y
-    },
-    [containerRef, lastMousePosition]
-  )
-
-  const onMouseUp = useCallback(
-    (e: MouseEvent) => {
-      e.preventDefault
-      const pt = getRelativeMousePosition(containerRef, e)
-      const delta = subtract(pt, lastMousePosition.current)
-      // click
-      if (Math.max(Math.abs(delta.x), Math.abs(delta.y)) < 3) {
-        transport.seek(deriveTimeFromPoint(pt))
-      }
-      // drag
-      else {
-        console.log("drag", delta)
-      }
-    },
-    [containerRef, lastMousePosition, transport, deriveTimeFromPoint]
+  useClickPoint(
+    containerRef,
+    useCallback(
+      (pt) => { transport.seek(deriveTimeFromPoint(pt)) },
+      [transport, deriveTimeFromPoint]
+    )
   )
 
   return <div
     ref={containerRef}
     style={{height}}
     className="specviz-visualization"
-    onMouseDown={onMouseDown}
-    onMouseUp={onMouseUp}
   >
     <svg
       width="100%"
@@ -150,8 +90,8 @@ function Visualization(props: {
         ref={layerRef}
         x={0}
         y={0}
-        width={dimensions.width * scrollZoom.current!.z}
-        height={dimensions.height * scrollZoom.current!.z}
+        width={dimensions.x * scrollZoom.current!.z}
+        height={dimensions.y * scrollZoom.current!.z}
       >
         <image
           // style={{pointerEvents: "none"}}
