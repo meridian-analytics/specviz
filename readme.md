@@ -8,8 +8,9 @@
 |global|<kbd>X</kbd>|stop|
 ||||
 |visualizer|mouse click|seek|
+|visualizer|trackpad|pan|
 ||||
-|navigator|trackpad wheel|pan|
+|navigator|trackpad|pan|
 |navigator|mouse click|pan jump|
 |navigator|mouse wheel|pan vertical|
 |navigator|<kbd>shift</kbd> + mouse wheel|pan horizontal|
