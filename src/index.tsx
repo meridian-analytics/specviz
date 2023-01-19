@@ -4,6 +4,7 @@ import { Specviz, useSpecviz } from "./specviz"
 import Visualization from "./visualization"
 import Navigator from "./navigator"
 import Audio from "./audio"
+import { Bindings, Keypress } from "./keybinds"
 import "./index.css"
 
 const segment1 = {
@@ -20,12 +21,10 @@ const segment2 = {
   waveform: "./waveform2.png",
 }
 
-function MyComponent(props: {
-  id: number,
-}) {
+function MyComponent() {
   const [data, setData] = useState(segment1)
   return <Specviz>
-    <h3>specviz instance {props.id}</h3>
+    <h3>specviz-react</h3>
     <button
       type="button"
       onClick={_ => setData(segment1)}
@@ -43,6 +42,7 @@ function MyComponent(props: {
     <Navigator height={30} imageUrl={data.waveform} mappingHeight={200} duration={data.duration} />
     <Audio url={data.audio} />
     <MyAudioControls />
+    <MyKeybinds />
   </Specviz>
 }
 
@@ -50,11 +50,13 @@ function MyAudioControls() {
   const { transport } = useSpecviz()
   return <p>
     <button
+      title="Z"
       type="button"
       onClick={_ => transport.play()}
       children="Play"
     />
     <button
+      title="X"
       type="button"
       onClick={_ => transport.stop()}
       children="Stop"
@@ -62,15 +64,18 @@ function MyAudioControls() {
   </p>
 }
 
+function MyKeybinds() {
+  const { transport } = useSpecviz()
+  return <Bindings>
+    <Keypress bind="z" onKeyDown={transport.play} />
+    <Keypress bind="x" onKeyDown={transport.stop} />
+  </Bindings>
+}
+
 createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
-    <div style={{flex: 1, display: "flex", flexDirection: "column"}}>
-      <div style={{padding: 20, backgroundColor: "#E8FDF5" }}>
-        <MyComponent id={1} />
-      </div>
-      <div style={{padding: 20, backgroundColor: "#F6FFFE" }}>
-        <MyComponent id={2} />
-      </div>
+    <div style={{padding: 20, backgroundColor: "#E8FDF5" }}>
+      <MyComponent />
     </div>
   </StrictMode>
 )
