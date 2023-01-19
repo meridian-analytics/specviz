@@ -65,10 +65,10 @@ function MyAudioControls() {
 createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
     <div style={{flex: 1, display: "flex", flexDirection: "column"}}>
-      <div style={{padding: 20, backgroundColor: "#cff" }}>
+      <div style={{padding: 20, backgroundColor: "#E8FDF5" }}>
         <MyComponent id={1} />
       </div>
-      <div style={{padding: 20, backgroundColor: "#fcf" }}>
+      <div style={{padding: 20, backgroundColor: "#F6FFFE" }}>
         <MyComponent id={2} />
       </div>
     </div>
