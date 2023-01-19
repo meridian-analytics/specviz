@@ -1,6 +1,7 @@
-import type { RefObject } from "react"
+import { RefObject, useRef } from "react"
 import type { tvector2 } from "./types"
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react"
+import { subtract } from "./vector2"
 
 // react 18, you might not need an effect
 // https://beta.reactjs.org/reference/react/useSyncExternalStore
@@ -45,26 +46,49 @@ function useAnimationFrame(callback: (frameId: number) => void) {
   )
 }
 
-function useClickPoint(ref: RefObject<HTMLElement>, onClick: (pt: tvector2) => void) {
-  const listener = useCallback(
-    (e: MouseEvent) => {
+function useClickDelta(
+  ref: RefObject<HTMLElement>,
+  onClick: (pt: tvector2, delta: tvector2) => void
+) {
+  const origin = useRef<tvector2>({ x: 0, y: 0 })
+
+  const absoluteToRelative = useCallback(
+    (pt: tvector2) => {
       const elem = ref.current!
-      onClick({
-        x: e.clientX - elem.offsetLeft,
-        y: e.clientY - elem.offsetTop,
-      })
+      return {
+        x: pt.x - elem.offsetLeft,
+        y: pt.y - elem.offsetTop,
+      }
     },
-    [ref, onClick]
+    [ref]
   )
+
+  const onMouseDown = useCallback(
+    (e: MouseEvent) => {
+      origin.current = absoluteToRelative({ x: e.clientX, y: e.clientY })
+    },
+    [origin, absoluteToRelative]
+  )
+
+  const onMouseUp = useCallback(
+    (e: MouseEvent) => {
+      const pt = absoluteToRelative({ x: e.clientX, y: e.clientY })
+      onClick(pt, subtract(pt, origin.current))
+    },
+    [origin, absoluteToRelative, onClick]
+  )
+
   useEffect(
     () => {
       const elem = ref.current!
-      elem.addEventListener("click", listener)
+      elem.addEventListener("mousedown", onMouseDown)
+      elem.addEventListener("mouseup", onMouseUp)
       return () => {
-        elem.removeEventListener("click", listener)
+        elem.removeEventListener("mousedown", onMouseDown)
+        elem.removeEventListener("mouseup", onMouseUp)
       }
     },
-    [ref, listener]
+    [ref, onMouseDown, onMouseUp]
   )
 }
 
@@ -84,4 +108,4 @@ function useWheel(ref: RefObject<HTMLElement>, onWheel: (e: WheelEvent) => void)
   )
 }
 
-export { useAnimationFrame, useClickPoint, useDimensions, useWheel }
+export { useAnimationFrame, useClickDelta, useDimensions, useWheel }

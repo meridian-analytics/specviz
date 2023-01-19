@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
-import { useAnimationFrame, useClickPoint, useDimensions, useWheel } from "./hooks"
+import { useAnimationFrame, useClickDelta, useDimensions, useWheel } from "./hooks"
 
 function Navigator(props: {
   height: number,
@@ -97,10 +97,10 @@ function Navigator(props: {
     )
   )
 
-  useClickPoint(
+  useClickDelta(
     containerRef,
     useCallback(
-      (pt) => {
+      (pt, delta) => {
         const { x: width, y: height } = dimensions
         const { x: scrollX, y: scrollY, z: zoom } = scrollZoom.current!
         setScrollZoom(

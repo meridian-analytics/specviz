@@ -1,7 +1,8 @@
 import type { tvector2 } from "./types"
 import { useCallback, useRef } from "react"
-import { useAnimationFrame, useClickPoint, useDimensions, useWheel } from "./hooks"
+import { useAnimationFrame, useClickDelta, useDimensions, useWheel } from "./hooks"
 import { useSpecviz } from "./specviz"
+import { magnitude } from "./vector2"
 
 function Visualization(props: {
   height: number,
@@ -69,11 +70,16 @@ function Visualization(props: {
     [setScrollZoom, updateLayer, updatePlayhead]
   ))
 
-  useClickPoint(
+  useClickDelta(
     containerRef,
     useCallback(
-      pt => {
-        transport.seek(deriveTimeFromPoint(pt))
+      (pt, delta) => {
+        if (magnitude(delta) > 5) {
+          // drag: create annotation
+        }
+        else {
+          transport.seek(deriveTimeFromPoint(pt))
+        }
       },
       [transport, deriveTimeFromPoint]
     )
@@ -111,7 +117,6 @@ function Visualization(props: {
         height={dimensions.y * scrollZoom.current!.z}
       >
         <image
-          // style={{pointerEvents: "none"}}
           preserveAspectRatio="none"
           href={imageUrl}
           width="100%"
