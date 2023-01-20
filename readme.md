@@ -8,8 +8,10 @@
 |global|<kbd>X</kbd>|stop|
 ||||
 |visualizer|mouse click|seek|
+|visualizer|mouse click|select annotation|
 |visualizer|trackpad|pan|
 |visualizer|<kbd>alt</kbd> + wheel|zoom|
+|visualizer|mouse click + drag|create annotation|
 ||||
 |navigator|trackpad|pan|
 |navigator|mouse click|pan jump|
@@ -35,6 +37,9 @@
 - [ ] annotation: create
 - [ ] annotation: playback region
 - [ ] annotation: playback filter
+- [ ] annotation: drag preview
+- [ ] annotation: click to select
+- [ ] annotation: 1-dimensional variant
 - [ ] tools: annotation tool
 - [ ] tools: zoom tool
 - [ ] tools: pan tool

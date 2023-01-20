@@ -48,8 +48,8 @@ function Navigator(props: {
         // click
         if (magnitude({x: rect.width, y: rect.height}) < .01) {
           setScrollZoom(state => ({
-            x: rect.x * state.z,
-            y: rect.y * state.z,
+            x: -0.5 + rect.x * state.z,
+            y: -0.5 + rect.y * state.z,
             z: state.z,
           }))
         }
@@ -58,7 +58,6 @@ function Navigator(props: {
 
 
         }
-
       },
       [setScrollZoom]
     )
