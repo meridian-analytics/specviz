@@ -1,16 +1,17 @@
 import type { ReactNode } from "react"
-import type { tannotation, ttransport, ttransportstate, tcontext, tfunctional, tvector3, trange } from "./types"
-import { createContext, useCallback, useContext, useRef, useState } from "react"
+import type { tannotation, ttransport, ttransportstate, tcontext, tfunctional, tvector2 } from "./types"
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react"
 import { clamp } from "./mathx"
 
-const ZOOM_RANGE: trange = [1, 5]
+const ZOOM_MAX: number = 5
 const STOP: ttransportstate = { type: "stop", offset: 0 }
 const NOOP = () => {}
 
 const SpecvizContext = createContext<tcontext>({
   annotations: new Map(),
   duration: 0,
-  scrollZoom: { current: { x: 0, y: 0, z: 1 } },
+  scroll: { x: 0, y: 0 },
+  zoom: { x: 0, y: 0 },
   transport: {
     play: () => { console.error("transport.play called outside of Specviz context") },
     stop: () => { console.error("transport.stop called outside of Specviz context") },
@@ -18,7 +19,6 @@ const SpecvizContext = createContext<tcontext>({
   },
   transportState: STOP,
   setAnnotations: _ => { console.error("setAnnotations called outside of Specviz context") },
-  setScrollZoom: _ => { console.error("setScrollZoom called outside of Specviz context") },
   setTransport: _ => { console.error("setTransport called outside of Specviz context") },
   setTransportState: _ => { console.error("setTransportState called outside of Specviz context") },
 })
@@ -28,24 +28,41 @@ function Specviz(props: {
   children: ReactNode,
 }) {
   const [annotations, setAnnotations] = useState<Map<string, tannotation>>(new Map())
-  const scrollZoom = useRef<tvector3>({ x: 0, y: 0, z: 1 })
+  const scrollRef = useRef<tvector2>({ x: 0, y: 0 })
+  const zoomRef = useRef<tvector2>({ x: 1, y: 1 })
 
-  const setScrollZoom = useCallback(
-    (t: tfunctional<tvector3>) => {
-      const state = scrollZoom.current!
-      if (typeof t === "function") {
-        const nextState = t(state)
-        state.z = clamp(nextState.z, ZOOM_RANGE[0], ZOOM_RANGE[1])
-        state.x = clamp(nextState.x, 0, state.z - 1)
-        state.y = clamp(nextState.y, 0, state.z - 1)
-      }
-      else {
-        state.z = clamp(t.z, ZOOM_RANGE[0], ZOOM_RANGE[1])
-        state.x = clamp(t.x, 0, state.z - 1)
-        state.y = clamp(t.y, 0, state.z - 1)
+  const scroll = useMemo(
+    () => {
+      const s = scrollRef.current!
+      const z = zoomRef.current!
+      return {
+        get x() { return s.x },
+        get y() { return s.y },
+        set x(v) { s.x = clamp(v, 0, z.x - 1) },
+        set y(v) { s.y = clamp(v, 0, z.y - 1) },
       }
     },
-    [scrollZoom]
+    [scrollRef, zoomRef]
+  )
+
+  const zoom = useMemo(
+    () => {
+      const s = scrollRef.current!
+      const z = zoomRef.current!
+      return {
+        get x() { return z.x },
+        get y() { return z.y },
+        set x(v) {
+          z.x = clamp(v, 1, ZOOM_MAX)
+          s.x = clamp(s.x, 0, z.x - 1)
+        },
+        set y(v) {
+          z.y = clamp(v, 1, ZOOM_MAX)
+          s.y = clamp(s.y, 0, z.y - 1)
+        },
+      }
+    },
+    [scrollRef, zoomRef]
   )
 
   const [transport, setTransport] = useState<ttransport>({
@@ -59,11 +76,11 @@ function Specviz(props: {
   return <SpecvizContext.Provider value={{
     annotations,
     duration: props.duration,
-    scrollZoom,
+    scroll,
+    zoom,
     transport,
     transportState,
     setAnnotations,
-    setScrollZoom,
     setTransport,
     setTransportState,
   }}>

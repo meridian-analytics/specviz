@@ -1,9 +1,10 @@
 import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
 import { useAnimationFrame, useClickRect, useWheel } from "./hooks"
+import { magnitude } from "./vector2"
+import { clamp } from "./mathx"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
-import { magnitude } from "./vector2"
 
 const RESOLUTION = 100
 
@@ -12,58 +13,50 @@ function Navigator(props: {
   imageUrl: string,
 }) {
   const { height, imageUrl } = props
-  const { annotations, scrollZoom, setScrollZoom } = useSpecviz()
+  const { annotations, scroll, zoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
   useAnimationFrame(useCallback(
     () => {
       const elem = maskRef.current!
-      const { x, y, z } = scrollZoom.current!
       elem.setAttribute("d", `
         M 0 0
         h ${RESOLUTION}
         v ${RESOLUTION}
         h ${-RESOLUTION}
         z
-        M ${x * RESOLUTION / z} ${y * RESOLUTION / z}
-        v ${RESOLUTION / z}
-        h ${RESOLUTION / z}
-        v ${-RESOLUTION / z}
+        M ${scroll.x * RESOLUTION / zoom.x} ${scroll.y * RESOLUTION / zoom.y}
+        v ${RESOLUTION / zoom.y}
+        h ${RESOLUTION / zoom.x}
+        v ${-RESOLUTION / zoom.y}
         z
       `)
     },
-    [maskRef, scrollZoom]
+    [maskRef, scroll, zoom]
   ))
 
   const {onMouseDown, onMouseUp} = useClickRect({
     onMouseDown: useCallback(
-      (e, origin) => {},
+      (e, origin) => {
+        e.preventDefault()
+      },
       []
     ),
     onMouseUp: useCallback(
       (e, rect) => {
         if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
-          setScrollZoom(state => ({
-            x: -0.5 + rect.x * state.z,
-            y: -0.5 + rect.y * state.z,
-            z: state.z,
-          }))
+          scroll.x = -0.5 + rect.x * zoom.x
+          scroll.y = -0.5 + rect.y * zoom.y
         }
         else { // drag
-          setScrollZoom(state => ({
-            x: state.x,
-            y: state.y,
-            z: 1 / rect.width,
-          }))
-          setScrollZoom(state => ({
-            x: -0.5 + (rect.x + rect.width / 2) * state.z,
-            y: -0.5 + (rect.y + rect.height / 2) * state.z,
-            z: state.z,
-          }))
+          zoom.x = 1 / rect.width
+          zoom.y = 1 / rect.height
+          scroll.x = -0.5 + (rect.x + rect.width / 2) * zoom.x
+          scroll.y = -0.5 + (rect.y + rect.height / 2) * zoom.y
         }
       },
-      [setScrollZoom]
+      [scroll, zoom]
     )
   })
 
@@ -73,14 +66,17 @@ function Navigator(props: {
       (e: WheelEvent) => {
         e.preventDefault()
         const elem = e.currentTarget as HTMLDivElement
-        setScrollZoom(state => {
-          if (e.altKey)
-            return { x: state.x, y: state.y, z: state.z + e.deltaY / 300 }
-          else
-            return { x: state.x - e.deltaX / elem.clientWidth, y: state.y - e.deltaY / elem.clientHeight, z: state.z }
-        })
+        if (e.altKey) {
+          // 1-dimensional zoom
+          zoom.x = clamp(zoom.x, 2, zoom.x + e.deltaY / 100)
+          zoom.y = clamp(zoom.y, 2, zoom.y + e.deltaY / 100)
+        }
+        else {
+          scroll.x = scroll.x - e.deltaX / elem.clientWidth
+          scroll.y = scroll.y - e.deltaY / elem.clientHeight
+        }
       },
-      [setScrollZoom]
+      [scroll, zoom]
     )
   )
 

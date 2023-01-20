@@ -12,32 +12,32 @@ function Visualization(props: {
   imageUrl: string,
 }) {
   const { height, imageUrl } = props
-  const { annotations, duration, scrollZoom, transport, setAnnotations, setScrollZoom } = useSpecviz()
+  const { annotations, duration, scroll, zoom, transport, setAnnotations } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const layerRef = useRef<SVGSVGElement>(null)
 
   useAnimationFrame(useCallback(
     () => {
-      const { x, y, z } = scrollZoom.current!
       const elem = layerRef.current!
-      elem.setAttribute("x", percent(-x))
-      elem.setAttribute("y", percent(-y))
-      elem.setAttribute("width", percent(z))
-      elem.setAttribute("height", percent(z))
+      elem.setAttribute("x", percent(-scroll.x))
+      elem.setAttribute("y", percent(-scroll.y))
+      elem.setAttribute("width", percent(zoom.x))
+      elem.setAttribute("height", percent(zoom.y))
     },
-    [layerRef, scrollZoom, setScrollZoom]
+    [layerRef, scroll, zoom]
   ))
 
   const {onMouseDown, onMouseUp} = useClickRect({
     onMouseDown: useCallback(
-      (e, origin) => {},
+      (e, origin) => {
+        e.preventDefault()
+      },
       []
     ),
     onMouseUp: useCallback(
       (e, rect) => {
-        const state = scrollZoom.current!
         if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
-          const progress = (state.x + rect.x) / state.z
+          const progress = (scroll.x + rect.x) / zoom.x
           transport.seek(progress * duration)
         }
         else { // drag
@@ -46,10 +46,10 @@ function Visualization(props: {
             new Map(a).set(id, {
               id,
               rect: {
-                x: (state.x + rect.x) / state.z,
-                y: (state.y + rect.y) / state.z,
-                width: rect.width / state.z,
-                height: rect.height / state.z,
+                x: (scroll.x + rect.x) / zoom.x,
+                y: (scroll.y + rect.y) / zoom.y,
+                width: rect.width / zoom.x,
+                height: rect.height / zoom.y,
               },
               data: {},
             })
@@ -57,7 +57,7 @@ function Visualization(props: {
         }
 
       },
-      [scrollZoom, transport, duration, setAnnotations]
+      [scroll, zoom, transport, duration, setAnnotations]
     )
   })
 
@@ -67,14 +67,16 @@ function Visualization(props: {
       e => {
         e.preventDefault()
         const elem = e.currentTarget as HTMLDivElement
-        setScrollZoom(state => {
-          if (e.altKey)
-            return { x: state.x, y: state.y, z: state.z - e.deltaY / 300 }
-          else
-            return { x: state.x + e.deltaX / elem.clientWidth, y: state.y + e.deltaY / elem.clientHeight, z: state.z }
-        })
+        if (e.altKey) {
+          zoom.x = zoom.x - e.deltaX / elem.clientWidth * 10
+          zoom.y = zoom.y - e.deltaY / elem.clientHeight * 10
+        }
+        else {
+          scroll.x = scroll.x + e.deltaX / elem.clientWidth
+          scroll.y = scroll.y + e.deltaY / elem.clientHeight
+        }
       },
-      [setScrollZoom]
+      [scroll, zoom]
     )
   )
 

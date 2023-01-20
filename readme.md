@@ -54,6 +54,6 @@
 - [x] bindings: keyboardevent
 - [ ] bindings: mouseevent
 - [ ] bindings: wheelevent
+- [x] ux: 2-dimensional zoom
 - [x] ux: declarative audio/visual loading
-- [ ] ux: reset zoom/pan when changing audio/visual?
 - [ ] bug: rect with negative % width or height
