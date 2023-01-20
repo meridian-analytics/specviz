@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
 import { useAnimationFrame, useClickDelta, useWheel } from "./hooks"
 import Playhead from "./playhead"
+import Annotation from "./annotation"
 
 const RESOLUTION = 100
 
@@ -10,7 +11,7 @@ function Navigator(props: {
   imageUrl: string,
 }) {
   const { height, imageUrl } = props
-  const { scrollZoom, setScrollZoom } = useSpecviz()
+  const { annotations, scrollZoom, setScrollZoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
@@ -85,6 +86,9 @@ function Navigator(props: {
         height="100%"
         preserveAspectRatio="none"
       />
+      {Array.from(annotations.values()).map(a =>
+        <Annotation key={a.id} annotation={a}  />
+      )}
       <path
         ref={maskRef}
         className="mask"

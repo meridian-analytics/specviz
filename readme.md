@@ -43,6 +43,7 @@
 - [x] navigator: wheel to zoom
 - [x] navigator: wheel to pan
 - [x] navigator: click to jump
+- [x] navigator: annotation rects
 - [x] bindings: keyboardevent
 - [ ] bindings: mouseevent
 - [ ] bindings: wheelevent

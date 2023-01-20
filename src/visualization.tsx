@@ -5,6 +5,7 @@ import { magnitude } from "./vector2"
 import Playhead from "./playhead"
 import { percent } from "./mathx"
 import { randomBytes } from "./stringx"
+import Annotation from "./annotation"
 
 function Visualization(props: {
   height: number,
@@ -105,16 +106,8 @@ function Visualization(props: {
           width="100%"
           height="100%"
         />
-        {Array.from(annotations.values()).map(({ id, rect }) =>
-          <rect
-            key={id}
-            className="annotation"
-            x={percent(rect.x)}
-            y={percent(rect.y)}
-            width={percent(rect.width)}
-            height={percent(rect.height)}
-            rx="3"
-          />
+        {Array.from(annotations.values()).map(a =>
+          <Annotation key={a.id} annotation={a}  />
         )}
         <Playhead />
       </svg>
