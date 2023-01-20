@@ -1,8 +1,9 @@
 import type { ReactNode } from "react"
-import type { tannotation, ttransport, ttransportstate, tcontext, tfunctional, tvector3 } from "./types"
+import type { tannotation, ttransport, ttransportstate, tcontext, tfunctional, tvector3, trange } from "./types"
 import { createContext, useCallback, useContext, useRef, useState } from "react"
 import { clamp } from "./mathx"
 
+const ZOOM_RANGE: trange = [1, 5]
 const STOP: ttransportstate = { type: "stop", offset: 0 }
 const NOOP = () => {}
 
@@ -34,12 +35,12 @@ function Specviz(props: {
       const state = scrollZoom.current!
       if (typeof t === "function") {
         const nextState = t(state)
-        state.z = clamp(nextState.z, 1, 2)
+        state.z = clamp(nextState.z, ZOOM_RANGE[0], ZOOM_RANGE[1])
         state.x = clamp(nextState.x, 0, state.z - 1)
         state.y = clamp(nextState.y, 0, state.z - 1)
       }
       else {
-        state.z = clamp(t.z, 1, 2)
+        state.z = clamp(t.z, ZOOM_RANGE[0], ZOOM_RANGE[1])
         state.x = clamp(t.x, 0, state.z - 1)
         state.y = clamp(t.y, 0, state.z - 1)
       }

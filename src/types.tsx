@@ -1,6 +1,8 @@
 import type { RefObject } from "react"
 
+type trange = [number, number]
 type trect = {
+
   x: number,
   y: number,
   width: number,
@@ -44,6 +46,7 @@ type ttransport = {
 }
 
 export type {
+  trange,
   trect,
   tannotation,
   tvector2,
