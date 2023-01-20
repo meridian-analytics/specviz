@@ -1,8 +1,9 @@
 import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
-import { useAnimationFrame, useClickDelta, useWheel } from "./hooks"
+import { useAnimationFrame, useClickRect, useWheel } from "./hooks"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
+import { magnitude } from "./vector2"
 
 const RESOLUTION = 100
 
@@ -35,22 +36,33 @@ function Navigator(props: {
     [maskRef, scrollZoom]
   ))
 
-  useClickDelta(
-    containerRef,
-    useCallback(
-      (e, pt, delta) => {
-        const elem = e.currentTarget as HTMLDivElement
-        // todo: center on click
-        setScrollZoom(state => ({
-          x: pt.x / elem.clientWidth,
-          y: pt.y / elem.clientHeight,
-          z: state.z,
-        }))
+  const {onMouseDown, onMouseUp} = useClickRect({
+    onMouseDown: useCallback(
+      (e, origin) => {
+
+      },
+      []
+    ),
+    onMouseUp: useCallback(
+      (e, rect) => {
+        // click
+        if (magnitude({x: rect.width, y: rect.height}) < .01) {
+          setScrollZoom(state => ({
+            x: rect.x * state.z,
+            y: rect.y * state.z,
+            z: state.z,
+          }))
+        }
+        // drag
+        else {
+
+
+        }
 
       },
       [setScrollZoom]
     )
-  )
+  })
 
   useWheel(
     containerRef,
@@ -73,6 +85,8 @@ function Navigator(props: {
     ref={containerRef}
     style={{height}}
     className="navigator"
+    onMouseDown={onMouseDown}
+    onMouseUp={onMouseUp}
   >
     <svg
       width="100%"

@@ -1,15 +1,15 @@
 import { useCallback, useRef } from "react"
-import { useAnimationFrame, useClickDelta, useClickRect, useWheel } from "./hooks"
+import { useAnimationFrame, useClickRect, useWheel } from "./hooks"
 import { useSpecviz } from "./specviz"
 import { magnitude } from "./vector2"
-import Playhead from "./playhead"
 import { percent } from "./mathx"
 import { randomBytes } from "./stringx"
+import Playhead from "./playhead"
 import Annotation from "./annotation"
 
 function Visualization(props: {
   height: number,
-  imageUrl: string
+  imageUrl: string,
 }) {
   const { height, imageUrl } = props
   const { annotations, duration, scrollZoom, transport, setAnnotations, setScrollZoom } = useSpecviz()
@@ -28,14 +28,14 @@ function Visualization(props: {
     [layerRef, scrollZoom, setScrollZoom]
   ))
 
-  const {onMouseDown, onMouseUp} = useClickRect(
-    useCallback(
+  const {onMouseDown, onMouseUp} = useClickRect({
+    onMouseDown: useCallback(
       (e, origin) => {
         console.log("mousedown", origin)
       },
       []
     ),
-    useCallback(
+    onMouseUp: useCallback(
       (e, rect) => {
         const state = scrollZoom.current!
         // click
@@ -63,7 +63,7 @@ function Visualization(props: {
       },
       [scrollZoom, transport, duration, setAnnotations]
     )
-  )
+  })
 
   useWheel(
     containerRef,
