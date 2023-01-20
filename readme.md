@@ -29,6 +29,7 @@
 - [ ] visualization: nonlinear freq axis
 - [x] audio: playback
 - [x] audio: resume at playhead
+- [x] audio: preserve playhead on unmount
 - [x] audio: seek to location
 - [ ] annotation: create
 - [ ] annotation: playback region

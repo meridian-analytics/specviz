@@ -14,13 +14,12 @@ function stopState(offset: number): ttransportstate {
 function Audio(props: {
   url: string,
 }) {
-  const { url } = props
   const { setTransport, setTransportState } = useSpecviz()
 
   useEffect(
     () => {
       const sound = new Sound(
-        url,
+        props.url,
         err => {
           if (err) return console.error(err)
           setTransport({
@@ -62,10 +61,19 @@ function Audio(props: {
         }
       )
       return () => {
-        sound.stop()
+        // preserve playhead location on audio unmount
+        setTransportState(t => {
+          switch(t.type) {
+            case "stop":
+              return t
+            case "play":
+              sound.stop()
+              return stopState(t.offset + (Date.now() - t.timeRef) / 1000)
+          }
+        })
       }
     },
-    [url]
+    [props.url]
   )
 
   return <></>
