@@ -30,21 +30,17 @@ function Visualization(props: {
 
   const {onMouseDown, onMouseUp} = useClickRect({
     onMouseDown: useCallback(
-      (e, origin) => {
-        console.log("mousedown", origin)
-      },
+      (e, origin) => {},
       []
     ),
     onMouseUp: useCallback(
       (e, rect) => {
         const state = scrollZoom.current!
-        // click
-        if (magnitude({x: rect.width, y: rect.height}) < .01) {
+        if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
           const progress = (state.x + rect.x) / state.z
           transport.seek(progress * duration)
         }
-        // drag
-        else {
+        else { // drag
           const id = randomBytes(10)
           setAnnotations(a =>
             new Map(a).set(id, {

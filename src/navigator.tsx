@@ -38,25 +38,29 @@ function Navigator(props: {
 
   const {onMouseDown, onMouseUp} = useClickRect({
     onMouseDown: useCallback(
-      (e, origin) => {
-
-      },
+      (e, origin) => {},
       []
     ),
     onMouseUp: useCallback(
       (e, rect) => {
-        // click
-        if (magnitude({x: rect.width, y: rect.height}) < .01) {
+        if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
           setScrollZoom(state => ({
             x: -0.5 + rect.x * state.z,
             y: -0.5 + rect.y * state.z,
             z: state.z,
           }))
         }
-        // drag
-        else {
-
-
+        else { // drag
+          setScrollZoom(state => ({
+            x: state.x,
+            y: state.y,
+            z: 1 / rect.width,
+          }))
+          setScrollZoom(state => ({
+            x: -0.5 + (rect.x + rect.width / 2) * state.z,
+            y: -0.5 + (rect.y + rect.height / 2) * state.z,
+            z: state.z,
+          }))
         }
       },
       [setScrollZoom]

@@ -18,6 +18,7 @@
 |navigator|mouse wheel|pan vertical|
 |navigator|<kbd>shift</kbd> + mouse wheel|pan horizontal|
 |navigator|<kbd>alt</kbd> + wheel|zoom|
+|navigator|mouse click + drag|zoom region|
 
 ### tasks
 
@@ -34,7 +35,7 @@
 - [x] audio: resume at playhead
 - [x] audio: preserve playhead on unmount
 - [x] audio: seek to location
-- [ ] annotation: create
+- [x] annotation: create
 - [ ] annotation: playback region
 - [ ] annotation: playback filter
 - [ ] annotation: drag preview
@@ -48,6 +49,7 @@
 - [x] navigator: wheel to zoom
 - [x] navigator: wheel to pan
 - [x] navigator: click to jump
+- [x] navigator: click + drag zoom to slection
 - [x] navigator: annotation rects
 - [x] bindings: keyboardevent
 - [ ] bindings: mouseevent
