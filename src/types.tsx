@@ -1,12 +1,11 @@
 import type { trect } from "./rect"
+import type { tvector2 } from "./vector2"
 
 type tannotation = {
   id: string,
   rect: trect,
   data: Object,
 }
-
-type tvector2 = { x: number, y: number }
 
 type tfunctional<T> = T | ((prevState: T) => T)
 
@@ -35,9 +34,7 @@ type ttransport = {
 }
 
 export type {
-  trect,
   tannotation,
-  tvector2,
   tfunctional,
   tnullable,
   tcontext,

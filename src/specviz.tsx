@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
-import type { tannotation, ttransport, ttransportstate, tcontext, tfunctional, tvector2 } from "./types"
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react"
+import type { tannotation, ttransport, ttransportstate, tcontext } from "./types"
+import type { tvector2 } from "./vector2"
+import { createContext, useContext, useMemo, useRef, useState } from "react"
 import { clamp } from "./mathx"
 
 const ZOOM_MAX: number = 5

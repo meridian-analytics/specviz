@@ -1,8 +1,7 @@
 import type { MouseEvent, RefObject } from "react"
-import type { trect, tvector2 } from "./types"
 import { useCallback, useEffect, useRef } from "react"
-import { subtract } from "./vector2"
-import { normalize } from "./rect"
+import { tvector2, subtract } from "./vector2"
+import { trect, normalize } from "./rect"
 
 function useAnimationFrame(callback: (frameId: number) => void) {
   useEffect(
