@@ -16,7 +16,7 @@ body > #root div ~ div {
 
 .visualization .playhead {
   stroke: white;
-  stroke-width: 3;
+  stroke-width: 0.3%;
   mix-blend-mode: difference;
 }
 
@@ -29,7 +29,7 @@ body > #root div ~ div {
 
 .navigator .playhead {
   stroke: white;
-  stroke-width: 1;
+  stroke-width: 0.2%;
   mix-blend-mode: difference;
 }
 

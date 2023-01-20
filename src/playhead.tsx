@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
 import { useAnimationFrame } from "./hooks"
+import { percent } from "./mathx"
 
 function Playhead(props: {
   duration: number
@@ -14,12 +15,12 @@ function Playhead(props: {
       let progress = "0%"
       switch (transportState.type) {
         case "stop":
-          progress = (transportState.offset / props.duration * 100).toFixed(2) + "%"
+          progress = percent(transportState.offset / props.duration)
           break
         case "play":
           const delta = (Date.now() - transportState.timeRef) / 1000
           const time = transportState.offset + delta
-          progress = (time / props.duration * 100).toFixed(2) + "%"
+          progress = percent(time / props.duration)
           break
       }
       ref.setAttribute("x1", progress)

@@ -24,20 +24,18 @@ function Specviz(props: { children: ReactNode }) {
   const scrollZoom = useRef<tvector3>({ x: 0, y: 0, z: 1 })
 
   const setScrollZoom = useCallback(
-    (dimension: tvector2, func: tfunctional<tvector3>) => {
-      const ref = scrollZoom.current!
-      const xLimit = dimension.x * (ref.z - 1)
-      const yLimit = dimension.y * (ref.z - 1)
-      if (typeof func === "function") {
-        const next = func(ref)
-        ref.x = clamp(next.x, 0, xLimit)
-        ref.y = clamp(next.y, 0, yLimit)
-        ref.z = clamp(next.z, 1, 2)
+    (t: tfunctional<tvector3>) => {
+      const state = scrollZoom.current!
+      if (typeof t === "function") {
+        const nextState = t(state)
+        state.z = clamp(nextState.z, 1, 2)
+        state.x = clamp(nextState.x, 0, state.z - 1)
+        state.y = clamp(nextState.y, 0, state.z - 1)
       }
       else {
-        ref.x = clamp(func.x, 0, xLimit)
-        ref.y = clamp(func.y, 0, yLimit)
-        ref.z = clamp(func.z, 1, 2)
+        state.z = clamp(t.z, 1, 2)
+        state.x = clamp(t.x, 0, state.z - 1)
+        state.y = clamp(t.y, 0, state.z - 1)
       }
     },
     [scrollZoom]

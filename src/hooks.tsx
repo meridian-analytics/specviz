@@ -1,33 +1,7 @@
 import { RefObject, useRef } from "react"
 import type { tvector2 } from "./types"
-import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react"
+import { useCallback, useEffect } from "react"
 import { subtract } from "./vector2"
-
-// react 18, you might not need an effect
-// https://beta.reactjs.org/reference/react/useSyncExternalStore
-//
-// naive solution, react <= 17
-// https://stackoverflow.com/a/60978633
-function resizeSubscription(callback: (e: Event) => void) {
-  window.addEventListener("resize", callback)
-  return () => {
-    window.removeEventListener("resize", callback)
-  }
-}
-
-function useDimensions(ref: RefObject<HTMLElement>) {
-  const dimensions = useSyncExternalStore(
-    resizeSubscription,
-    () => JSON.stringify({
-      x: ref.current?.offsetWidth ?? 300,
-      y: ref.current?.offsetHeight ?? 200,
-    })
-  )
-  return useMemo<tvector2>(
-    () => JSON.parse(dimensions),
-    [dimensions]
-  )
-}
 
 function useAnimationFrame(callback: (frameId: number) => void) {
   useEffect(
@@ -48,7 +22,7 @@ function useAnimationFrame(callback: (frameId: number) => void) {
 
 function useClickDelta(
   ref: RefObject<HTMLElement>,
-  onClick: (pt: tvector2, delta: tvector2) => void
+  onClick: (e: MouseEvent, pt: tvector2, delta: tvector2) => void
 ) {
   const origin = useRef<tvector2>({ x: 0, y: 0 })
 
@@ -73,7 +47,7 @@ function useClickDelta(
   const onMouseUp = useCallback(
     (e: MouseEvent) => {
       const pt = absoluteToRelative({ x: e.clientX, y: e.clientY })
-      onClick(pt, subtract(pt, origin.current))
+      onClick(e, pt, subtract(pt, origin.current))
     },
     [origin, absoluteToRelative, onClick]
   )
@@ -108,4 +82,4 @@ function useWheel(ref: RefObject<HTMLElement>, onWheel: (e: WheelEvent) => void)
   )
 }
 
-export { useAnimationFrame, useClickDelta, useDimensions, useWheel }
+export { useAnimationFrame, useClickDelta, useWheel }

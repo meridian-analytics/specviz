@@ -36,10 +36,10 @@ function MyComponent() {
       children={segment2.audio}
     />
     <p>{data.audio} ({data.duration} seconds)</p>
-    <Navigator height={30} imageUrl={data.spectrogram} mappingHeight={200} duration={data.duration} />
+    <Navigator height={30} imageUrl={data.spectrogram} duration={data.duration} />
     <Visualization height={200} imageUrl={data.spectrogram} duration={data.duration} />
     <Visualization height={200} imageUrl={data.waveform} duration={data.duration} />
-    <Navigator height={30} imageUrl={data.waveform} mappingHeight={200} duration={data.duration} />
+    <Navigator height={30} imageUrl={data.waveform} duration={data.duration} />
     <Audio url={data.audio} />
     <MyAudioControls />
     <MyKeybinds />
