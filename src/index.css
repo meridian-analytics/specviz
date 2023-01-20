@@ -36,3 +36,10 @@ body > #root div ~ div {
 .navigator .mask {
   fill: rgba(0, 0, 0, 0.5);
 }
+
+.annotation {
+  fill: rgba(33, 33, 33, 1);
+  stroke: rgba(133, 133, 133, 1);
+  mix-blend-mode: difference;
+  stroke-width: 0.1%;
+}

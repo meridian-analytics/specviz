@@ -27,6 +27,7 @@
 - [x] visualization: playhead
 - [ ] visualization: frequency/amplitude, time axes
 - [ ] visualization: nonlinear freq axis
+- [x] visualization: annotation rects
 - [x] audio: playback
 - [x] audio: resume at playhead
 - [x] audio: preserve playhead on unmount
@@ -47,3 +48,4 @@
 - [ ] bindings: wheelevent
 - [x] ux: declarative audio/visual loading
 - [ ] ux: reset zoom/pan when changing audio/visual?
+- [ ] bug: rect with negative % width or height

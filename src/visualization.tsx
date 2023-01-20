@@ -1,16 +1,17 @@
 import { useCallback, useRef } from "react"
-import { useAnimationFrame, useClickDelta, useWheel } from "./hooks"
+import { useAnimationFrame, useClickDelta, useClickRect, useWheel } from "./hooks"
 import { useSpecviz } from "./specviz"
 import { magnitude } from "./vector2"
 import Playhead from "./playhead"
 import { percent } from "./mathx"
+import { randomBytes } from "./stringx"
 
 function Visualization(props: {
   height: number,
   imageUrl: string
 }) {
   const { height, imageUrl } = props
-  const { duration, scrollZoom, transport, setScrollZoom } = useSpecviz()
+  const { annotations, duration, scrollZoom, transport, setAnnotations, setScrollZoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const layerRef = useRef<SVGSVGElement>(null)
 
@@ -26,21 +27,40 @@ function Visualization(props: {
     [layerRef, scrollZoom, setScrollZoom]
   ))
 
-  useClickDelta(
-    containerRef,
+  const {onMouseDown, onMouseUp} = useClickRect(
     useCallback(
-      (e, pt, delta) => {
-        if (magnitude(delta) > 5) {
-          // drag: create annotation
-        }
-        else {
-          const state = scrollZoom.current!
-          const elem = e.currentTarget as HTMLDivElement
-          const progress = (state.x + pt.x / elem.clientWidth) / state.z
+      (e, origin) => {
+        console.log("mousedown", origin)
+      },
+      []
+    ),
+    useCallback(
+      (e, rect) => {
+        const state = scrollZoom.current!
+        // click
+        if (magnitude({x: rect.width, y: rect.height}) < .01) {
+          const progress = (state.x + rect.x) / state.z
           transport.seek(progress * duration)
         }
+        // drag
+        else {
+          const id = randomBytes(10)
+          setAnnotations(a =>
+            new Map(a).set(id, {
+              id,
+              rect: {
+                x: (state.x + rect.x) / state.z,
+                y: (state.y + rect.y) / state.z,
+                width: rect.width / state.z,
+                height: rect.height / state.z,
+              },
+              data: {},
+            })
+          )
+        }
+
       },
-      [transport, scrollZoom, duration]
+      [scrollZoom, transport, duration, setAnnotations]
     )
   )
 
@@ -65,6 +85,8 @@ function Visualization(props: {
     ref={containerRef}
     style={{height}}
     className="visualization"
+    onMouseDown={onMouseDown}
+    onMouseUp={onMouseUp}
   >
     <svg
       width="100%"
@@ -83,6 +105,17 @@ function Visualization(props: {
           width="100%"
           height="100%"
         />
+        {Array.from(annotations.values()).map(({ id, rect }) =>
+          <rect
+            key={id}
+            className="annotation"
+            x={percent(rect.x)}
+            y={percent(rect.y)}
+            width={percent(rect.width)}
+            height={percent(rect.height)}
+            rx="3"
+          />
+        )}
         <Playhead />
       </svg>
     </svg>

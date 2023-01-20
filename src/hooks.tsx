@@ -1,6 +1,6 @@
-import { RefObject, useRef } from "react"
-import type { tvector2 } from "./types"
-import { useCallback, useEffect } from "react"
+import type { MouseEvent as ReactMouseEvent, RefObject } from "react"
+import type { trect, tvector2 } from "./types"
+import { useCallback, useEffect, useRef } from "react"
 import { subtract } from "./vector2"
 
 function useAnimationFrame(callback: (frameId: number) => void) {
@@ -18,6 +18,38 @@ function useAnimationFrame(callback: (frameId: number) => void) {
     },
     [callback]
   )
+}
+
+function useClickRect(
+  onMouseDown: (e: ReactMouseEvent<HTMLElement>, origin: tvector2) => void,
+  onMouseUp: (e: ReactMouseEvent<HTMLElement>, rect: trect) => void,
+) {
+  const origin = useRef<tvector2>({ x: 0, y: 0 })
+  return {
+    onMouseDown: useCallback(
+      (e: ReactMouseEvent<HTMLElement>) => {
+        const elem = e.currentTarget
+        origin.current = {
+          x: (e.clientX - elem.offsetLeft) / elem.clientWidth,
+          y: (e.clientY - elem.offsetTop) / elem.clientHeight,
+        }
+        onMouseDown(e, origin.current)
+      },
+      [origin, onMouseDown]
+    ),
+    onMouseUp: useCallback(
+      (e: ReactMouseEvent<HTMLElement>) => {
+        const elem = e.currentTarget
+        const pt = {
+          x: (e.clientX - elem.offsetLeft) / elem.clientWidth,
+          y: (e.clientY - elem.offsetTop) / elem.clientHeight,
+        }
+        const delta = subtract(pt, origin.current)
+        onMouseUp(e, {x: origin.current.x, y: origin.current.y, width: delta.x, height: delta.y})
+      },
+      [origin, onMouseUp]
+    )
+  }
 }
 
 function useClickDelta(
@@ -82,4 +114,4 @@ function useWheel(ref: RefObject<HTMLElement>, onWheel: (e: WheelEvent) => void)
   )
 }
 
-export { useAnimationFrame, useClickDelta, useWheel }
+export { useAnimationFrame, useClickRect, useClickDelta, useWheel }

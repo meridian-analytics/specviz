@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import type { ttransport, ttransportstate, tcontext, tfunctional, tvector2, tvector3 } from "./types"
+import type { tannotation, ttransport, ttransportstate, tcontext, tfunctional, tvector3 } from "./types"
 import { createContext, useCallback, useContext, useRef, useState } from "react"
 import { clamp } from "./mathx"
 
@@ -7,6 +7,7 @@ const STOP: ttransportstate = { type: "stop", offset: 0 }
 const NOOP = () => {}
 
 const SpecvizContext = createContext<tcontext>({
+  annotations: new Map(),
   duration: 0,
   scrollZoom: { current: { x: 0, y: 0, z: 1 } },
   transport: {
@@ -15,6 +16,7 @@ const SpecvizContext = createContext<tcontext>({
     seek: () => { console.error("transport.seek called outside of Specviz context") },
   },
   transportState: STOP,
+  setAnnotations: _ => { console.error("setAnnotations called outside of Specviz context") },
   setScrollZoom: _ => { console.error("setScrollZoom called outside of Specviz context") },
   setTransport: _ => { console.error("setTransport called outside of Specviz context") },
   setTransportState: _ => { console.error("setTransportState called outside of Specviz context") },
@@ -24,6 +26,7 @@ function Specviz(props: {
   duration: number,
   children: ReactNode,
 }) {
+  const [annotations, setAnnotations] = useState<Map<string, tannotation>>(new Map())
   const scrollZoom = useRef<tvector3>({ x: 0, y: 0, z: 1 })
 
   const setScrollZoom = useCallback(
@@ -53,10 +56,12 @@ function Specviz(props: {
   const [transportState, setTransportState] = useState<ttransportstate>(STOP)
 
   return <SpecvizContext.Provider value={{
+    annotations,
     duration: props.duration,
     scrollZoom,
     transport,
     transportState,
+    setAnnotations,
     setScrollZoom,
     setTransport,
     setTransportState,
