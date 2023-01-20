@@ -2,6 +2,7 @@ import type { MouseEvent, RefObject } from "react"
 import type { trect, tvector2 } from "./types"
 import { useCallback, useEffect, useRef } from "react"
 import { subtract } from "./vector2"
+import { normalize } from "./rect"
 
 function useAnimationFrame(callback: (frameId: number) => void) {
   useEffect(
@@ -45,7 +46,7 @@ function useClickRect(listeners: {
           y: (e.clientY - elem.offsetTop) / elem.clientHeight,
         }
         const delta = subtract(pt, origin.current)
-        listeners.onMouseUp(e, {x: origin.current.x, y: origin.current.y, width: delta.x, height: delta.y})
+        listeners.onMouseUp(e, normalize({x: origin.current.x, y: origin.current.y, width: delta.x, height: delta.y}))
       },
       [origin, listeners.onMouseUp]
     )

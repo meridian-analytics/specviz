@@ -56,4 +56,3 @@
 - [ ] bindings: wheelevent
 - [x] ux: 2-dimensional zoom
 - [x] ux: declarative audio/visual loading
-- [ ] bug: rect with negative % width or height

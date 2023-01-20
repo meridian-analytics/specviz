@@ -1,9 +1,4 @@
-type trect = {
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-}
+import type { trect } from "./rect"
 
 type tannotation = {
   id: string,
