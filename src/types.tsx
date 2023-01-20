@@ -9,6 +9,7 @@ type tfunctional<T> = T | ((prevState: T) => T)
 type tnullable<T> = T | null
 
 type tcontext = {
+  duration: number,
   scrollZoom: RefObject<tvector3>,
   transport: ttransport,
   transportState: ttransportstate

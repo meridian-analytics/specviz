@@ -3,11 +3,9 @@ import { useSpecviz } from "./specviz"
 import { useAnimationFrame } from "./hooks"
 import { percent } from "./mathx"
 
-function Playhead(props: {
-  duration: number
-}){
+function Playhead() {
   const elem = useRef<SVGLineElement>(null)
-  const { transportState } = useSpecviz()
+  const { duration, transportState } = useSpecviz()
 
   useAnimationFrame(useCallback(
     () => {
@@ -15,18 +13,18 @@ function Playhead(props: {
       let progress = "0%"
       switch (transportState.type) {
         case "stop":
-          progress = percent(transportState.offset / props.duration)
+          progress = percent(transportState.offset / duration)
           break
         case "play":
           const delta = (Date.now() - transportState.timeRef) / 1000
           const time = transportState.offset + delta
-          progress = percent(time / props.duration)
+          progress = percent(time / duration)
           break
       }
       ref.setAttribute("x1", progress)
       ref.setAttribute("x2", progress)
     },
-    [elem, transportState, props.duration]
+    [elem, transportState, duration]
   ))
 
   return <line

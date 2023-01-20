@@ -7,11 +7,10 @@ import { percent } from "./mathx"
 
 function Visualization(props: {
   height: number,
-  imageUrl: string,
-  duration: number,
+  imageUrl: string
 }) {
-  const { height, imageUrl, duration } = props
-  const { scrollZoom, transport, setScrollZoom } = useSpecviz()
+  const { height, imageUrl } = props
+  const { duration, scrollZoom, transport, setScrollZoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const layerRef = useRef<SVGSVGElement>(null)
 
@@ -84,7 +83,7 @@ function Visualization(props: {
           width="100%"
           height="100%"
         />
-        <Playhead duration={duration} />
+        <Playhead />
       </svg>
     </svg>
   </div>

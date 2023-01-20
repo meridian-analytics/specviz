@@ -23,7 +23,7 @@ const segment2 = {
 
 function MyComponent() {
   const [data, setData] = useState(segment1)
-  return <Specviz>
+  return <Specviz duration={data.duration}>
     <h3>specviz-react</h3>
     <button
       type="button"
@@ -36,10 +36,10 @@ function MyComponent() {
       children={segment2.audio}
     />
     <p>{data.audio} ({data.duration} seconds)</p>
-    <Navigator height={30} imageUrl={data.spectrogram} duration={data.duration} />
-    <Visualization height={200} imageUrl={data.spectrogram} duration={data.duration} />
-    <Visualization height={200} imageUrl={data.waveform} duration={data.duration} />
-    <Navigator height={30} imageUrl={data.waveform} duration={data.duration} />
+    <Navigator height={30} imageUrl={data.spectrogram} />
+    <Visualization height={200} imageUrl={data.spectrogram} />
+    <Visualization height={200} imageUrl={data.waveform} />
+    <Navigator height={30} imageUrl={data.waveform} />
     <Audio url={data.audio} />
     <MyAudioControls />
     <MyKeybinds />

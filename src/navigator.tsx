@@ -8,9 +8,8 @@ const RESOLUTION = 100
 function Navigator(props: {
   height: number,
   imageUrl: string,
-  duration: number,
 }) {
-  const { height, imageUrl, duration } = props
+  const { height, imageUrl } = props
   const { scrollZoom, setScrollZoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
@@ -91,7 +90,7 @@ function Navigator(props: {
         className="mask"
         d=""
       />
-      <Playhead duration={duration} />
+      <Playhead />
     </svg>
   </div>
 

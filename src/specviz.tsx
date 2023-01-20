@@ -7,6 +7,7 @@ const STOP: ttransportstate = { type: "stop", offset: 0 }
 const NOOP = () => {}
 
 const SpecvizContext = createContext<tcontext>({
+  duration: 0,
   scrollZoom: { current: { x: 0, y: 0, z: 1 } },
   transport: {
     play: () => { console.error("transport.play called outside of Specviz context") },
@@ -19,8 +20,10 @@ const SpecvizContext = createContext<tcontext>({
   setTransportState: _ => { console.error("setTransportState called outside of Specviz context") },
 })
 
-function Specviz(props: { children: ReactNode }) {
-  const { children } = props
+function Specviz(props: {
+  duration: number,
+  children: ReactNode,
+}) {
   const scrollZoom = useRef<tvector3>({ x: 0, y: 0, z: 1 })
 
   const setScrollZoom = useCallback(
@@ -50,6 +53,7 @@ function Specviz(props: { children: ReactNode }) {
   const [transportState, setTransportState] = useState<ttransportstate>(STOP)
 
   return <SpecvizContext.Provider value={{
+    duration: props.duration,
     scrollZoom,
     transport,
     transportState,
@@ -57,7 +61,7 @@ function Specviz(props: { children: ReactNode }) {
     setTransport,
     setTransportState,
   }}>
-    {children}
+    {props.children}
   </SpecvizContext.Provider>
 }
 
