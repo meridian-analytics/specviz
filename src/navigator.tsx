@@ -2,9 +2,9 @@ import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
 import { useAnimationFrame, useClickRect, useWheel } from "./hooks"
 import { magnitude } from "./vector2"
-import { clamp } from "./mathx"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
+import { normalize } from "./rect"
 
 const RESOLUTION = 100
 
@@ -13,7 +13,7 @@ function Navigator(props: {
   imageUrl: string,
 }) {
   const { height, imageUrl } = props
-  const { annotations, scroll, zoom } = useSpecviz()
+  const { annotations, mouse, scroll, zoom } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
@@ -36,28 +36,47 @@ function Navigator(props: {
     [maskRef, scroll, zoom]
   ))
 
-  const {onMouseDown, onMouseUp} = useClickRect({
+  const {onMouseDown, onMouseMove, onMouseUp, onMouseLeave} = useClickRect({
     onMouseDown: useCallback(
-      (e, origin) => {
-        e.preventDefault()
+      (e, pt) => {
+        mouse.lmb = true
+        mouse.x = 0
+        mouse.y = 0
+        mouse.width = 0
+        mouse.height = 0
+      },
+      []
+    ),
+    onMouseMove: useCallback(
+      (e, pt) => {
+
       },
       []
     ),
     onMouseUp: useCallback(
       (e, rect) => {
+        if (!mouse.lmb) return
+        mouse.lmb = false
         if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
           scroll.x = -0.5 + rect.x * zoom.x
           scroll.y = -0.5 + rect.y * zoom.y
         }
         else { // drag
-          zoom.x = 1 / rect.width
-          zoom.y = 1 / rect.height
-          scroll.x = -0.5 + (rect.x + rect.width / 2) * zoom.x
-          scroll.y = -0.5 + (rect.y + rect.height / 2) * zoom.y
+          const selection = normalize(rect)
+          zoom.x = 1 / selection.width
+          zoom.y = 1 / selection.height
+          scroll.x = -0.5 + (selection.x + selection.width / 2) * zoom.x
+          scroll.y = -0.5 + (selection.y + selection.height / 2) * zoom.y
         }
       },
       [scroll, zoom]
-    )
+    ),
+    onMouseLeave: useCallback(
+      (e, pt) => {
+        mouse.lmb = false
+      },
+      []
+    ),
   })
 
   useWheel(
@@ -90,7 +109,9 @@ function Navigator(props: {
     style={{height}}
     className="navigator"
     onMouseDown={onMouseDown}
+    onMouseMove={onMouseMove}
     onMouseUp={onMouseUp}
+    onMouseLeave={onMouseLeave}
   >
     <svg
       width="100%"

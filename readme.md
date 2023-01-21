@@ -38,7 +38,7 @@
 - [x] annotation: create
 - [ ] annotation: playback region
 - [ ] annotation: playback filter
-- [ ] annotation: drag preview
+- [x] annotation: drag selection preview
 - [ ] annotation: click to select
 - [ ] annotation: 1-dimensional variant
 - [ ] tools: annotation tool

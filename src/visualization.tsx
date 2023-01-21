@@ -6,38 +6,73 @@ import { percent } from "./mathx"
 import { randomBytes } from "./stringx"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
+import { normalize, trect } from "./rect"
 
 function Visualization(props: {
   height: number,
   imageUrl: string,
 }) {
   const { height, imageUrl } = props
-  const { annotations, duration, scroll, zoom, transport, setAnnotations } = useSpecviz()
+  const { annotations, duration, mouse, scroll, zoom, transport, setAnnotations } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const layerRef = useRef<SVGSVGElement>(null)
+  const selectionRef = useRef<SVGRectElement>(null)
 
   useAnimationFrame(useCallback(
     () => {
       const elem = layerRef.current!
+      const selection = selectionRef.current!
+      let rect: trect
       elem.setAttribute("x", percent(-scroll.x))
       elem.setAttribute("y", percent(-scroll.y))
       elem.setAttribute("width", percent(zoom.x))
       elem.setAttribute("height", percent(zoom.y))
+      if (mouse.lmb) {
+        rect = normalize({ x: mouse.x, y: mouse.y, width: mouse.width, height: mouse.height })
+        selection.setAttribute("display", "inline")
+        selection.setAttribute("x", percent(rect.x))
+        selection.setAttribute("y", percent(rect.y))
+        selection.setAttribute("width", percent(rect.width))
+        selection.setAttribute("height", percent(rect.height))
+      }
+      else {
+        selection.setAttribute("display", "none")
+      }
     },
-    [layerRef, scroll, zoom]
+    [layerRef, selectionRef, scroll, zoom]
   ))
 
-  const {onMouseDown, onMouseUp} = useClickRect({
+  const { onMouseDown, onMouseMove, onMouseUp, onMouseLeave } = useClickRect({
     onMouseDown: useCallback(
-      (e, origin) => {
+      (e, pt) => {
         e.preventDefault()
+        mouse.lmb = true
+        mouse.x = (scroll.x + pt.x) / zoom.x
+        mouse.y = (scroll.y + pt.y) / zoom.y
+        mouse.width = 0
+        mouse.height = 0
+      },
+      []
+    ),
+    onMouseMove: useCallback(
+      (e, pt) => {
+        if (mouse.lmb) {
+          mouse.width = (scroll.x + pt.x) / zoom.x - mouse.x
+          mouse.height = (scroll.y + pt.y) / zoom.y - mouse.y
+        }
+        else {
+          mouse.x = (scroll.x + pt.x) / zoom.x
+          mouse.y = (scroll.y + pt.y) / zoom.y
+        }
       },
       []
     ),
     onMouseUp: useCallback(
       (e, rect) => {
-        if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
-          const progress = (scroll.x + rect.x) / zoom.x
+        if (!mouse.lmb) return
+        mouse.lmb = false
+        if (magnitude({x: mouse.width, y: mouse.height}) < .01) { // click
+          const progress = (scroll.x + mouse.x) / zoom.x
           transport.seek(progress * duration)
         }
         else { // drag
@@ -45,12 +80,12 @@ function Visualization(props: {
           setAnnotations(a =>
             new Map(a).set(id, {
               id,
-              rect: {
-                x: (scroll.x + rect.x) / zoom.x,
-                y: (scroll.y + rect.y) / zoom.y,
-                width: rect.width / zoom.x,
-                height: rect.height / zoom.y,
-              },
+              rect: normalize({
+                x: mouse.x,
+                y: mouse.y,
+                width: mouse.width,
+                height: mouse.height,
+              }),
               data: {},
             })
           )
@@ -58,7 +93,13 @@ function Visualization(props: {
 
       },
       [scroll, zoom, transport, duration, setAnnotations]
-    )
+    ),
+    onMouseLeave: useCallback(
+      (e, pt) => {
+        mouse.lmb = false
+      },
+      []
+    ),
   })
 
   useWheel(
@@ -91,7 +132,9 @@ function Visualization(props: {
     style={{height}}
     className="visualization"
     onMouseDown={onMouseDown}
+    onMouseMove={onMouseMove}
     onMouseUp={onMouseUp}
+    onMouseLeave={onMouseLeave}
   >
     <svg
       width="100%"
@@ -111,8 +154,17 @@ function Visualization(props: {
           height="100%"
         />
         {Array.from(annotations.values()).map(a =>
-          <Annotation key={a.id} annotation={a}  />
+          <Annotation key={a.id} annotation={a} />
         )}
+        <rect
+          ref={selectionRef}
+          className="selection"
+          x={0}
+          y={0}
+          width={0}
+          height={0}
+          rx="3"
+        />
         <Playhead />
       </svg>
     </svg>

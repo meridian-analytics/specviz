@@ -1,7 +1,7 @@
 import type { MouseEvent, RefObject } from "react"
 import { useCallback, useEffect, useRef } from "react"
 import { tvector2, subtract } from "./vector2"
-import { trect, normalize } from "./rect"
+import { trect } from "./rect"
 
 function useAnimationFrame(callback: (frameId: number) => void) {
   useEffect(
@@ -21,8 +21,10 @@ function useAnimationFrame(callback: (frameId: number) => void) {
 }
 
 function useClickRect(listeners: {
-  onMouseDown: (e: MouseEvent<HTMLElement>, origin: tvector2) => void,
+  onMouseDown: (e: MouseEvent<HTMLElement>, point: tvector2) => void,
+  onMouseMove: (e: MouseEvent<HTMLElement>, point: tvector2) => void,
   onMouseUp: (e: MouseEvent<HTMLElement>, rect: trect) => void,
+  onMouseLeave: (e: MouseEvent<HTMLElement>, point: tvector2) => void,
 }) {
   const origin = useRef<tvector2>({ x: 0, y: 0 })
   return {
@@ -37,6 +39,16 @@ function useClickRect(listeners: {
       },
       [origin, listeners.onMouseDown]
     ),
+    onMouseMove: useCallback(
+      (e: MouseEvent<HTMLElement>) => {
+        const elem = e.currentTarget
+        listeners.onMouseMove(e, {
+          x: (e.clientX - elem.offsetLeft) / elem.clientWidth,
+          y: (e.clientY - elem.offsetTop) / elem.clientHeight,
+        })
+      },
+      [origin, listeners.onMouseMove]
+    ),
     onMouseUp: useCallback(
       (e: MouseEvent<HTMLElement>) => {
         const elem = e.currentTarget
@@ -45,9 +57,19 @@ function useClickRect(listeners: {
           y: (e.clientY - elem.offsetTop) / elem.clientHeight,
         }
         const delta = subtract(pt, origin.current)
-        listeners.onMouseUp(e, normalize({x: origin.current.x, y: origin.current.y, width: delta.x, height: delta.y}))
+        listeners.onMouseUp(e, {x: origin.current.x, y: origin.current.y, width: delta.x, height: delta.y})
       },
       [origin, listeners.onMouseUp]
+    ),
+    onMouseLeave: useCallback(
+      (e: MouseEvent<HTMLElement>) => {
+        const elem = e.currentTarget
+        listeners.onMouseLeave(e, {
+          x: (e.clientX - elem.offsetLeft) / elem.clientWidth,
+          y: (e.clientY - elem.offsetTop) / elem.clientHeight,
+        })
+      },
+      [origin, listeners.onMouseLeave]
     )
   }
 }

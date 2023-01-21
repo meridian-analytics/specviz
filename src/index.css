@@ -28,6 +28,11 @@ body > #root div ~ div {
   stroke-width: 0.1%;
 }
 
+.visualization .selection {
+  fill: rgba(77, 77, 77, 1);
+  mix-blend-mode: difference;
+}
+
 .navigator {
   cursor: crosshair;
   background-color: #FBF1A9;
