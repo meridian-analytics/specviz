@@ -40,18 +40,25 @@ function Navigator(props: {
     onMouseDown: useCallback(
       (e, pt) => {
         mouse.lmb = true
-        mouse.x = 0
-        mouse.y = 0
+        mouse.x = pt.x
+        mouse.y = pt.y
         mouse.width = 0
         mouse.height = 0
       },
-      []
+      [mouse]
     ),
     onMouseMove: useCallback(
       (e, pt) => {
-
+        if (mouse.lmb) {
+          mouse.width = pt.x - mouse.x
+          mouse.height = pt.y - mouse.y
+        }
+        else {
+          mouse.x = pt.x
+          mouse.y = pt.y
+        }
       },
-      []
+      [mouse]
     ),
     onMouseUp: useCallback(
       (e, rect) => {
@@ -69,13 +76,13 @@ function Navigator(props: {
           scroll.y = -0.5 + (selection.y + selection.height / 2) * zoom.y
         }
       },
-      [scroll, zoom]
+      [mouse, scroll, zoom]
     ),
     onMouseLeave: useCallback(
       (e, pt) => {
         mouse.lmb = false
       },
-      []
+      [mouse]
     ),
   })
 
@@ -85,15 +92,15 @@ function Navigator(props: {
       (e: WheelEvent) => {
         e.preventDefault()
         const elem = e.currentTarget as HTMLDivElement
-        const dx = e.deltaY / elem.clientHeight
+        const dx = e.deltaX / elem.clientWidth
         const dy = e.deltaY / elem.clientHeight
         if (e.altKey) {
           const zx = zoom.x
           const zy = zoom.y
-          zoom.x = zoom.x - dx * 2
-          zoom.y = zoom.y - dy * 2
-          if (zoom.x != zx) scroll.x = scroll.x - dx
-          if (zoom.y != zy) scroll.y = scroll.y - dy
+          zoom.x = zoom.x + dx
+          zoom.y = zoom.y + dy
+          if (zoom.x != zx) scroll.x = scroll.x + dx / 2
+          if (zoom.y != zy) scroll.y = scroll.y + dy / 2
         }
         else {
           scroll.x = scroll.x - dx

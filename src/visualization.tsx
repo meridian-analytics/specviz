@@ -45,14 +45,13 @@ function Visualization(props: {
   const { onMouseDown, onMouseMove, onMouseUp, onMouseLeave } = useClickRect({
     onMouseDown: useCallback(
       (e, pt) => {
-        e.preventDefault()
         mouse.lmb = true
         mouse.x = (scroll.x + pt.x) / zoom.x
         mouse.y = (scroll.y + pt.y) / zoom.y
         mouse.width = 0
         mouse.height = 0
       },
-      []
+      [mouse]
     ),
     onMouseMove: useCallback(
       (e, pt) => {
@@ -65,7 +64,7 @@ function Visualization(props: {
           mouse.y = (scroll.y + pt.y) / zoom.y
         }
       },
-      []
+      [mouse]
     ),
     onMouseUp: useCallback(
       (e, rect) => {
@@ -92,38 +91,40 @@ function Visualization(props: {
         }
 
       },
-      [scroll, zoom, transport, duration, setAnnotations]
+      [mouse, scroll, zoom, transport, duration, setAnnotations]
     ),
     onMouseLeave: useCallback(
       (e, pt) => {
         mouse.lmb = false
       },
-      []
+      [mouse]
     ),
   })
 
   useWheel(
     containerRef,
     useCallback(
-      e => {
+      (e) => {
         e.preventDefault()
         const elem = e.currentTarget as HTMLDivElement
         const dx = e.deltaX / elem.clientWidth
         const dy = e.deltaY / elem.clientHeight
         if (e.altKey) {
+          const mx = (mouse.x * zoom.x) - scroll.x
+          const my = (mouse.y * zoom.y) - scroll.y
           const zx = zoom.x
           const zy = zoom.y
-          zoom.x = zoom.x - dx * 2
-          zoom.y = zoom.y - dy * 2
-          if (zoom.x != zx) scroll.x = scroll.x - dx
-          if (zoom.y != zy) scroll.y = scroll.y - dy
+          zoom.x = zoom.x - dx
+          zoom.y = zoom.y - dy
+          if (zoom.x != zx) scroll.x = scroll.x - dx * mx
+          if (zoom.y != zy) scroll.y = scroll.y - dy * my
         }
         else {
-          scroll.x = scroll.x - dx
-          scroll.y = scroll.y - dy
+          scroll.x = scroll.x + dx
+          scroll.y = scroll.y + dy
         }
       },
-      [scroll, zoom]
+      [mouse, scroll, zoom]
     )
   )
 

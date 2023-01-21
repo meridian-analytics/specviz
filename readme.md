@@ -56,4 +56,4 @@
 - [ ] bindings: wheelevent
 - [x] ux: 2-dimensional zoom
 - [x] ux: declarative audio/visual loading
-- [x] ux: zoom to and from cursor
+- [x] ux: zoom center on cursor
