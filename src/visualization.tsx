@@ -67,13 +67,19 @@ function Visualization(props: {
       e => {
         e.preventDefault()
         const elem = e.currentTarget as HTMLDivElement
+        const dx = e.deltaX / elem.clientWidth
+        const dy = e.deltaY / elem.clientHeight
         if (e.altKey) {
-          zoom.x = zoom.x - e.deltaX / elem.clientWidth * 10
-          zoom.y = zoom.y - e.deltaY / elem.clientHeight * 10
+          const zx = zoom.x
+          const zy = zoom.y
+          zoom.x = zoom.x - dx * 2
+          zoom.y = zoom.y - dy * 2
+          if (zoom.x != zx) scroll.x = scroll.x - dx
+          if (zoom.y != zy) scroll.y = scroll.y - dy
         }
         else {
-          scroll.x = scroll.x + e.deltaX / elem.clientWidth
-          scroll.y = scroll.y + e.deltaY / elem.clientHeight
+          scroll.x = scroll.x - dx
+          scroll.y = scroll.y - dy
         }
       },
       [scroll, zoom]

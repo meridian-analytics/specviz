@@ -66,14 +66,19 @@ function Navigator(props: {
       (e: WheelEvent) => {
         e.preventDefault()
         const elem = e.currentTarget as HTMLDivElement
+        const dx = e.deltaY / elem.clientHeight
+        const dy = e.deltaY / elem.clientHeight
         if (e.altKey) {
-          // 1-dimensional zoom
-          zoom.x = clamp(zoom.x, 2, zoom.x + e.deltaY / 100)
-          zoom.y = clamp(zoom.y, 2, zoom.y + e.deltaY / 100)
+          const zx = zoom.x
+          const zy = zoom.y
+          zoom.x = zoom.x - dx * 2
+          zoom.y = zoom.y - dy * 2
+          if (zoom.x != zx) scroll.x = scroll.x - dx
+          if (zoom.y != zy) scroll.y = scroll.y - dy
         }
         else {
-          scroll.x = scroll.x - e.deltaX / elem.clientWidth
-          scroll.y = scroll.y - e.deltaY / elem.clientHeight
+          scroll.x = scroll.x - dx
+          scroll.y = scroll.y - dy
         }
       },
       [scroll, zoom]
