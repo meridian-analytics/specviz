@@ -21,12 +21,23 @@ type tcontext = {
   mouse: tmouse,
   scroll: tvector2,
   zoom: tvector2,
+  tool: ttool,
+  toolState: ttoolstate,
   transport: ttransport,
   transportState: ttransportstate,
   setAnnotations: (func: tfunctional<Map<string, tannotation>>) => void,
   setTransport: (func: tfunctional<ttransport>) => void,
   setTransportState: (func: tfunctional<ttransportstate>) => void,
 }
+
+type ttool = {
+  annotate: () => void,
+  select: () => void,
+  zoom: () => void,
+  pan: () => void,
+}
+
+type ttoolstate = "annotate" | "select" | "zoom" | "pan"
 
 type ttransportstate =
   | { type: "play", offset: number, timeRef: number }
@@ -44,6 +55,8 @@ export type {
   tfunctional,
   tnullable,
   tcontext,
+  ttool,
+  ttoolstate,
   ttransportstate,
   ttransport,
 }

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import type { tannotation, tmouse, ttransport, ttransportstate, tcontext } from "./types"
+import type { tannotation, tmouse, ttool, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
 import type { tvector2 } from "./vector2"
 import { createContext, useContext, useMemo, useRef, useState } from "react"
 import { clamp } from "./mathx"
@@ -14,6 +14,13 @@ const SpecvizContext = createContext<tcontext>({
   mouse: { lmb: false, x: 0, y: 0, width: 0, height: 0 },
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
+  tool: {
+    annotate: () => { console.error("tool.annotate called outside of Specviz context") },
+    select: () => { console.error("tool.select called outside of Specviz context") },
+    zoom: () => { console.error("tool.zoom called outside of Specviz context") },
+    pan: () => { console.error("tool.pan called outside of Specviz context") },
+  },
+  toolState: "annotate",
   transport: {
     play: () => { console.error("transport.play called outside of Specviz context") },
     stop: () => { console.error("transport.stop called outside of Specviz context") },
@@ -87,6 +94,18 @@ function Specviz(props: {
     [scrollRef, zoomRef]
   )
 
+  const tool = useMemo<ttool>(
+    () => ({
+      annotate: () => setToolState("annotate"),
+      select: () => setToolState("select"),
+      zoom: () => setToolState("zoom"),
+      pan: () => setToolState("pan"),
+    }),
+    []
+  )
+
+  const [toolState, setToolState] = useState<ttoolstate>("annotate")
+
   const [transport, setTransport] = useState<ttransport>({
     play: NOOP,
     stop: NOOP,
@@ -101,6 +120,8 @@ function Specviz(props: {
     mouse,
     scroll,
     zoom,
+    tool,
+    toolState,
     transport,
     transportState,
     setAnnotations,
