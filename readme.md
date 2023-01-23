@@ -41,9 +41,10 @@
 - [x] annotation: drag selection preview
 - [ ] annotation: click to select
 - [ ] annotation: 1-dimensional variant
-- [ ] tools: annotation tool
-- [ ] tools: zoom tool
-- [ ] tools: pan tool
+- [x] tools: annotation tool
+- [ ] tools: selection tool
+- [x] tools: zoom tool
+- [x] tools: pan tool
 - [x] navigator: show visible region
 - [x] navigator: playhead
 - [x] navigator: wheel to zoom

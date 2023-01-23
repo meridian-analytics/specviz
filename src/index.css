@@ -7,12 +7,27 @@ body > #root div ~ div {
 }
 
 .visualization {
-  cursor: crosshair;
   background-color: #FBF1A9;
   border-radius: 0.25rem;
   border: 1px solid #000;
   overflow: hidden;
   margin: 0.25rem 0;
+}
+
+.visualization.annotate {
+  cursor: crosshair;
+}
+
+.visualization.select {
+  cursor: context-menu;
+}
+
+.visualization.zoom {
+  cursor: zoom-in;
+}
+
+.visualization.pan {
+  cursor: move;
 }
 
 .visualization .playhead {
@@ -39,6 +54,10 @@ body > #root div ~ div {
   border-radius: 0.25rem;
   border: 1px solid #000;
   overflow: hidden;
+}
+
+.navigator.zoom {
+  cursor: zoom-out;
 }
 
 .navigator .playhead {

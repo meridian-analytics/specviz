@@ -13,7 +13,7 @@ function Navigator(props: {
   imageUrl: string,
 }) {
   const { height, imageUrl } = props
-  const { annotations, mouse, scroll, zoom } = useSpecviz()
+  const { annotations, mouse, scroll, zoom, toolState, transportState } = useSpecviz()
   const containerRef = useRef<HTMLDivElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
@@ -39,6 +39,7 @@ function Navigator(props: {
   const {onMouseDown, onMouseMove, onMouseUp, onMouseLeave} = useClickRect({
     onMouseDown: useCallback(
       (e, pt) => {
+        e.preventDefault()
         mouse.lmb = true
         mouse.x = pt.x
         mouse.y = pt.y
@@ -65,8 +66,18 @@ function Navigator(props: {
         if (!mouse.lmb) return
         mouse.lmb = false
         if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
-          scroll.x = -0.5 + rect.x * zoom.x
-          scroll.y = -0.5 + rect.y * zoom.y
+          switch (toolState) {
+            case "annotate":
+            case "select":
+            case "pan":
+              scroll.x = -0.5 + rect.x * zoom.x
+              scroll.y = -0.5 + rect.y * zoom.y
+              break
+            case "zoom":
+              zoom.x = 1
+              zoom.y = 1
+              break
+          }
         }
         else { // drag
           const selection = normalize(rect)
@@ -76,7 +87,7 @@ function Navigator(props: {
           scroll.y = -0.5 + (selection.y + selection.height / 2) * zoom.y
         }
       },
-      [mouse, scroll, zoom]
+      [mouse, scroll, zoom, toolState]
     ),
     onMouseLeave: useCallback(
       (e, pt) => {
@@ -114,7 +125,7 @@ function Navigator(props: {
   return <div
     ref={containerRef}
     style={{height}}
-    className="navigator"
+    className={`navigator ${toolState} ${transportState.type}`}
     onMouseDown={onMouseDown}
     onMouseMove={onMouseMove}
     onMouseUp={onMouseUp}
