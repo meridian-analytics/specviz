@@ -36,11 +36,17 @@ function Navigator(props: {
     [maskRef, scroll, zoom]
   ))
 
-  const {onMouseDown, onMouseMove, onMouseUp, onMouseLeave} = useClickRect({
+  const {onMouseDown, onMouseMove, onMouseUp, onMouseLeave, onContextMenu} = useClickRect({
+    onContextMenu: useCallback(
+      (e, pt) => {
+        e.preventDefault() // disable context menu
+      },
+      []
+    ),
     onMouseDown: useCallback(
       (e, pt) => {
-        e.preventDefault()
-        mouse.lmb = true
+        e.preventDefault() // disable native drag
+        mouse.buttons = e.buttons
         mouse.x = pt.x
         mouse.y = pt.y
         mouse.width = 0
@@ -50,7 +56,7 @@ function Navigator(props: {
     ),
     onMouseMove: useCallback(
       (e, pt) => {
-        if (mouse.lmb) {
+        if (mouse.buttons & 1) {
           mouse.width = pt.x - mouse.x
           mouse.height = pt.y - mouse.y
         }
@@ -63,8 +69,8 @@ function Navigator(props: {
     ),
     onMouseUp: useCallback(
       (e, rect) => {
-        if (!mouse.lmb) return
-        mouse.lmb = false
+        if (!(mouse.buttons & 1)) return
+        mouse.buttons = 0
         if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
           switch (toolState) {
             case "annotate":
@@ -91,7 +97,7 @@ function Navigator(props: {
     ),
     onMouseLeave: useCallback(
       (e, pt) => {
-        mouse.lmb = false
+        mouse.buttons = 0
       },
       [mouse]
     ),
@@ -130,6 +136,7 @@ function Navigator(props: {
     onMouseMove={onMouseMove}
     onMouseUp={onMouseUp}
     onMouseLeave={onMouseLeave}
+    onContextMenu={onContextMenu}
   >
     <svg
       width="100%"

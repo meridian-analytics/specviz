@@ -8,7 +8,7 @@ type tannotation = {
 }
 
 type tmouse = trect & {
-  lmb: boolean,
+  buttons: number,
 }
 
 type tfunctional<T> = T | ((prevState: T) => T)

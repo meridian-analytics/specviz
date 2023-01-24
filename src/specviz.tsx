@@ -11,7 +11,7 @@ const NOOP = () => {}
 const SpecvizContext = createContext<tcontext>({
   annotations: new Map(),
   duration: 0,
-  mouse: { lmb: false, x: 0, y: 0, width: 0, height: 0 },
+  mouse: { buttons: 0, x: 0, y: 0, width: 0, height: 0 },
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
   tool: {
@@ -37,7 +37,7 @@ function Specviz(props: {
   children: ReactNode,
 }) {
   const [annotations, setAnnotations] = useState<Map<string, tannotation>>(new Map())
-  const mouseRef = useRef<tmouse>({ lmb: false, x: 0, y: 0, width: 0, height: 0 })
+  const mouseRef = useRef<tmouse>({ buttons: 0, x: 0, y: 0, width: 0, height: 0 })
   const scrollRef = useRef<tvector2>({ x: 0, y: 0 })
   const zoomRef = useRef<tvector2>({ x: 1, y: 1 })
 
@@ -45,12 +45,12 @@ function Specviz(props: {
     () => {
       const m = mouseRef.current!
       return {
-        get lmb() { return m.lmb },
+        get buttons() { return m.buttons },
         get x() { return m.x },
         get y() { return m.y },
         get width() { return m.width },
         get height() { return m.height },
-        set lmb(v) { m.lmb = v },
+        set buttons(v) { m.buttons = v },
         set x(v) { m.x = v },
         set y(v) { m.y = v },
         set width(v) { m.width = v },
