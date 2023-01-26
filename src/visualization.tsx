@@ -1,197 +1,143 @@
 import { useCallback, useRef } from "react"
-import { useAnimationFrame, useClickRect, useWheel } from "./hooks"
-import { useSpecviz } from "./specviz"
+import { useClickRect, useSpecviz, useWheel } from "./specviz"
+import { useAnimationFrame } from "./hooks"
+import { trect } from "./rect"
 import { magnitude } from "./vector2"
 import { percent } from "./mathx"
 import { randomBytes } from "./stringx"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
-import { normalize, trect } from "./rect"
+
+const NOOP = () => {}
+const NOSELECTION = { x: 0, y: 0, width: 0, height: 0 }
 
 function Visualization(props: {
-  height: number,
   imageUrl: string,
 }) {
-  const { height, imageUrl } = props
-  const { annotations, duration, mouse, scroll, zoom, toolState, transport, transportState, setAnnotations } = useSpecviz()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const layerRef = useRef<SVGSVGElement>(null)
-  const selectionRef = useRef<SVGRectElement>(null)
+  const { annotations, duration, input, mouseup, scroll, zoom, toolState, transport, transportState, setAnnotations } = useSpecviz()
+  const selectionRect = useRef<trect>(NOSELECTION)
+  const svgRoot = useRef<SVGSVGElement>(null)
+  const svgLayer = useRef<SVGSVGElement>(null)
+  const svgSelection = useRef<SVGRectElement>(null)
 
   useAnimationFrame(useCallback(
     () => {
-      const elem = layerRef.current!
-      const selection = selectionRef.current!
-      let rect: trect
-      elem.setAttribute("x", percent(-scroll.x))
-      elem.setAttribute("y", percent(-scroll.y))
-      elem.setAttribute("width", percent(zoom.x))
-      elem.setAttribute("height", percent(zoom.y))
-      if (mouse.buttons & 1) {
-        rect = normalize({ x: mouse.x, y: mouse.y, width: mouse.width, height: mouse.height })
-        selection.setAttribute("display", "inline")
-        selection.setAttribute("x", percent(rect.x))
-        selection.setAttribute("y", percent(rect.y))
-        selection.setAttribute("width", percent(rect.width))
-        selection.setAttribute("height", percent(rect.height))
-      }
-      else {
-        selection.setAttribute("display", "none")
-      }
+      const layer = svgLayer.current!
+      const selection = svgSelection.current!
+      const rect = selectionRect.current!
+      layer.setAttribute("x", percent(-scroll.x))
+      layer.setAttribute("y", percent(-scroll.y))
+      layer.setAttribute("width", percent(zoom.x))
+      layer.setAttribute("height", percent(zoom.y))
+      selection.setAttribute("x", percent(rect.x))
+      selection.setAttribute("y", percent(rect.y))
+      selection.setAttribute("width", percent(rect.width))
+      selection.setAttribute("height", percent(rect.height))
     },
-    [layerRef, selectionRef, scroll, zoom]
+    [svgLayer, svgSelection, scroll, zoom, selectionRect]
   ))
 
   const { onMouseDown, onMouseMove, onMouseUp, onMouseLeave, onContextMenu } = useClickRect({
-    onContextMenu: useCallback(
-      (e, pt) => {
-        e.preventDefault() // disable context menu
-      },
-      []
-    ),
-    onMouseDown: useCallback(
-      (e, pt) => {
-        e.preventDefault() // disable native drag
-        mouse.buttons = e.buttons
-        mouse.x = (scroll.x + pt.x) / zoom.x
-        mouse.y = (scroll.y + pt.y) / zoom.y
-        mouse.width = 0
-        mouse.height = 0
-      },
-      [mouse, toolState]
-    ),
+    onContextMenu: NOOP,
+    onMouseDown: NOOP,
+    onMouseLeave: NOOP,
     onMouseMove: useCallback(
-      (e, pt) => {
-        if (mouse.buttons & 1) {
-          mouse.width = (scroll.x + pt.x) / zoom.x - mouse.x
-          mouse.height = (scroll.y + pt.y) / zoom.y - mouse.y
+      (e, rect) => {
+        if (input.buttons & 1) {
           switch (toolState) {
             case "annotate":
-            case "select":
-            case "zoom":
+              selectionRect.current = rect
               break
-            case "pan":
+            case "select":
+              selectionRect.current = rect
+              break
+            case "zoom":
+              selectionRect.current = rect
+              break
+            case "pan": // drag pan
+              selectionRect.current = NOSELECTION
               scroll.x -= e.movementX / e.currentTarget.clientWidth
               scroll.y -= e.movementY / e.currentTarget.clientHeight
               break
           }
         }
-        else {
-          mouse.x = (scroll.x + pt.x) / zoom.x
-          mouse.y = (scroll.y + pt.y) / zoom.y
-        }
       },
-      [mouse, toolState]
+      [input, scroll, toolState]
     ),
     onMouseUp: useCallback(
       (e, rect) => {
-        if (!(mouse.buttons & 1)) return
-        mouse.buttons = 0
-        if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
-          switch (toolState) {
-            case "annotate":
-            case "pan":
-              transport.seek(duration * (scroll.x + rect.x) / zoom.x)
-              break
-            case "zoom":
-              // todo: increment/decrement zoom
-              zoom.x += 0.5
-              zoom.y += 0.5
-              scroll.x += 0.5 * rect.x
-              scroll.y += 0.5 * rect.y
-              break
-            case "select":
-              // todo: select annotation
-              break
+        selectionRect.current = NOSELECTION
+        if (input.buttons & 1) {
+          if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
+            switch (toolState) {
+              case "annotate": // noop
+                break
+              case "select": // todo: select annotation
+                break
+              case "zoom": // increment zoom to point
+                const mx = (mouseup.x * zoom.x) - scroll.x
+                const my = (mouseup.y * zoom.y) - scroll.y
+                zoom.x += 0.5
+                zoom.y += 0.5
+                scroll.x = (mouseup.x * zoom.x) - mx
+                scroll.y = (mouseup.y * zoom.y) - my
+                break
+              case "pan": // noop
+                break
+            }
+          }
+          else { // drag
+            switch (toolState) {
+              case "annotate": // create annotation
+                const id = randomBytes(10)
+                setAnnotations(a =>
+                  new Map(a).set(id, {
+                    id,
+                    rect,
+                    data: {},
+                  })
+                )
+                break
+              case "select": // todo: select annotations
+                break
+              case "zoom": // zoom to selection
+                zoom.x = 1 / rect.width
+                zoom.y = 1 / rect.height
+                scroll.x = -0.5 + (rect.x + rect.width / 2) * zoom.x
+                scroll.y = -0.5 + (rect.y + rect.height / 2) * zoom.y
+                break
+              case "pan": // noop
+                break
+            }
           }
         }
-        else { // drag
-          const selection = normalize({
-            x: mouse.x,
-            y: mouse.y,
-            width: mouse.width,
-            height: mouse.height,
-          })
-          switch (toolState) {
-            case "annotate":
-              const id = randomBytes(10)
-              setAnnotations(a =>
-                new Map(a).set(id, {
-                  id,
-                  rect: selection,
-                  data: {},
-                })
-              )
-              break
-            case "select":
-              // todo: select annotations
-              break
-            case "zoom":
-              zoom.x = 1 / selection.width
-              zoom.y = 1 / selection.height
-              scroll.x = -0.5 + (selection.x + selection.width / 2) * zoom.x
-              scroll.y = -0.5 + (selection.y + selection.height / 2) * zoom.y
-              break
-            case "pan":
-              scroll.x -= e.movementX / e.currentTarget.clientWidth
-              scroll.y -= e.movementY / e.currentTarget.clientHeight
-              break
-          }
+        if (input.buttons & 2) { // jump playhead to point
+          transport.seek(duration * mouseup.x)
         }
       },
-      [mouse, scroll, zoom, toolState, transport, duration]
-    ),
-    onMouseLeave: useCallback(
-      (e, pt) => {
-        mouse.buttons = 0
-      },
-      [mouse, toolState]
+      [input, mouseup, scroll, zoom, toolState, transport, duration]
     ),
   })
 
-  useWheel(
-    containerRef,
-    useCallback(
-      (e) => {
-        e.preventDefault()
-        const elem = e.currentTarget as HTMLDivElement
-        const dx = e.deltaX / elem.clientWidth
-        const dy = e.deltaY / elem.clientHeight
-        if (e.altKey) {
-          const mx = (mouse.x * zoom.x) - scroll.x
-          const my = (mouse.y * zoom.y) - scroll.y
-          const zx = zoom.x
-          const zy = zoom.y
-          zoom.x = zoom.x - dx
-          zoom.y = zoom.y - dy
-          if (zoom.x != zx) scroll.x = scroll.x - dx * mx
-          if (zoom.y != zy) scroll.y = scroll.y - dy * my
-        }
-        else {
-          scroll.x = scroll.x + dx
-          scroll.y = scroll.y + dy
-        }
-      },
-      [mouse, scroll, zoom]
-    )
-  )
+  useWheel(svgRoot, -1)
 
   return <div
-    ref={containerRef}
-    style={{height}}
     className={`visualization ${toolState} ${transportState.type}`}
-    onMouseDown={onMouseDown}
-    onMouseMove={onMouseMove}
-    onMouseUp={onMouseUp}
-    onMouseLeave={onMouseLeave}
-    onContextMenu={onContextMenu}
   >
     <svg
+      ref={svgRoot}
       width="100%"
       height="100%"
+      x={0}
+      y={0}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseLeave}
+      onContextMenu={onContextMenu}
     >
       <svg
-        ref={layerRef}
+        ref={svgLayer}
         x={0}
         y={0}
         width="100%"
@@ -199,7 +145,7 @@ function Visualization(props: {
       >
         <image
           preserveAspectRatio="none"
-          href={imageUrl}
+          href={props.imageUrl}
           width="100%"
           height="100%"
         />
@@ -207,7 +153,7 @@ function Visualization(props: {
           <Annotation key={a.id} annotation={a} />
         )}
         <rect
-          ref={selectionRef}
+          ref={svgSelection}
           className="selection"
           x={0}
           y={0}

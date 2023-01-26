@@ -1,20 +1,18 @@
 import { useCallback, useRef } from "react"
-import { useSpecviz } from "./specviz"
-import { useAnimationFrame, useClickRect, useWheel } from "./hooks"
+import { useClickRect, useSpecviz, useWheel } from "./specviz"
+import { useAnimationFrame } from "./hooks"
 import { magnitude } from "./vector2"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
-import { normalize } from "./rect"
 
 const RESOLUTION = 100
+const NOOP = () => {}
 
 function Navigator(props: {
-  height: number,
   imageUrl: string,
 }) {
-  const { height, imageUrl } = props
-  const { annotations, mouse, scroll, zoom, toolState, transportState } = useSpecviz()
-  const containerRef = useRef<HTMLDivElement>(null)
+  const { annotations, input, mouseup, scroll, zoom, toolState, transportState } = useSpecviz()
+  const containerRef = useRef<SVGSVGElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
   useAnimationFrame(useCallback(
@@ -37,115 +35,86 @@ function Navigator(props: {
   ))
 
   const {onMouseDown, onMouseMove, onMouseUp, onMouseLeave, onContextMenu} = useClickRect({
-    onContextMenu: useCallback(
-      (e, pt) => {
-        e.preventDefault() // disable context menu
-      },
-      []
-    ),
-    onMouseDown: useCallback(
-      (e, pt) => {
-        e.preventDefault() // disable native drag
-        mouse.buttons = e.buttons
-        mouse.x = pt.x
-        mouse.y = pt.y
-        mouse.width = 0
-        mouse.height = 0
-      },
-      [mouse]
-    ),
+    onContextMenu: NOOP,
+    onMouseDown: NOOP,
+    onMouseLeave: NOOP,
     onMouseMove: useCallback(
-      (e, pt) => {
-        if (mouse.buttons & 1) {
-          mouse.width = pt.x - mouse.x
-          mouse.height = pt.y - mouse.y
-        }
-        else {
-          mouse.x = pt.x
-          mouse.y = pt.y
-        }
-      },
-      [mouse]
-    ),
-    onMouseUp: useCallback(
       (e, rect) => {
-        if (!(mouse.buttons & 1)) return
-        mouse.buttons = 0
-        if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
+        if (input.buttons & 1) {
           switch (toolState) {
             case "annotate":
             case "select":
+              // noop
+              break
             case "pan":
-              scroll.x = -0.5 + rect.x * zoom.x
-              scroll.y = -0.5 + rect.y * zoom.y
+              scroll.x += e.movementX / e.currentTarget.clientWidth * zoom.x
+              scroll.y += e.movementY / e.currentTarget.clientHeight * zoom.y
               break
             case "zoom":
-              zoom.x = 1
-              zoom.y = 1
               break
           }
         }
-        else { // drag
-          const selection = normalize(rect)
-          zoom.x = 1 / selection.width
-          zoom.y = 1 / selection.height
-          scroll.x = -0.5 + (selection.x + selection.width / 2) * zoom.x
-          scroll.y = -0.5 + (selection.y + selection.height / 2) * zoom.y
+      },
+      [input, scroll, zoom, toolState]
+    ),
+    onMouseUp: useCallback(
+      (e, rect) => {
+        if (input.buttons & 1) {
+          if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
+            switch (toolState) {
+              case "annotate":
+              case "select":
+              case "pan":
+                scroll.x = mouseup.x * zoom.x - 0.5
+                scroll.y = mouseup.y * zoom.y - 0.5
+                break
+              case "zoom":
+                zoom.x = 1
+                zoom.y = 1
+                scroll.x = 0
+                scroll.y = 0
+                break
+            }
+          }
+          else { // drag
+            switch (toolState) {
+              case "annotate":
+              case "select":
+              case "pan":
+                break
+              case "zoom":
+                zoom.x = 1 / rect.width
+                zoom.y = 1 / rect.height
+                scroll.x = -0.5 + (rect.x + rect.width / 2) * zoom.x
+                scroll.y = -0.5 + (rect.y + rect.height / 2) * zoom.y
+                break
+            }
+          }
         }
       },
-      [mouse, scroll, zoom, toolState]
-    ),
-    onMouseLeave: useCallback(
-      (e, pt) => {
-        mouse.buttons = 0
-      },
-      [mouse]
+      [input, mouseup, scroll, zoom, toolState]
     ),
   })
 
-  useWheel(
-    containerRef,
-    useCallback(
-      (e: WheelEvent) => {
-        e.preventDefault()
-        const elem = e.currentTarget as HTMLDivElement
-        const dx = e.deltaX / elem.clientWidth
-        const dy = e.deltaY / elem.clientHeight
-        if (e.altKey) {
-          const zx = zoom.x
-          const zy = zoom.y
-          zoom.x = zoom.x + dx
-          zoom.y = zoom.y + dy
-          if (zoom.x != zx) scroll.x = scroll.x + dx / 2
-          if (zoom.y != zy) scroll.y = scroll.y + dy / 2
-        }
-        else {
-          scroll.x = scroll.x - dx
-          scroll.y = scroll.y - dy
-        }
-      },
-      [scroll, zoom]
-    )
-  )
+  useWheel(containerRef, -1)
 
   return <div
-    ref={containerRef}
-    style={{height}}
     className={`navigator ${toolState} ${transportState.type}`}
-    onMouseDown={onMouseDown}
-    onMouseMove={onMouseMove}
-    onMouseUp={onMouseUp}
-    onMouseLeave={onMouseLeave}
-    onContextMenu={onContextMenu}
   >
     <svg
+      ref={containerRef}
       width="100%"
       height="100%"
       viewBox={`0 0 ${RESOLUTION} ${RESOLUTION}`}
       preserveAspectRatio="none"
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseLeave}
+      onContextMenu={onContextMenu}
     >
       <image
-        href={imageUrl}
+        href={props.imageUrl}
         width="100%"
         height="100%"
         preserveAspectRatio="none"

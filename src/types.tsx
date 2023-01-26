@@ -7,18 +7,20 @@ type tannotation = {
   data: Object,
 }
 
-type tmouse = trect & {
+type tfunctional<T> = T | ((prevState: T) => T)
+
+type tinput = {
   buttons: number,
 }
-
-type tfunctional<T> = T | ((prevState: T) => T)
 
 type tnullable<T> = T | null
 
 type tcontext = {
   annotations: Map<string, tannotation>,
   duration: number,
-  mouse: tmouse,
+  input: tinput,
+  mousedown: tvector2,
+  mouseup: tvector2,
   scroll: tvector2,
   zoom: tvector2,
   tool: ttool,
@@ -51,8 +53,8 @@ type ttransport = {
 
 export type {
   tannotation,
-  tmouse,
   tfunctional,
+  tinput,
   tnullable,
   tcontext,
   ttool,
