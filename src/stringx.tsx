@@ -4,4 +4,10 @@ function randomBytes(count: number) {
   return Array.from(a, byte => byte.toString(16).padStart(2, "0")).join('')
 }
 
-export { randomBytes }
+function formatTimestamp(time: number) {
+  const minutes = Math.floor(time / 60)
+  const seconds = time - minutes
+  return `${minutes}:${seconds.toFixed(3).padStart(2, "0")}`
+}
+
+export { formatTimestamp, randomBytes }

@@ -32,9 +32,19 @@ body > #root div ~ div {
 }
 
 .visualization .playhead {
-  stroke: white;
-  stroke-width: 0.3%;
   mix-blend-mode: difference;
+}
+
+.visualization .playhead .line {
+  stroke: white;
+  stroke-width: 3px;
+}
+
+.visualization .playhead .text {
+  fill: white;
+  font-size: 1rem;
+  font-family: sans-serif;
+  text-anchor: start;
 }
 
 .visualization .annotation {
@@ -62,10 +72,14 @@ body > #root div ~ div {
   cursor: zoom-out;
 }
 
-.navigator .playhead {
+.navigator .playhead .line {
   stroke: white;
   stroke-width: 0.2%;
   mix-blend-mode: difference;
+}
+
+.navigator .playhead .text {
+  display: none;
 }
 
 .navigator .mask {

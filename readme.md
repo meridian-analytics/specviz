@@ -28,6 +28,7 @@
 - [x] visualization: pan
 - [x] visualization: sync zoom/pan
 - [x] visualization: playhead
+- [x] visualization: playhead timestamp on hover
 - [ ] visualization: frequency/amplitude, time axes
 - [ ] visualization: nonlinear freq axis
 - [x] visualization: annotation rects
