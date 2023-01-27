@@ -37,7 +37,7 @@ body > #root div ~ div {
 
 .visualization .playhead .line {
   stroke: white;
-  stroke-width: 3px;
+  stroke-width: 5;
 }
 
 .visualization .playhead .text {

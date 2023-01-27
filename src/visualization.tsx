@@ -14,7 +14,7 @@ const NOSELECTION = { x: 0, y: 0, width: 0, height: 0 }
 function Visualization(props: {
   imageUrl: string,
 }) {
-  const { annotations, duration, input, mouseup, scroll, zoom, toolState, transport, transportState, setAnnotations } = useSpecviz()
+  const { annotations, input, mouseup, scroll, zoom, toolState, transport, transportState, setAnnotations } = useSpecviz()
   const selectionRect = useRef<trect>(NOSELECTION)
   const svgRoot = useRef<SVGSVGElement>(null)
   const svgLayer = useRef<SVGSVGElement>(null)
@@ -112,10 +112,10 @@ function Visualization(props: {
           }
         }
         if (input.buttons & 2) { // jump playhead to point
-          transport.seek(duration * mouseup.x)
+          transport.seek(mouseup.x)
         }
       },
-      [input, mouseup, scroll, zoom, toolState, transport, duration]
+      [input, mouseup, scroll, zoom, toolState, transport]
     ),
   })
 

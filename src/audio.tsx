@@ -14,7 +14,7 @@ function stopState(offset: number): ttransportstate {
 function Audio(props: {
   url: string,
 }) {
-  const { setTransport, setTransportState } = useSpecviz()
+  const { duration, setTransport, setTransportState } = useSpecviz()
 
   useEffect(
     () => {
@@ -45,7 +45,8 @@ function Audio(props: {
                 }
               })
             },
-            seek: (offset: number) => {
+            seek: (progress) => {
+              const offset = progress * duration
               setTransportState(t => {
                 switch(t.type) {
                   case "stop":
@@ -73,7 +74,7 @@ function Audio(props: {
         })
       }
     },
-    [props.url]
+    [props.url, duration]
   )
 
   return <></>

@@ -48,7 +48,7 @@ type ttransportstate =
 type ttransport = {
   play: () => void,
   stop: () => void,
-  seek: (offset: number) => void,
+  seek: (progress: number) => void,
 }
 
 export type {
