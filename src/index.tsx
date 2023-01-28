@@ -1,3 +1,4 @@
+import { taxis } from "./types"
 import { StrictMode, useState } from "react"
 import { createRoot } from "react-dom/client"
 import { Specviz, useSpecviz } from "./specviz"
@@ -5,20 +6,58 @@ import Visualization from "./visualization"
 import Navigator from "./navigator"
 import Audio from "./audio"
 import { Bindings, Keypress } from "./keybinds"
+import { formatHz, formatPercent, formatTimestamp } from "./stringx"
 import "./index.css"
 
-const segment1 = {
-  audio: "./audio.wav",
-  duration: 44.416,
-  spectrogram: "./spectrogram.png",
-  waveform: "./waveform.png",
+type tsegment = {
+  audio: string,
+  duration: number,
+  xaxis: taxis,
+  xformat: (n: number) => string,
+  spectrogram: {
+    imageUrl: string,
+    yaxis: taxis,
+    yformat: (n: number) => string,
+  },
+  waveform: {
+    imageUrl: string,
+    yaxis: taxis,
+    yformat: (n: number) => string,
+  },
 }
 
-const segment2 = {
+const segment1: tsegment = {
+  audio: "./audio.wav",
+  duration: 44.416,
+  xaxis: [[0,0], [1, 44.416]],
+  xformat: formatTimestamp,
+  spectrogram: {
+    imageUrl: "./spectrogram.png",
+    yaxis: [[0,0], [.5,2000], [1, 20000]],
+    yformat: formatHz,
+  },
+  waveform: {
+    imageUrl: "./waveform.png",
+    yaxis: [[0, -1], [.5, 0], [1, 1]],
+    yformat: formatPercent,
+  }
+}
+
+const segment2: tsegment = {
   audio: "./audio2.wav",
   duration: 44.416,
-  spectrogram: "./spectrogram2.png",
-  waveform: "./waveform2.png",
+  xaxis: [[0,0], [1, 44.416]],
+  xformat: formatTimestamp,
+  spectrogram: {
+    imageUrl: "./spectrogram2.png",
+    yaxis: [[0,0], [1, 20000]],
+    yformat: formatHz,
+  },
+  waveform: {
+    imageUrl: "./waveform2.png",
+    yaxis: [[0,-1], [.5, 0], [1, 1]],
+    yformat: formatPercent,
+  },
 }
 
 function MyComponent() {
@@ -36,10 +75,22 @@ function MyComponent() {
       children={segment2.audio}
     />
     <p>{data.audio} ({data.duration} seconds)</p>
-    <Navigator imageUrl={data.spectrogram} />
-    <Visualization imageUrl={data.spectrogram} />
-    <Visualization imageUrl={data.waveform} />
-    <Navigator imageUrl={data.waveform} />
+    <Navigator imageUrl={data.spectrogram.imageUrl} />
+    <Visualization
+      imageUrl={data.spectrogram.imageUrl}
+      xaxis={data.xaxis}
+      yaxis={data.spectrogram.yaxis}
+      xformat={data.xformat}
+      yformat={data.spectrogram.yformat}
+    />
+    <Visualization
+      imageUrl={data.waveform.imageUrl}
+      xaxis={data.xaxis}
+      yaxis={data.waveform.yaxis}
+      xformat={data.xformat}
+      yformat={data.waveform.yformat}
+    />
+    <Navigator imageUrl={data.waveform.imageUrl} />
     <Audio url={data.audio} />
     <MyAudioControls />
     <MyKeybinds />

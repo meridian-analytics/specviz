@@ -32,6 +32,10 @@
 - [ ] visualization: frequency/amplitude, time axes
 - [ ] visualization: nonlinear freq axis
 - [x] visualization: annotation rects
+- [x] cursor: hold alt to render cursor
+- [x] cursor: coordinate pair
+- [x] cursor: nonlinear axes
+- [ ] cursor: 1-dimensional variant
 - [x] audio: playback
 - [x] audio: resume at playhead
 - [x] audio: preserve playhead on unmount

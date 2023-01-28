@@ -7,10 +7,15 @@ type tannotation = {
   data: Object,
 }
 
+type taxisinterval = [number, number]
+
+type taxis = Array<taxisinterval>
+
 type tfunctional<T> = T | ((prevState: T) => T)
 
 type tinput = {
   buttons: number,
+  alt: boolean,
 }
 
 type tnullable<T> = T | null
@@ -54,6 +59,7 @@ type ttransport = {
 
 export type {
   tannotation,
+  taxis,
   tfunctional,
   tinput,
   tnullable,

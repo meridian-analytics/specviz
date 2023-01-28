@@ -11,7 +11,7 @@ const NOOP = () => {}
 const SpecvizContext = createContext<tcontext>({
   annotations: new Map(),
   duration: 0,
-  input: { buttons: 0 },
+  input: { buttons: 0, alt: false },
   mousedown: { x: 0, y: 0 },
   mouseup: { x: 0, y: 0 },
   scroll: { x: 0, y: 0 },
@@ -43,10 +43,13 @@ function Specviz(props: {
 
   const input = useMemo(
     () => {
-      const i = { buttons: 0 }
+      let buttons = 0
+      let alt = false
       return {
-        get buttons() { return i.buttons },
-        set buttons(v) { i.buttons = v },
+        get buttons() { return buttons },
+        set buttons(v) { buttons = v },
+        get alt() { return alt },
+        set alt(v) { alt = v },
       }
     },
     []
@@ -97,6 +100,29 @@ function Specviz(props: {
   })
 
   const [transportState, setTransportState] = useState<ttransportstate>(STOP)
+
+  // todo: expose via command and keybind
+  useEffect(
+    () => {
+      function onKeyDown(e: KeyboardEvent) {
+        if (e.key == "Alt") {
+          input.alt = true
+        }
+      }
+      function onKeyUp(e: KeyboardEvent) {
+        if (e.key == "Alt") {
+          input.alt = false
+        }
+      }
+      window.addEventListener("keydown", onKeyDown)
+      window.addEventListener("keyup", onKeyUp)
+      return () => {
+        window.removeEventListener("keydown", onKeyDown)
+        window.removeEventListener("keyup", onKeyUp)
+      }
+    },
+    []
+  )
 
   return <SpecvizContext.Provider value={{
     annotations,

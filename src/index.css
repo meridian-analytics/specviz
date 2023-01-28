@@ -31,15 +31,22 @@ body > #root div ~ div {
   cursor: move;
 }
 
-.visualization .playhead-line {
+.visualization .playhead {
   stroke: white;
   stroke-width: 0.3%;
   mix-blend-mode: difference;
 }
 
-.visualization .playhead-text {
+.cursor-x, .cursor-y {
+  stroke: white;
+  stroke-width: .3%;
+  mix-blend-mode: difference;
+}
+
+
+.cursor-text {
   fill: white;
-  font-size: .2%;
+  font-size: 12pt;
   font-family: monospace;
   text-anchor: start;
   mix-blend-mode: difference;
@@ -68,7 +75,7 @@ body > #root div ~ div {
   cursor: zoom-out;
 }
 
-.navigator .playhead-line {
+.navigator .playhead {
   stroke: white;
   stroke-width: 0.2%;
   mix-blend-mode: difference;
