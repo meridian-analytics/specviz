@@ -1,20 +1,36 @@
 import type { ttransportstate } from "./types"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { Sound } from "pizzicato"
 import { useSpecviz } from "./specviz"
+import { useAnimationFrame } from "./hooks"
 
-function playState(offset: number, timeRef: number): ttransportstate {
-  return { type: "play", offset, timeRef }
+function playState(progress: number, timeRef: number): ttransportstate {
+  return { type: "play", progress, timeRef }
 }
 
-function stopState(offset: number): ttransportstate {
-  return { type: "stop", offset }
+function stopState(progress: number): ttransportstate {
+  return { type: "stop", progress }
 }
 
 function Audio(props: {
   url: string,
 }) {
-  const { duration, setTransport, setTransportState } = useSpecviz()
+  const { duration, playhead, transportState, setTransport, setTransportState } = useSpecviz()
+
+  useAnimationFrame(useCallback(
+    () => {
+      switch (transportState.type) {
+        case "stop":
+          playhead.x = transportState.progress
+          break
+        case "play":
+          const delta = (Date.now() - transportState.timeRef) / 1000
+          playhead.x = transportState.progress + delta / duration
+          break
+      }
+    },
+    [transportState, duration]
+  ))
 
   useEffect(
     () => {
@@ -27,8 +43,8 @@ function Audio(props: {
               setTransportState(t => {
                 switch(t.type) {
                   case "stop":
-                    sound.play(0, t.offset)
-                    return playState(t.offset, Date.now())
+                    sound.play(0, t.progress * duration)
+                    return playState(t.progress, Date.now())
                   case "play":
                     return t
                 }
@@ -41,20 +57,20 @@ function Audio(props: {
                     return t
                   case "play":
                     sound.stop()
-                    return stopState(t.offset + (Date.now() - t.timeRef) / 1000)
+                    const delta = (Date.now() - t.timeRef) / 1000
+                    return stopState(t.progress + delta / duration)
                 }
               })
             },
             seek: (progress) => {
-              const offset = progress * duration
               setTransportState(t => {
                 switch(t.type) {
                   case "stop":
-                    return stopState(offset)
+                    return stopState(progress)
                   case "play":
                     sound.stop()
-                    sound.play(0, offset)
-                    return playState(offset, Date.now())
+                    sound.play(0, progress * duration)
+                    return playState(progress, Date.now())
                 }
               })
             }
@@ -69,7 +85,8 @@ function Audio(props: {
               return t
             case "play":
               sound.stop()
-              return stopState(t.offset + (Date.now() - t.timeRef) / 1000)
+              const delta = (Date.now() - t.timeRef) / 1000
+              return stopState(t.progress + delta / duration)
           }
         })
       }

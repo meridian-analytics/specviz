@@ -6,47 +6,25 @@ import { formatTimestamp } from "./stringx"
 function Playhead() {
   const svgLine = useRef<SVGLineElement>(null)
   const svgText = useRef<SVGTextElement>(null)
-  const { mouseup, duration, transportState } = useSpecviz()
+  const { duration, mouseup, playhead } = useSpecviz()
 
   useAnimationFrame(useCallback(
     () => {
       const line = svgLine.current!
       const text = svgText.current!
-      let progress = 0
-      switch (transportState.type) {
-        case "stop":
-          progress = transportState.offset / duration
-          line.setAttribute("x1", String(progress))
-          line.setAttribute("x2", String(progress))
-          if (Math.abs(mouseup.x - progress) < 0.01) {
-            text.setAttribute("display", "inline")
-            text.setAttribute("x", String(progress))
-            text.setAttribute("y", String(mouseup.y))
-            text.textContent = formatTimestamp(transportState.offset)
-          }
-          else {
-            text.setAttribute("display", "none")
-          }
-          break
-        case "play":
-          const delta = (Date.now() - transportState.timeRef) / 1000
-          const time = transportState.offset + delta
-          progress = time / duration
-          line.setAttribute("x1", String(progress))
-          line.setAttribute("x2", String(progress))
-          if (Math.abs(mouseup.x - progress) < 0.03) {
-            text.setAttribute("display", "inline")
-            text.setAttribute("x", String(progress))
-            text.setAttribute("y", String(mouseup.y))
-            text.textContent = formatTimestamp(time)
-          }
-          else {
-            text.setAttribute("display", "none")
-          }
-          break
+      line.setAttribute("x1", String(playhead.x))
+      line.setAttribute("x2", String(playhead.x))
+      if (Math.abs(mouseup.x - playhead.x) < 0.01) {
+        text.setAttribute("display", "inline")
+        text.setAttribute("x", String(playhead.x))
+        text.setAttribute("y", String(mouseup.y))
+        text.textContent = formatTimestamp(playhead.x * duration)
+      }
+      else {
+        text.setAttribute("display", "none")
       }
     },
-    [svgLine, transportState, duration]
+    [svgLine, svgText, duration]
   ))
 
   return <>

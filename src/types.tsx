@@ -23,6 +23,7 @@ type tcontext = {
   mouseup: tvector2,
   scroll: tvector2,
   zoom: tvector2,
+  playhead: tvector2,
   tool: ttool,
   toolState: ttoolstate,
   transport: ttransport,
@@ -42,8 +43,8 @@ type ttool = {
 type ttoolstate = "annotate" | "select" | "zoom" | "pan"
 
 type ttransportstate =
-  | { type: "play", offset: number, timeRef: number }
-  | { type: "stop", offset: number }
+  | { type: "play", progress: number, timeRef: number }
+  | { type: "stop", progress: number }
 
 type ttransport = {
   play: () => void,

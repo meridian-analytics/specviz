@@ -5,7 +5,7 @@ import { clamp } from "./mathx"
 import { trect, fromPoints } from "./rect"
 
 const ZOOM_MAX: number = 5
-const STOP: ttransportstate = { type: "stop", offset: 0 }
+const STOP: ttransportstate = { type: "stop", progress: 0 }
 const NOOP = () => {}
 
 const SpecvizContext = createContext<tcontext>({
@@ -16,6 +16,7 @@ const SpecvizContext = createContext<tcontext>({
   mouseup: { x: 0, y: 0 },
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
+  playhead: { x: 0, y: 0 },
   tool: {
     annotate: () => { console.error("tool.annotate called outside of Specviz context") },
     select: () => { console.error("tool.select called outside of Specviz context") },
@@ -51,56 +52,30 @@ function Specviz(props: {
     []
   )
 
-  const zoom = useMemo(
+  const zoom = useMemo<tvector2>(
     () => {
-      const z = { x: 1, y: 1 }
+      let x = 1, y = 1
       return {
-        get x() { return z.x },
-        get y() { return z.y },
-        set x(v) { z.x = clamp(v, 1, ZOOM_MAX) },
-        set y(v) { z.y = clamp(v, 1, ZOOM_MAX) },
+        get x() { return x },
+        get y() { return y },
+        set x(v) { x = clamp(v, 1, ZOOM_MAX) },
+        set y(v) { y = clamp(v, 1, ZOOM_MAX) },
       }
     },
     []
   )
 
-  const scroll = useMemo(
+  const scroll = useMemo<tvector2>(
     () => {
-      const s = { x: 0, y: 0 }
+      let x = 0, y = 0
       return {
-        get x() { return s.x },
-        get y() { return s.y },
-        set x(v) { s.x = clamp(v, 0, zoom.x - 1) },
-        set y(v) { s.y = clamp(v, 0, zoom.y - 1) },
+        get x() { return x },
+        get y() { return y },
+        set x(v) { x = clamp(v, 0, zoom.x - 1) },
+        set y(v) { y = clamp(v, 0, zoom.y - 1) },
       }
     },
     [zoom]
-  )
-
-  const mousedown = useMemo(
-    () => {
-      const m = { x: 0, y: 0 }
-      return {
-        get x() { return m.x },
-        get y() { return m.y },
-        set x(v) { m.x = v },
-        set y(v) { m.y = v },
-      }
-    },
-    []
-  )
-
-  const mouseup = useMemo(
-    () => {
-      const m = { x: 0, y: 0 }
-      return {
-        get x() { return m.x },
-        get y() { return m.y },
-        set x(v) { m.x = v },
-        set y(v) { m.y = v },
-      }
-    },
-    []
   )
 
   const tool = useMemo<ttool>(
@@ -127,10 +102,11 @@ function Specviz(props: {
     annotations,
     duration: props.duration,
     input,
-    mousedown,
-    mouseup,
+    mousedown: useMutableVector2(),
+    mouseup: useMutableVector2(),
     scroll,
     zoom,
+    playhead: useMutableVector2(),
     tool,
     toolState,
     transport,
@@ -215,6 +191,21 @@ function useClickRect(listeners: {
   )
 }
 
+function useMutableVector2() {
+  return useMemo<tvector2>(
+    () => {
+      let x = 0, y = 0
+      return {
+        get x() { return x },
+        get y() { return y },
+        set x(v) { x = v },
+        set y(v) { y = v },
+      }
+    },
+    []
+  )
+}
+
 // react uses passive event listeners by default
 // to stop propagation, use a non-passive listener
 // https://stackoverflow.com/a/67258046
@@ -232,7 +223,6 @@ function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
           const my = (mousedown.y * zoom.y) - scroll.y
           zoom.x = zoom.x + dx * direction
           zoom.y = zoom.y + dy * direction
-          // bug: navigator scroll offset is incorrect
           scroll.x = (mousedown.x * zoom.x) - mx
           scroll.y = (mousedown.y * zoom.y) - my
         }
