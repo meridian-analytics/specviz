@@ -28,9 +28,23 @@ function Cursor(props: {
         xline.setAttribute("x2", formatPercent(rx))
         yline.setAttribute("y1", formatPercent(ry))
         yline.setAttribute("y2", formatPercent(ry))
-        text.setAttribute("x", formatPercent(rx))
-        text.setAttribute("y", formatPercent(ry - 0.02))
         text.textContent = `(${fx(rx)}, ${fy(1 - ry)})`
+        if (mouseup.x < .5) {
+          text.setAttribute("x", formatPercent(rx))
+          text.setAttribute("text-anchor", "start")
+        }
+        else {
+          text.setAttribute("x", formatPercent(rx))
+          text.setAttribute("text-anchor", "end")
+        }
+        if (mouseup.y < .5) {
+          text.setAttribute("y", formatPercent(ry + 0.01))
+          text.setAttribute("dominant-baseline", "hanging")
+        }
+        else {
+          text.setAttribute("y", formatPercent(ry - 0.01))
+          text.setAttribute("dominant-baseline", "text-top")
+        }
       }
       else {
         layer.setAttribute("display", "none")

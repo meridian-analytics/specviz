@@ -48,7 +48,6 @@ body > #root div ~ div {
   fill: white;
   font-size: 12pt;
   font-family: monospace;
-  text-anchor: start;
   mix-blend-mode: difference;
 }
 
