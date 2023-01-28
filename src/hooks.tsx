@@ -6,11 +6,11 @@ function useAnimationFrame(callback: (frameId: number) => void) {
       let frame: number
       function onFrame(frameId: number) {
         callback(frameId)
-        frame = requestAnimationFrame(onFrame)
+        frame = window.requestAnimationFrame(onFrame)
       }
-      frame = requestAnimationFrame(onFrame)
+      frame = window.requestAnimationFrame(onFrame)
       return () => {
-        cancelAnimationFrame(frame)
+        window.cancelAnimationFrame(frame)
       }
     },
     [callback]
