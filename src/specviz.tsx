@@ -147,17 +147,12 @@ function useSpecviz() {
   return useContext(SpecvizContext)
 }
 
-function fromMouse(e: MouseEvent<SVGSVGElement>): tvector2 {
+function fromMouse(e: MouseEvent<SVGSVGElement>, scroll:tvector2, zoom: tvector2): tvector2 {
   const elem = e.currentTarget
   const viewport = elem.getBoundingClientRect()
-  const bounds = elem.getBBox() // x,y are negative offsets
-  // same but without getBBox, but depends on scroll and zoom
-  // maybe useful if getBBox is unreliable
-  // const mx = ((e.clientX - viewport.x) / viewport.width + scroll.x) / zoom.x
-  // const my = ((e.clientY - viewport.y) / viewport.height + scroll.y) / zoom.y
   return {
-    x: (e.clientX - viewport.x - bounds.x) / bounds.width,
-    y: (e.clientY - viewport.y - bounds.y) / bounds.height
+    x: ((e.clientX - viewport.x) / viewport.width + scroll.x) / zoom.x,
+    y: ((e.clientY - viewport.y) / viewport.height + scroll.y) / zoom.y,
   }
 }
 
@@ -168,7 +163,7 @@ function useClickRect(listeners: {
   onMouseLeave: (e: MouseEvent<SVGSVGElement>) => void,
   onContextMenu: (e: MouseEvent<SVGSVGElement>) => void,
 }) {
-  const { input, mousedown, mouseup } = useSpecviz()
+  const { input, mousedown, mouseup, scroll, zoom } = useSpecviz()
   return useMemo(
     () => {
       return {
@@ -179,7 +174,7 @@ function useClickRect(listeners: {
         onMouseDown(e: MouseEvent<SVGSVGElement>) {
           e.preventDefault() // disable native drag
           input.buttons = e.buttons
-          const pt = fromMouse(e)
+          const pt = fromMouse(e, scroll, zoom)
           mousedown.x = pt.x
           mousedown.y = pt.y
           mouseup.x = pt.x
@@ -187,7 +182,7 @@ function useClickRect(listeners: {
           listeners.onMouseDown(e)
         },
         onMouseMove(e: MouseEvent<SVGSVGElement>) {
-          const pt = fromMouse(e)
+          const pt = fromMouse(e, scroll, zoom)
           if (input.buttons & 1) {
             mouseup.x = pt.x
             mouseup.y = pt.y

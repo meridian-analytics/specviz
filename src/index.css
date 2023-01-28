@@ -31,31 +31,27 @@ body > #root div ~ div {
   cursor: move;
 }
 
-.visualization .playhead {
+.visualization .playhead-line {
+  stroke: white;
+  stroke-width: 0.3%;
   mix-blend-mode: difference;
 }
 
-.visualization .playhead .line {
-  stroke: white;
-  stroke-width: 5;
-}
-
-.visualization .playhead .text {
+.visualization .playhead-text {
   fill: white;
-  font-size: 1rem;
-  font-family: sans-serif;
+  font-size: .2%;
+  font-family: monospace;
   text-anchor: start;
+  mix-blend-mode: difference;
 }
 
 .visualization .annotation {
   fill: rgba(33, 33, 33, 1);
-  stroke: rgba(133, 133, 133, 1);
   mix-blend-mode: difference;
-  stroke-width: 0.1%;
 }
 
 .visualization .selection {
-  fill: rgba(77, 77, 77, 1);
+  fill: rgba(200, 200, 200, 1);
   mix-blend-mode: difference;
 }
 
@@ -72,13 +68,13 @@ body > #root div ~ div {
   cursor: zoom-out;
 }
 
-.navigator .playhead .line {
+.navigator .playhead-line {
   stroke: white;
   stroke-width: 0.2%;
   mix-blend-mode: difference;
 }
 
-.navigator .playhead .text {
+.navigator .playhead-text {
   display: none;
 }
 

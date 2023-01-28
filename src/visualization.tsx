@@ -3,7 +3,6 @@ import { useClickRect, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
 import { trect } from "./rect"
 import { magnitude } from "./vector2"
-import { percent } from "./mathx"
 import { randomBytes } from "./stringx"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
@@ -25,14 +24,14 @@ function Visualization(props: {
       const layer = svgLayer.current!
       const selection = svgSelection.current!
       const rect = selectionRect.current!
-      layer.setAttribute("x", percent(-scroll.x))
-      layer.setAttribute("y", percent(-scroll.y))
-      layer.setAttribute("width", percent(zoom.x))
-      layer.setAttribute("height", percent(zoom.y))
-      selection.setAttribute("x", percent(rect.x))
-      selection.setAttribute("y", percent(rect.y))
-      selection.setAttribute("width", percent(rect.width))
-      selection.setAttribute("height", percent(rect.height))
+      layer.setAttribute(
+        "transform",
+        `translate(${-scroll.x}, ${-scroll.y}) scale(${zoom.x}, ${zoom.y})`
+      )
+      selection.setAttribute("x", String(rect.x))
+      selection.setAttribute("y", String(rect.y))
+      selection.setAttribute("width", String(rect.width))
+      selection.setAttribute("height", String(rect.height))
     },
     [svgLayer, svgSelection, scroll, zoom, selectionRect]
   ))
@@ -128,20 +127,18 @@ function Visualization(props: {
       ref={svgRoot}
       width="100%"
       height="100%"
-      x={0}
-      y={0}
+      viewBox="0 0 1 1"
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
       onContextMenu={onContextMenu}
+      preserveAspectRatio="none"
     >
-      <svg
+      <g
         ref={svgLayer}
-        x={0}
-        y={0}
-        width="100%"
-        height="100%"
+        width="1"
+        height="1"
       >
         <image
           preserveAspectRatio="none"
@@ -155,14 +152,13 @@ function Visualization(props: {
         <rect
           ref={svgSelection}
           className="selection"
-          x={0}
-          y={0}
-          width={0}
-          height={0}
-          rx="3"
+          x="0"
+          y="0"
+          width="0"
+          height="0"
         />
         <Playhead />
-      </svg>
+      </g>
     </svg>
   </div>
 }

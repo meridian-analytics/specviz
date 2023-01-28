@@ -5,7 +5,6 @@ import { magnitude } from "./vector2"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
 
-const RESOLUTION = 100
 const NOOP = () => {}
 
 function Navigator(props: {
@@ -17,17 +16,16 @@ function Navigator(props: {
 
   useAnimationFrame(useCallback(
     () => {
-      const elem = maskRef.current!
-      elem.setAttribute("d", `
+      maskRef.current!.setAttribute("d", `
         M 0 0
-        h ${RESOLUTION}
-        v ${RESOLUTION}
-        h ${-RESOLUTION}
+        h 1
+        v 1
+        h -1
         z
-        M ${scroll.x * RESOLUTION / zoom.x} ${scroll.y * RESOLUTION / zoom.y}
-        v ${RESOLUTION / zoom.y}
-        h ${RESOLUTION / zoom.x}
-        v ${-RESOLUTION / zoom.y}
+        M ${scroll.x / zoom.x} ${scroll.y / zoom.y}
+        v ${1 / zoom.y}
+        h ${1 / zoom.x}
+        v ${-1 / zoom.y}
         z
       `)
     },
@@ -96,7 +94,7 @@ function Navigator(props: {
     ),
   })
 
-  useWheel(containerRef, -1)
+  useWheel(containerRef, 1)
 
   return <div
     className={`navigator ${toolState} ${transportState.type}`}
@@ -105,7 +103,7 @@ function Navigator(props: {
       ref={containerRef}
       width="100%"
       height="100%"
-      viewBox={`0 0 ${RESOLUTION} ${RESOLUTION}`}
+      viewBox="0 0 1 1"
       preserveAspectRatio="none"
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
