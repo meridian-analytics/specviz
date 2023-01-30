@@ -19,7 +19,9 @@ function fscale(scale: taxis, q: number) {
     while (i < scale.length - 1) {
       [ax, ay] = scale[i];
       [bx, by] = scale[i + 1]
-      if (q < bx) return ay + (by - ay) * (q - ax) / (bx - ax)
+      if (q <= bx) {
+        return ay + (by - ay) * (q - ax) / (bx - ax)
+      }
       i += 1
     }
     return -Infinity

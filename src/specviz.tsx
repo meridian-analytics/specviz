@@ -153,8 +153,8 @@ function fromMouse(e: MouseEvent<SVGSVGElement>, scroll:tvector2, zoom: tvector2
   const elem = e.currentTarget
   const viewport = elem.getBoundingClientRect()
   return {
-    x: ((e.clientX - viewport.x) / viewport.width + scroll.x) / zoom.x,
-    y: ((e.clientY - viewport.y) / viewport.height + scroll.y) / zoom.y,
+    x: clamp(((e.clientX - viewport.x) / viewport.width + scroll.x) / zoom.x, 0, 1),
+    y: clamp(((e.clientY - viewport.y) / viewport.height + scroll.y) / zoom.y, 0, 1),
   }
 }
 
