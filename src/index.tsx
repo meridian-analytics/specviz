@@ -105,6 +105,7 @@ function MyComponent() {
     <Audio url={data.audio} />
     <MyAudioControls />
     <MyKeybinds />
+    <MyForm />
   </Specviz>
 }
 
@@ -167,6 +168,13 @@ function MyKeybinds() {
     <Keypress bind="z" onKeyDown={transport.play} />
     <Keypress bind="x" onKeyDown={transport.stop} />
   </Bindings>
+}
+
+function MyForm() {
+  const { selection } = useSpecviz()
+  return <pre>
+    {JSON.stringify(Array.from(selection), null, 2)}
+  </pre>
 }
 
 createRoot(document.getElementById("root") as HTMLElement).render(

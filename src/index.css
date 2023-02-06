@@ -37,27 +37,21 @@ body > #root div ~ div {
   mix-blend-mode: difference;
 }
 
+.visualization .selection {
+  fill: rgba(200, 200, 200, 1);
+  mix-blend-mode: difference;
+}
+
 .cursor-x, .cursor-y {
   stroke: white;
   stroke-width: .3%;
   mix-blend-mode: difference;
 }
 
-
 .cursor-text {
   fill: white;
   font-size: 12pt;
   font-family: monospace;
-  mix-blend-mode: difference;
-}
-
-.visualization .annotation {
-  fill: rgba(33, 33, 33, 1);
-  mix-blend-mode: difference;
-}
-
-.visualization .selection {
-  fill: rgba(200, 200, 200, 1);
   mix-blend-mode: difference;
 }
 
@@ -88,9 +82,13 @@ body > #root div ~ div {
   fill: rgba(0, 0, 0, 0.5);
 }
 
-.navigator .annotation {
+.annotation {
   fill: rgba(33, 33, 33, 1);
   mix-blend-mode: difference;
+}
+
+.annotation-selected {
+  fill: rgba(99, 99, 99, 1);
 }
 
 button.active {

@@ -1,8 +1,8 @@
-import { taxis } from "./types"
+import { taxis, tselection } from "./types"
 import { useCallback, useRef } from "react"
 import { useClickRect, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
-import { trect } from "./rect"
+import { trect, intersectPoint } from "./rect"
 import { magnitude } from "./vector2"
 import { randomBytes } from "./stringx"
 import Playhead from "./playhead"
@@ -17,7 +17,10 @@ function Visualization(props: {
   xaxis: taxis,
   yaxis: taxis,
 }) {
-  const { annotations, input, mouseup, scroll, zoom, toolState, transport, transportState, setAnnotations } = useSpecviz()
+  const { input, mouseup, scroll, zoom } = useSpecviz()
+  const { toolState, transportState, transport } = useSpecviz()
+  const { annotations, setAnnotations } = useSpecviz()
+  const { setSelection } = useSpecviz()
   const selectionRect = useRef<trect>(NOSELECTION)
   const svgRoot = useRef<SVGSVGElement>(null)
   const svgLayer = useRef<SVGSVGElement>(null)
@@ -88,7 +91,16 @@ function Visualization(props: {
             switch (toolState) {
               case "annotate": // noop
                 break
-              case "select": // todo: select annotation
+              case "select": // select annotation
+                setSelection(() => {
+                  const newSelection: tselection = new Set()
+                  for (const a of annotations.values()) {
+                    if (intersectPoint(a.rect, mouseup)) {
+                      newSelection.add(a)
+                    }
+                  }
+                  return newSelection
+                })
                 break
               case "zoom": // increment zoom to point
                 const mx = (mouseup.x * zoom.x) - scroll.x

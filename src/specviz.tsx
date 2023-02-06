@@ -17,6 +17,7 @@ const SpecvizContext = createContext<tcontext>({
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
   playhead: { x: 0, y: 0 },
+  selection: new Set(),
   tool: {
     annotate: () => { console.error("tool.annotate called outside of Specviz context") },
     select: () => { console.error("tool.select called outside of Specviz context") },
@@ -31,6 +32,7 @@ const SpecvizContext = createContext<tcontext>({
   },
   transportState: STOP,
   setAnnotations: _ => { console.error("setAnnotations called outside of Specviz context") },
+  setSelection: _ => { console.error("setSelection called outside of Specviz context") },
   setTransport: _ => { console.error("setTransport called outside of Specviz context") },
   setTransportState: _ => { console.error("setTransportState called outside of Specviz context") },
 })
@@ -40,7 +42,7 @@ function Specviz(props: {
   children: ReactNode,
 }) {
   const [annotations, setAnnotations] = useState<Map<string, tannotation>>(new Map())
-
+  const [selection, setSelection] = useState<Set<tannotation>>(new Set())
   const input = useMemo(
     () => {
       let buttons = 0
@@ -142,11 +144,13 @@ function Specviz(props: {
     scroll,
     zoom,
     playhead: useMutableVector2(),
+    selection: selection,
     tool,
     toolState,
     transport,
     transportState,
     setAnnotations,
+    setSelection,
     setTransport,
     setTransportState,
   }}>

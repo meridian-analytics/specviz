@@ -16,6 +16,14 @@ function fromPoints(pt1: tvector2, pt2: tvector2): trect {
   })
 }
 
+function intersectPoint(t: trect, pt: tvector2): boolean {
+  const n = normalize(t)
+  return pt.x >= n.x
+    && pt.x <= n.x + n.width
+    && pt.y >= n.y
+    && pt.y <= n.y + n.height
+}
+
 function normalize(t: trect): trect {
   return {
     x: Math.min(t.x, t.x + t.width),
@@ -26,4 +34,4 @@ function normalize(t: trect): trect {
 }
 
 export type { trect }
-export { fromPoints, normalize }
+export { fromPoints, intersectPoint, normalize }
