@@ -1,4 +1,4 @@
-import type { tannotation, ttool, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
+import type { tannotation, taxis, tnullable, ttool, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
 import type { tvector2 } from "./vector2"
 import { MouseEvent, ReactNode, RefObject, createContext, useContext, useEffect, useMemo, useState } from "react"
 import { clamp } from "./mathx"
@@ -11,7 +11,7 @@ const NOOP = () => {}
 const SpecvizContext = createContext<tcontext>({
   annotations: new Map(),
   duration: 0,
-  input: { buttons: 0, alt: false },
+  input: { buttons: 0, alt: false, focus: null, xaxis: null, yaxis: null },
   mousedown: { x: 0, y: 0 },
   mouseup: { x: 0, y: 0 },
   scroll: { x: 0, y: 0 },
@@ -45,11 +45,20 @@ function Specviz(props: {
     () => {
       let buttons = 0
       let alt = false
+      let focus: tnullable<SVGSVGElement> = null
+      let xaxis: tnullable<taxis> = null
+      let yaxis: tnullable<taxis> = null
       return {
         get buttons() { return buttons },
         set buttons(v) { buttons = v },
         get alt() { return alt },
         set alt(v) { alt = v },
+        get focus() { return focus },
+        set focus(v) { focus = v },
+        get xaxis() { return xaxis },
+        set xaxis(v) { xaxis = v },
+        get yaxis() { return yaxis },
+        set yaxis(v) { yaxis = v },
       }
     },
     []
@@ -162,6 +171,7 @@ function useClickRect(listeners: {
   onMouseDown: (e: MouseEvent<SVGSVGElement>) => void,
   onMouseMove: (e: MouseEvent<SVGSVGElement>, rect: trect) => void,
   onMouseUp: (e: MouseEvent<SVGSVGElement>, rect: trect) => void,
+  onMouseEnter: (e: MouseEvent<SVGSVGElement>) => void,
   onMouseLeave: (e: MouseEvent<SVGSVGElement>) => void,
   onContextMenu: (e: MouseEvent<SVGSVGElement>) => void,
 }) {
@@ -201,9 +211,14 @@ function useClickRect(listeners: {
           listeners.onMouseUp(e, fromPoints(mousedown, mouseup))
           input.buttons = 0
         },
+        onMouseEnter(e: MouseEvent<SVGSVGElement>) {
+          input.focus = e.currentTarget
+          listeners.onMouseEnter(e)
+        },
         onMouseLeave(e: MouseEvent<SVGSVGElement>) {
-          listeners.onMouseLeave(e)
           input.buttons = 0
+          input.focus = null
+          listeners.onMouseLeave(e)
         },
       }
     },

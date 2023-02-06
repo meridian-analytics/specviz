@@ -32,9 +32,10 @@ function Navigator(props: {
     [maskRef, scroll, zoom]
   ))
 
-  const {onMouseDown, onMouseMove, onMouseUp, onMouseLeave, onContextMenu} = useClickRect({
+  const onMouse = useClickRect({
     onContextMenu: NOOP,
     onMouseDown: NOOP,
+    onMouseEnter: NOOP,
     onMouseLeave: NOOP,
     onMouseMove: useCallback(
       (e, rect) => {
@@ -105,11 +106,7 @@ function Navigator(props: {
       height="100%"
       viewBox="0 0 1 1"
       preserveAspectRatio="none"
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-      onMouseLeave={onMouseLeave}
-      onContextMenu={onContextMenu}
+      {...onMouse}
     >
       <image
         href={props.imageUrl}

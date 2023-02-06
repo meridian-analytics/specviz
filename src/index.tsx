@@ -13,50 +13,65 @@ type tsegment = {
   audio: string,
   duration: number,
   xaxis: taxis,
-  xformat: (n: number) => string,
   spectrogram: {
     imageUrl: string,
     yaxis: taxis,
-    yformat: (n: number) => string,
   },
   waveform: {
     imageUrl: string,
     yaxis: taxis,
-    yformat: (n: number) => string,
   },
 }
 
 const segment1: tsegment = {
   audio: "./audio.wav",
   duration: 44.416,
-  xaxis: [[0,0], [1, 44.416]],
-  xformat: formatTimestamp,
+  xaxis: {
+    unit: "seconds",
+    intervals: [[0,0], [1, 44.416]],
+    format: formatTimestamp,
+  },
   spectrogram: {
     imageUrl: "./spectrogram.png",
-    yaxis: [[0,0], [.5,2000], [1, 20000]],
-    yformat: formatHz,
+    yaxis: {
+      unit: "hertz",
+      intervals: [[0, 0], [.5, 2000], [1, 20000]],
+      format: formatHz,
+    },
   },
   waveform: {
     imageUrl: "./waveform.png",
-    yaxis: [[0, -1], [.5, 0], [1, 1]],
-    yformat: formatPercent,
+    yaxis: {
+      unit: "percent",
+      intervals: [[0, -1], [.5, 0], [1, 1]],
+      format: formatPercent,
+    },
   }
 }
 
 const segment2: tsegment = {
   audio: "./audio2.wav",
   duration: 44.416,
-  xaxis: [[0,0], [1, 44.416]],
-  xformat: formatTimestamp,
+  xaxis: {
+    unit: "seconds",
+    intervals: [[0, 0], [1, 44.416]],
+    format: formatTimestamp,
+  },
   spectrogram: {
     imageUrl: "./spectrogram2.png",
-    yaxis: [[0,0], [1, 20000]],
-    yformat: formatHz,
+    yaxis: {
+      unit: "hertz",
+      intervals: [[0, 0], [.5, 2000], [1, 20000]],
+      format: formatHz,
+    },
   },
   waveform: {
     imageUrl: "./waveform2.png",
-    yaxis: [[0,-1], [.5, 0], [1, 1]],
-    yformat: formatPercent,
+    yaxis: {
+      unit: "percent",
+      intervals: [[0, -1], [.5, 0], [1, 1]],
+      format: formatPercent,
+    },
   },
 }
 
@@ -80,15 +95,11 @@ function MyComponent() {
       imageUrl={data.spectrogram.imageUrl}
       xaxis={data.xaxis}
       yaxis={data.spectrogram.yaxis}
-      xformat={data.xformat}
-      yformat={data.spectrogram.yformat}
     />
     <Visualization
       imageUrl={data.waveform.imageUrl}
       xaxis={data.xaxis}
       yaxis={data.waveform.yaxis}
-      xformat={data.xformat}
-      yformat={data.waveform.yformat}
     />
     <Navigator imageUrl={data.waveform.imageUrl} />
     <Audio url={data.audio} />

@@ -7,15 +7,20 @@ type tannotation = {
   data: Object,
 }
 
-type taxisinterval = [number, number]
-
-type taxis = Array<taxisinterval>
+type taxis = {
+  unit: "hertz" | "seconds" | "percent",
+  intervals: Array<[number, number]>,
+  format: (x: number) => string,
+}
 
 type tfunctional<T> = T | ((prevState: T) => T)
 
 type tinput = {
   buttons: number,
   alt: boolean,
+  focus: tnullable<SVGSVGElement>,
+  xaxis: tnullable<taxis>,
+  yaxis: tnullable<taxis>,
 }
 
 type tnullable<T> = T | null

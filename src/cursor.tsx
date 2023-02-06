@@ -1,19 +1,43 @@
-import { useCallback, useRef } from "react"
+import { RefObject, useCallback, useRef } from "react"
+import { taxis } from "./types"
 import { useAnimationFrame } from "./hooks"
 import { useSpecviz } from "./specviz"
 import { formatPercent } from "./stringx"
 
+function fscale({ intervals }: taxis, q: number) {
+  if (intervals.length < 2) return -Infinity
+    let ax, ay, bx, by
+    let i = 0
+    while (i < intervals.length - 1) {
+      [ax, ay] = intervals[i];
+      [bx, by] = intervals[i + 1]
+      if (q <= bx) {
+        return ay + (by - ay) * (q - ax) / (bx - ax)
+      }
+      i += 1
+    }
+    return -Infinity
+}
+
 function Cursor(props: {
-  fx: (x: number) => string,
-  fy: (y: number) => string,
+  parent: RefObject<SVGGElement>,
+  xaxis: taxis,
+  yaxis: taxis,
 }) {
-  const { fx, fy } = props
+  const { parent, xaxis, yaxis } = props
   const { input, mouseup, zoom, scroll } = useSpecviz()
   const svgLayer = useRef<SVGGElement>(null)
   const svgXline = useRef<SVGLineElement>(null)
   const svgYline = useRef<SVGLineElement>(null)
   const svgText = useRef<SVGTextElement>(null)
-
+  const fx = useCallback(
+    (x: number) => xaxis.format(fscale(xaxis, x)),
+    [xaxis]
+  )
+  const fy = useCallback(
+    (y: number) => yaxis.format(fscale(yaxis, y)),
+    [yaxis]
+  )
   useAnimationFrame(useCallback(
     () => {
       const layer = svgLayer.current!
@@ -24,10 +48,25 @@ function Cursor(props: {
         const rx = (mouseup.x * zoom.x) - scroll.x
         const ry = (mouseup.y * zoom.y) - scroll.y
         layer.setAttribute("display", "inline")
-        xline.setAttribute("x1", formatPercent(rx))
-        xline.setAttribute("x2", formatPercent(rx))
-        yline.setAttribute("y1", formatPercent(ry))
-        yline.setAttribute("y2", formatPercent(ry))
+        // x line
+        if (parent.current == input.focus || props.xaxis == input.xaxis) {
+          xline.setAttribute("x1", formatPercent(rx))
+          xline.setAttribute("x2", formatPercent(rx))
+          xline.setAttribute("display", "inline")
+        }
+        else {
+          xline.setAttribute("display", "none")
+        }
+        // y line
+        if (parent.current == input.focus || props.yaxis == input.yaxis) {
+          yline.setAttribute("y1", formatPercent(ry))
+          yline.setAttribute("y2", formatPercent(ry))
+          yline.setAttribute("display", "inline")
+        }
+        else {
+          yline.setAttribute("display", "none")
+        }
+        // text
         text.textContent = `(${fx(rx)}, ${fy(1 - ry)})`
         if (mouseup.x < .5) {
           text.setAttribute("x", formatPercent(rx))
