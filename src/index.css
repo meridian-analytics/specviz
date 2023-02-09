@@ -1,13 +1,31 @@
+/* user styles */
 body {
   background-color: #eee;
 }
 
-body > #root div ~ div {
+#app {
+  display: flex;
+  justify-content: space-between;
+}
+
+#app main {
+  width: 60%;
+}
+
+#app main div ~ div {
   margin-top: 1rem;
 }
 
+#app aside {
+  width: 35%;
+  padding: 0 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #000;
+}
+
+/* specviz defaults */
 .visualization {
-  height: 250px;
+  height: 200px;
   background-color: #FBF1A9;
   border-radius: 0.25rem;
   border: 1px solid #000;
@@ -33,7 +51,7 @@ body > #root div ~ div {
 
 .visualization .playhead {
   stroke: white;
-  stroke-width: 0.3%;
+  stroke-width: 0.2%;
   mix-blend-mode: difference;
 }
 
@@ -44,7 +62,7 @@ body > #root div ~ div {
 
 .cursor-x, .cursor-y {
   stroke: white;
-  stroke-width: .3%;
+  stroke-width: .2%;
   mix-blend-mode: difference;
 }
 
@@ -56,7 +74,7 @@ body > #root div ~ div {
 }
 
 .navigator {
-  height: 50px;
+  height: 30px;
   cursor: crosshair;
   background-color: #FBF1A9;
   border-radius: 0.25rem;

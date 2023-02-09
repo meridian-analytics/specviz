@@ -78,34 +78,43 @@ const segment2: tsegment = {
 function MyComponent() {
   const [data, setData] = useState(segment1)
   return <Specviz duration={data.duration}>
-    <h3>specviz-react</h3>
-    <button
-      type="button"
-      onClick={_ => setData(segment1)}
-      children={segment1.audio}
-    />
-    <button
-      type="button"
-      onClick={_ => setData(segment2)}
-      children={segment2.audio}
-    />
-    <p>{data.audio} ({data.duration} seconds)</p>
-    <Navigator imageUrl={data.spectrogram.imageUrl} />
-    <Visualization
-      imageUrl={data.spectrogram.imageUrl}
-      xaxis={data.xaxis}
-      yaxis={data.spectrogram.yaxis}
-    />
-    <Visualization
-      imageUrl={data.waveform.imageUrl}
-      xaxis={data.xaxis}
-      yaxis={data.waveform.yaxis}
-    />
-    <Navigator imageUrl={data.waveform.imageUrl} />
     <Audio url={data.audio} />
-    <MyAudioControls />
     <MyKeybinds />
-    <MyForm />
+    <h3>specviz-react</h3>
+    <div className="segments">
+      <button
+        type="button"
+        onClick={_ => setData(segment1)}
+        children={segment1.audio}
+      />
+      <button
+        type="button"
+        onClick={_ => setData(segment2)}
+        children={segment2.audio}
+      />
+      <p>{data.audio} ({data.duration} seconds)</p>
+    </div>
+    <div id="app">
+      <main>
+        <Navigator imageUrl={data.spectrogram.imageUrl} />
+        <Visualization
+          imageUrl={data.spectrogram.imageUrl}
+          xaxis={data.xaxis}
+          yaxis={data.spectrogram.yaxis}
+        />
+        <Visualization
+          imageUrl={data.waveform.imageUrl}
+          xaxis={data.xaxis}
+          yaxis={data.waveform.yaxis}
+        />
+        <Navigator imageUrl={data.waveform.imageUrl} />
+        <MyAudioControls />
+      </main>
+      <aside>
+        <p>annotations</p>
+        <MyForm />
+      </aside>
+    </div>
   </Specviz>
 }
 
