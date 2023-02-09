@@ -2,7 +2,7 @@ import { taxis, tselection } from "./types"
 import { useCallback, useRef } from "react"
 import { useClickRect, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
-import { trect, intersectPoint } from "./rect"
+import { trect, intersectPoint, intersectRect } from "./rect"
 import { magnitude } from "./vector2"
 import { randomBytes } from "./stringx"
 import Playhead from "./playhead"
@@ -118,15 +118,28 @@ function Visualization(props: {
             switch (toolState) {
               case "annotate": // create annotation
                 const id = randomBytes(10)
-                setAnnotations(a =>
-                  new Map(a).set(id, {
-                    id,
-                    rect,
-                    data: {},
-                  })
-                )
+                const newAnnotation = {
+                  id,
+                  rect,
+                  data: {},
+                }
+                setAnnotations(a => {
+                  return new Map(a).set(id, newAnnotation)
+                })
+                setSelection(s => {
+                  return new Set([newAnnotation])
+                })
                 break
-              case "select": // todo: select annotations
+              case "select": // select annotations
+                setSelection(() => {
+                  const newSelection: tselection = new Set()
+                  for (const a of annotations.values()) {
+                    if (intersectRect(a.rect, rect)) {
+                      newSelection.add(a)
+                    }
+                  }
+                  return newSelection
+                })
                 break
               case "zoom": // zoom to selection
                 zoom.x = 1 / rect.width
