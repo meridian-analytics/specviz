@@ -35,7 +35,7 @@
 - [x] cursor: hold alt to render cursor
 - [x] cursor: coordinate pair
 - [x] cursor: nonlinear axes
-- [ ] cursor: 1-dimensional variant
+- [x] cursor: 1-dimensional variant
 - [x] audio: playback
 - [x] audio: resume at playhead
 - [x] audio: preserve playhead on unmount
@@ -44,10 +44,12 @@
 - [ ] annotation: playback region
 - [ ] annotation: playback filter
 - [x] annotation: drag selection preview
-- [ ] annotation: click to select
+- [x] annotation: click to select
+- [x] annotation: click-drag to select mulitple
+- [x] annotation: ctrl-click to add/remove selection
 - [ ] annotation: 1-dimensional variant
 - [x] tools: annotation tool
-- [ ] tools: selection tool
+- [x] tools: selection tool
 - [x] tools: zoom tool
 - [x] tools: pan tool
 - [x] navigator: show visible region
@@ -63,3 +65,4 @@
 - [x] ux: 2-dimensional zoom
 - [x] ux: declarative audio/visual loading
 - [x] ux: zoom center on cursor
+- [ ] bug: audio sometimes does not stop on unmount
