@@ -18,6 +18,7 @@ type tfunctional<T> = T | ((prevState: T) => T)
 type tinput = {
   buttons: number,
   alt: boolean,
+  ctrl: boolean,
   focus: tnullable<SVGSVGElement>,
   xaxis: tnullable<taxis>,
   yaxis: tnullable<taxis>,

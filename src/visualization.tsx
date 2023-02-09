@@ -92,14 +92,26 @@ function Visualization(props: {
               case "annotate": // noop
                 break
               case "select": // select annotation
-                setSelection(() => {
-                  const newSelection: tselection = new Set()
-                  for (const a of annotations.values()) {
-                    if (intersectPoint(a.rect, mouseup)) {
-                      newSelection.add(a)
+                setSelection(selection => {
+                  if (input.ctrl) {
+                    const newSelection: tselection = new Set(selection)
+                    for (const a of annotations.values()) {
+                      if (intersectPoint(a.rect, mouseup)) {
+                        if (newSelection.has(a)) newSelection.delete(a)
+                        else newSelection.add(a)
+                      }
                     }
+                    return newSelection
                   }
-                  return newSelection
+                  else {
+                    const newSelection: tselection = new Set()
+                    for (const a of annotations.values()) {
+                      if (intersectPoint(a.rect, mouseup)) {
+                        newSelection.add(a)
+                      }
+                    }
+                    return newSelection
+                  }
                 })
                 break
               case "zoom": // increment zoom to point

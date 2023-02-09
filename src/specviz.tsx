@@ -11,7 +11,7 @@ const NOOP = () => {}
 const SpecvizContext = createContext<tcontext>({
   annotations: new Map(),
   duration: 0,
-  input: { buttons: 0, alt: false, focus: null, xaxis: null, yaxis: null },
+  input: { buttons: 0, alt: false, ctrl: false, focus: null, xaxis: null, yaxis: null },
   mousedown: { x: 0, y: 0 },
   mouseup: { x: 0, y: 0 },
   scroll: { x: 0, y: 0 },
@@ -47,6 +47,7 @@ function Specviz(props: {
     () => {
       let buttons = 0
       let alt = false
+      let ctrl = false
       let focus: tnullable<SVGSVGElement> = null
       let xaxis: tnullable<taxis> = null
       let yaxis: tnullable<taxis> = null
@@ -55,6 +56,8 @@ function Specviz(props: {
         set buttons(v) { buttons = v },
         get alt() { return alt },
         set alt(v) { alt = v },
+        get ctrl() { return ctrl },
+        set ctrl(v) { ctrl = v },
         get focus() { return focus },
         set focus(v) { focus = v },
         get xaxis() { return xaxis },
@@ -119,10 +122,16 @@ function Specviz(props: {
         if (e.key == "Alt") {
           input.alt = true
         }
+        else if (e.key == "Control") {
+          input.ctrl = true
+        }
       }
       function onKeyUp(e: KeyboardEvent) {
         if (e.key == "Alt") {
           input.alt = false
+        }
+        else if (e.key == "Control") {
+          input.ctrl = false
         }
       }
       window.addEventListener("keydown", onKeyDown)
