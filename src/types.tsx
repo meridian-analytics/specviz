@@ -36,7 +36,7 @@ type tcontext = {
   zoom: tvector2,
   playhead: tvector2,
   selection: tselection,
-  tool: ttool,
+  command: tcommand,
   toolState: ttoolstate,
   transport: ttransport,
   transportState: ttransportstate,
@@ -48,11 +48,12 @@ type tcontext = {
 
 type tselection = Set<tannotation>
 
-type ttool = {
+type tcommand = {
   annotate: () => void,
   select: () => void,
   zoom: () => void,
   pan: () => void,
+  delete: () => void,
 }
 
 type ttoolstate = "annotate" | "select" | "zoom" | "pan"
@@ -75,7 +76,7 @@ export type {
   tnullable,
   tcontext,
   tselection,
-  ttool,
+  tcommand,
   ttoolstate,
   ttransportstate,
   ttransport,

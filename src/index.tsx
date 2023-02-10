@@ -119,33 +119,33 @@ function MyComponent() {
 }
 
 function MyAudioControls() {
-  const { tool, toolState, transport, transportState } = useSpecviz()
+  const { command, toolState, transport, transportState } = useSpecviz()
   return <p>
     <button
       title="A"
       type="button"
-      onClick={_ => tool.annotate()}
+      onClick={_ => command.annotate()}
       className={toolState === "annotate" ? "active" : ""}
       children="Annotate"
     />
     <button
       title="S"
       type="button"
-      onClick={_ => tool.select()}
+      onClick={_ => command.select()}
       className={toolState === "select" ? "active" : ""}
       children="Select"
     />
     <button
       title="D"
       type="button"
-      onClick={_ => tool.zoom()}
+      onClick={_ => command.zoom()}
       className={toolState === "zoom" ? "active" : ""}
       children="Zoom"
     />
     <button
       title="F"
       type="button"
-      onClick={_ => tool.pan()}
+      onClick={_ => command.pan()}
       className={toolState === "pan" ? "active" : ""}
       children="Pan"
     />
@@ -168,12 +168,13 @@ function MyAudioControls() {
 }
 
 function MyKeybinds() {
-  const { tool, transport } = useSpecviz()
+  const { command, transport } = useSpecviz()
   return <Bindings>
-    <Keypress bind="a" onKeyDown={tool.annotate} />
-    <Keypress bind="s" onKeyDown={tool.select} />
-    <Keypress bind="d" onKeyDown={tool.zoom} />
-    <Keypress bind="f" onKeyDown={tool.pan} />
+    <Keypress bind="Backspace" onKeyDown={command.delete} />
+    <Keypress bind="a" onKeyDown={command.annotate} />
+    <Keypress bind="s" onKeyDown={command.select} />
+    <Keypress bind="d" onKeyDown={command.zoom} />
+    <Keypress bind="f" onKeyDown={command.pan} />
     <Keypress bind="z" onKeyDown={transport.play} />
     <Keypress bind="x" onKeyDown={transport.stop} />
   </Bindings>

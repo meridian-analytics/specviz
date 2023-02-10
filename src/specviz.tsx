@@ -1,4 +1,4 @@
-import type { tannotation, taxis, tnullable, ttool, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
+import type { tannotation, taxis, tnullable, tcommand, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
 import type { tvector2 } from "./vector2"
 import { MouseEvent, ReactNode, RefObject, createContext, useContext, useEffect, useMemo, useState } from "react"
 import { clamp } from "./mathx"
@@ -18,11 +18,12 @@ const SpecvizContext = createContext<tcontext>({
   zoom: { x: 0, y: 0 },
   playhead: { x: 0, y: 0 },
   selection: new Set(),
-  tool: {
-    annotate: () => { console.error("tool.annotate called outside of Specviz context") },
-    select: () => { console.error("tool.select called outside of Specviz context") },
-    zoom: () => { console.error("tool.zoom called outside of Specviz context") },
-    pan: () => { console.error("tool.pan called outside of Specviz context") },
+  command: {
+    annotate: () => { console.error("command.annotate called outside of Specviz context") },
+    select: () => { console.error("command.select called outside of Specviz context") },
+    zoom: () => { console.error("command.zoom called outside of Specviz context") },
+    pan: () => { console.error("command.pan called outside of Specviz context") },
+    delete: () => { console.error("command.delete called outside of Specviz context") },
   },
   toolState: "annotate",
   transport: {
@@ -95,14 +96,22 @@ function Specviz(props: {
     [zoom]
   )
 
-  const tool = useMemo<ttool>(
+  const command = useMemo<tcommand>(
     () => ({
       annotate: () => setToolState("annotate"),
       select: () => setToolState("select"),
       zoom: () => setToolState("zoom"),
       pan: () => setToolState("pan"),
+      delete: () => {
+        setAnnotations(a => {
+          const result = new Map(a)
+          for (const a of selection)
+            result.delete(a.id)
+          return result
+        })
+      }
     }),
-    []
+    [selection]
   )
 
   const [toolState, setToolState] = useState<ttoolstate>("annotate")
@@ -154,7 +163,7 @@ function Specviz(props: {
     zoom,
     playhead: useMutableVector2(),
     selection: selection,
-    tool,
+    command,
     toolState,
     transport,
     transportState,
