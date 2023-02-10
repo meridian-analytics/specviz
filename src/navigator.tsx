@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react"
-import { useClickRect, useSpecviz, useWheel } from "./specviz"
+import { useMouse, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
 import { magnitude } from "./vector2"
 import Playhead from "./playhead"
@@ -10,7 +10,7 @@ const NOOP = () => {}
 function Navigator(props: {
   imageUrl: string,
 }) {
-  const { annotations, input, mouseup, scroll, zoom, toolState, transportState } = useSpecviz()
+  const { annotations, input, mouseup, mouseRect, scroll, zoom, toolState, transportState } = useSpecviz()
   const containerRef = useRef<SVGSVGElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
@@ -32,40 +32,30 @@ function Navigator(props: {
     [maskRef, scroll, zoom]
   ))
 
-  const onMouse = useClickRect({
+  const onMouse = useMouse({
     onContextMenu: NOOP,
     onMouseDown: NOOP,
     onMouseEnter: NOOP,
     onMouseLeave: NOOP,
     onMouseMove: useCallback(
-      (e, rect) => {
+      (e) => {
         if (input.buttons & 1) {
-          switch (toolState) {
-            case "annotate":
-            case "select":
-              // noop
-              break
-            case "pan":
-              scroll.x += e.movementX / e.currentTarget.clientWidth * zoom.x
-              scroll.y += e.movementY / e.currentTarget.clientHeight * zoom.y
-              break
-            case "zoom":
-              break
-          }
+          scroll.x += e.movementX / e.currentTarget.clientWidth * zoom.x
+          scroll.y += e.movementY / e.currentTarget.clientHeight * zoom.y
         }
       },
       [input, scroll, zoom, toolState]
     ),
     onMouseUp: useCallback(
-      (e, rect) => {
+      (e) => {
         if (input.buttons & 1) {
-          if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
+          if (magnitude({x: mouseRect.width, y: mouseRect.height}) < .01) { // click
             switch (toolState) {
               case "annotate":
               case "select":
               case "pan":
-                scroll.x = mouseup.x * zoom.x - 0.5
-                scroll.y = mouseup.y * zoom.y - 0.5
+                scroll.x = mouseup.rel.x * zoom.x - 0.5
+                scroll.y = mouseup.rel.y * zoom.y - 0.5
                 break
               case "zoom":
                 zoom.x = 1
@@ -75,23 +65,9 @@ function Navigator(props: {
                 break
             }
           }
-          else { // drag
-            switch (toolState) {
-              case "annotate":
-              case "select":
-              case "pan":
-                break
-              case "zoom":
-                zoom.x = 1 / rect.width
-                zoom.y = 1 / rect.height
-                scroll.x = -0.5 + (rect.x + rect.width / 2) * zoom.x
-                scroll.y = -0.5 + (rect.y + rect.height / 2) * zoom.y
-                break
-            }
-          }
         }
       },
-      [input, mouseup, scroll, zoom, toolState]
+      [input, mouseup, mouseRect, scroll, zoom, toolState]
     ),
   })
 

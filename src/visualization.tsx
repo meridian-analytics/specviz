@@ -1,8 +1,8 @@
 import { taxis, tselection } from "./types"
 import { useCallback, useRef } from "react"
-import { useClickRect, useSpecviz, useWheel } from "./specviz"
+import { useMouse, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
-import { trect, intersectPoint, intersectRect } from "./rect"
+import { intersectPoint, intersectRect } from "./rect"
 import { magnitude } from "./vector2"
 import { randomBytes } from "./stringx"
 import Playhead from "./playhead"
@@ -17,11 +17,10 @@ function Visualization(props: {
   xaxis: taxis,
   yaxis: taxis,
 }) {
-  const { input, mouseup, scroll, zoom } = useSpecviz()
+  const { input, mouseup, mouseRect, scroll, zoom } = useSpecviz()
   const { toolState, transportState, transport } = useSpecviz()
   const { annotations, setAnnotations } = useSpecviz()
   const { setSelection } = useSpecviz()
-  const selectionRect = useRef<trect>(NOSELECTION)
   const svgRoot = useRef<SVGSVGElement>(null)
   const svgLayer = useRef<SVGSVGElement>(null)
   const svgSelection = useRef<SVGRectElement>(null)
@@ -30,20 +29,29 @@ function Visualization(props: {
     () => {
       const layer = svgLayer.current!
       const selection = svgSelection.current!
-      const rect = selectionRect.current!
       layer.setAttribute(
         "transform",
         `translate(${-scroll.x}, ${-scroll.y}) scale(${zoom.x}, ${zoom.y})`
       )
-      selection.setAttribute("x", String(rect.x))
-      selection.setAttribute("y", String(rect.y))
-      selection.setAttribute("width", String(rect.width))
-      selection.setAttribute("height", String(rect.height))
+      switch (toolState) {
+        case "annotate":
+        case "select":
+        case "zoom":
+          selection.setAttribute("x", String(mouseRect.x))
+          selection.setAttribute("y", String(mouseRect.y))
+          selection.setAttribute("width", String(mouseRect.width))
+          selection.setAttribute("height", String(mouseRect.height))
+          selection.setAttribute("display", "inline")
+          break
+        case "pan":
+          selection.setAttribute("display", "none")
+          break
+      }
     },
-    [svgLayer, svgSelection, scroll, zoom, selectionRect]
+    [svgLayer, svgSelection, scroll, zoom, mouseRect, toolState]
   ))
 
-  const onMouse = useClickRect({
+  const onMouse = useMouse({
     onContextMenu: NOOP,
     onMouseDown: NOOP,
     onMouseEnter: useCallback(
@@ -61,20 +69,14 @@ function Visualization(props: {
       []
     ),
     onMouseMove: useCallback(
-      (e, rect) => {
+      (e) => {
         if (input.buttons & 1) {
           switch (toolState) {
             case "annotate":
-              selectionRect.current = rect
-              break
             case "select":
-              selectionRect.current = rect
-              break
             case "zoom":
-              selectionRect.current = rect
               break
             case "pan": // drag pan
-              selectionRect.current = NOSELECTION
               scroll.x -= e.movementX / e.currentTarget.clientWidth
               scroll.y -= e.movementY / e.currentTarget.clientHeight
               break
@@ -84,10 +86,9 @@ function Visualization(props: {
       [input, scroll, toolState]
     ),
     onMouseUp: useCallback(
-      (e, rect) => {
-        selectionRect.current = NOSELECTION
+      (e) => {
         if (input.buttons & 1) {
-          if (magnitude({x: rect.width, y: rect.height}) < .01) { // click
+          if (magnitude({x: mouseRect.width, y: mouseRect.height}) < .01) { // click
             switch (toolState) {
               case "annotate": // noop
                 break
@@ -96,7 +97,7 @@ function Visualization(props: {
                   if (input.ctrl) {
                     const newSelection: tselection = new Set(selection)
                     for (const a of annotations.values()) {
-                      if (intersectPoint(a.rect, mouseup)) {
+                      if (intersectPoint(a.rect, mouseup.abs)) {
                         if (newSelection.has(a)) newSelection.delete(a)
                         else newSelection.add(a)
                       }
@@ -106,7 +107,7 @@ function Visualization(props: {
                   else {
                     const newSelection: tselection = new Set()
                     for (const a of annotations.values()) {
-                      if (intersectPoint(a.rect, mouseup)) {
+                      if (intersectPoint(a.rect, mouseup.abs)) {
                         newSelection.add(a)
                       }
                     }
@@ -115,12 +116,12 @@ function Visualization(props: {
                 })
                 break
               case "zoom": // increment zoom to point
-                const mx = (mouseup.x * zoom.x) - scroll.x
-                const my = (mouseup.y * zoom.y) - scroll.y
+                const mx = (mouseup.abs.x * zoom.x) - scroll.x
+                const my = (mouseup.abs.y * zoom.y) - scroll.y
                 zoom.x += 0.5
                 zoom.y += 0.5
-                scroll.x = (mouseup.x * zoom.x) - mx
-                scroll.y = (mouseup.y * zoom.y) - my
+                scroll.x = (mouseup.abs.x * zoom.x) - mx
+                scroll.y = (mouseup.abs.y * zoom.y) - my
                 break
               case "pan": // noop
                 break
@@ -132,7 +133,7 @@ function Visualization(props: {
                 const id = randomBytes(10)
                 const newAnnotation = {
                   id,
-                  rect,
+                  rect: {...mouseRect},
                   data: {},
                 }
                 setAnnotations(a => {
@@ -146,7 +147,7 @@ function Visualization(props: {
                 setSelection(() => {
                   const newSelection: tselection = new Set()
                   for (const a of annotations.values()) {
-                    if (intersectRect(a.rect, rect)) {
+                    if (intersectRect(a.rect, mouseRect)) {
                       newSelection.add(a)
                     }
                   }
@@ -154,10 +155,10 @@ function Visualization(props: {
                 })
                 break
               case "zoom": // zoom to selection
-                zoom.x = 1 / rect.width
-                zoom.y = 1 / rect.height
-                scroll.x = -0.5 + (rect.x + rect.width / 2) * zoom.x
-                scroll.y = -0.5 + (rect.y + rect.height / 2) * zoom.y
+                zoom.x = 1 / mouseRect.width
+                zoom.y = 1 / mouseRect.height
+                scroll.x = -0.5 + (mouseRect.x + mouseRect.width / 2) * zoom.x
+                scroll.y = -0.5 + (mouseRect.y + mouseRect.height / 2) * zoom.y
                 break
               case "pan": // noop
                 break
@@ -165,10 +166,10 @@ function Visualization(props: {
           }
         }
         if (input.buttons & 2) { // jump playhead to point
-          transport.seek(mouseup.x)
+          transport.seek(mouseup.abs.x)
         }
       },
-      [input, mouseup, scroll, zoom, toolState, transport]
+      [input, mouseup, mouseRect, scroll, zoom, toolState, transport]
     ),
   })
 

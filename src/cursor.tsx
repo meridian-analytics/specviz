@@ -45,13 +45,11 @@ function Cursor(props: {
       const yline = svgYline.current!
       const text = svgText.current!
       if (input.alt) {
-        const rx = (mouseup.x * zoom.x) - scroll.x
-        const ry = (mouseup.y * zoom.y) - scroll.y
         layer.setAttribute("display", "inline")
         // x line
         if (parent.current == input.focus || props.xaxis == input.xaxis) {
-          xline.setAttribute("x1", formatPercent(rx))
-          xline.setAttribute("x2", formatPercent(rx))
+          xline.setAttribute("x1", formatPercent(mouseup.rel.x))
+          xline.setAttribute("x2", formatPercent(mouseup.rel.x))
           xline.setAttribute("display", "inline")
         }
         else {
@@ -59,29 +57,29 @@ function Cursor(props: {
         }
         // y line
         if (parent.current == input.focus || props.yaxis == input.yaxis) {
-          yline.setAttribute("y1", formatPercent(ry))
-          yline.setAttribute("y2", formatPercent(ry))
+          yline.setAttribute("y1", formatPercent(mouseup.rel.y))
+          yline.setAttribute("y2", formatPercent(mouseup.rel.y))
           yline.setAttribute("display", "inline")
         }
         else {
           yline.setAttribute("display", "none")
         }
         // text
-        text.textContent = `(${fx(rx)}, ${fy(1 - ry)})`
-        if (mouseup.x < .5) {
-          text.setAttribute("x", formatPercent(rx))
+        text.textContent = `(${fx(mouseup.rel.x)}, ${fy(1 - mouseup.rel.y)})`
+        if (mouseup.abs.x < .5) {
+          text.setAttribute("x", formatPercent(mouseup.rel.x))
           text.setAttribute("text-anchor", "start")
         }
         else {
-          text.setAttribute("x", formatPercent(rx))
+          text.setAttribute("x", formatPercent(mouseup.rel.x))
           text.setAttribute("text-anchor", "end")
         }
-        if (mouseup.y < .5) {
-          text.setAttribute("y", formatPercent(ry + 0.01))
+        if (mouseup.abs.y < .5) {
+          text.setAttribute("y", formatPercent(mouseup.rel.y + 0.01))
           text.setAttribute("dominant-baseline", "hanging")
         }
         else {
-          text.setAttribute("y", formatPercent(ry - 0.01))
+          text.setAttribute("y", formatPercent(mouseup.rel.y - 0.01))
           text.setAttribute("dominant-baseline", "text-top")
         }
       }

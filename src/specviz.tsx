@@ -1,4 +1,4 @@
-import type { tannotation, taxis, tnullable, tcommand, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
+import type { tannotation, taxis, tnullable, tcommand, tcoord, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
 import type { tvector2 } from "./vector2"
 import { MouseEvent, ReactNode, RefObject, createContext, useContext, useEffect, useMemo, useState } from "react"
 import { clamp } from "./mathx"
@@ -12,8 +12,9 @@ const SpecvizContext = createContext<tcontext>({
   annotations: new Map(),
   duration: 0,
   input: { buttons: 0, alt: false, ctrl: false, focus: null, xaxis: null, yaxis: null },
-  mousedown: { x: 0, y: 0 },
-  mouseup: { x: 0, y: 0 },
+  mousedown: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
+  mouseup: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
+  mouseRect: { x: 0, y: 0, width: 0, height: 0 },
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
   playhead: { x: 0, y: 0 },
@@ -109,6 +110,7 @@ function Specviz(props: {
             result.delete(a.id)
           return result
         })
+        setSelection(new Set())
       }
     }),
     [selection]
@@ -157,8 +159,9 @@ function Specviz(props: {
     annotations,
     duration: props.duration,
     input,
-    mousedown: useMutableVector2(),
-    mouseup: useMutableVector2(),
+    mousedown: useMutableCoord(),
+    mouseup: useMutableCoord(),
+    mouseRect: useMutableRect(),
     scroll,
     zoom,
     playhead: useMutableVector2(),
@@ -180,24 +183,15 @@ function useSpecviz() {
   return useContext(SpecvizContext)
 }
 
-function fromMouse(e: MouseEvent<SVGSVGElement>, scroll:tvector2, zoom: tvector2): tvector2 {
-  const elem = e.currentTarget
-  const viewport = elem.getBoundingClientRect()
-  return {
-    x: clamp(((e.clientX - viewport.x) / viewport.width + scroll.x) / zoom.x, 0, 1),
-    y: clamp(((e.clientY - viewport.y) / viewport.height + scroll.y) / zoom.y, 0, 1),
-  }
-}
-
-function useClickRect(listeners: {
+function useMouse(listeners: {
   onMouseDown: (e: MouseEvent<SVGSVGElement>) => void,
-  onMouseMove: (e: MouseEvent<SVGSVGElement>, rect: trect) => void,
-  onMouseUp: (e: MouseEvent<SVGSVGElement>, rect: trect) => void,
+  onMouseMove: (e: MouseEvent<SVGSVGElement>) => void,
+  onMouseUp: (e: MouseEvent<SVGSVGElement>) => void,
   onMouseEnter: (e: MouseEvent<SVGSVGElement>) => void,
   onMouseLeave: (e: MouseEvent<SVGSVGElement>) => void,
   onContextMenu: (e: MouseEvent<SVGSVGElement>) => void,
 }) {
-  const { input, mousedown, mouseup, scroll, zoom } = useSpecviz()
+  const { input, mousedown, mouseup, mouseRect, scroll, zoom } = useSpecviz()
   return useMemo(
     () => {
       return {
@@ -208,29 +202,34 @@ function useClickRect(listeners: {
         onMouseDown(e: MouseEvent<SVGSVGElement>) {
           e.preventDefault() // disable native drag
           input.buttons = e.buttons
-          const pt = fromMouse(e, scroll, zoom)
-          mousedown.x = pt.x
-          mousedown.y = pt.y
-          mouseup.x = pt.x
-          mouseup.y = pt.y
           listeners.onMouseDown(e)
         },
         onMouseMove(e: MouseEvent<SVGSVGElement>) {
-          const pt = fromMouse(e, scroll, zoom)
+          const elem = e.currentTarget
+          const viewport = elem.getBoundingClientRect()
+          const x = (e.clientX - viewport.x) / viewport.width
+          const y = (e.clientY - viewport.y) / viewport.height
           if (input.buttons & 1) {
-            mouseup.x = pt.x
-            mouseup.y = pt.y
+            mouseup.rel.x = x
+            mouseup.rel.y = y
+            mouseup.abs.x = (x + scroll.x) / zoom.x
+            mouseup.abs.y = (y + scroll.y) / zoom.y
           }
           else {
-            mousedown.x = pt.x
-            mousedown.y = pt.y
-            mouseup.x = pt.x
-            mouseup.y = pt.y
+            mousedown.rel.x = mouseup.rel.x = x
+            mousedown.rel.y = mouseup.rel.y = y
+            mousedown.abs.x = mouseup.abs.x = (x + scroll.x) / zoom.x
+            mousedown.abs.y = mouseup.abs.y = (y + scroll.y) / zoom.y
           }
-          listeners.onMouseMove(e, fromPoints(mousedown, mouseup))
+          const rect = fromPoints(mousedown.abs, mouseup.abs)
+          mouseRect.x = rect.x
+          mouseRect.y = rect.y
+          mouseRect.width = rect.width
+          mouseRect.height = rect.height
+          listeners.onMouseMove(e)
         },
         onMouseUp(e: MouseEvent<SVGSVGElement>) {
-          listeners.onMouseUp(e, fromPoints(mousedown, mouseup))
+          listeners.onMouseUp(e)
           input.buttons = 0
         },
         onMouseEnter(e: MouseEvent<SVGSVGElement>) {
@@ -238,9 +237,9 @@ function useClickRect(listeners: {
           listeners.onMouseEnter(e)
         },
         onMouseLeave(e: MouseEvent<SVGSVGElement>) {
+          listeners.onMouseLeave(e)
           input.buttons = 0
           input.focus = null
-          listeners.onMouseLeave(e)
         },
       }
     },
@@ -269,6 +268,48 @@ function useMutableVector2() {
   )
 }
 
+function useMutableCoord() {
+  return useMemo<tcoord>(
+    () => {
+      let absx = 0, absy = 0, relx = 0, rely = 0
+      return {
+        abs: {
+          get x() { return absx },
+          set x(v) { absx = v },
+          get y() { return absy },
+          set y(v) { absy = v },
+        },
+        rel: {
+          get x() { return relx },
+          set x(v) { relx = v },
+          get y() { return rely },
+          set y(v) { rely = v },
+        },
+      }
+    },
+    []
+  )
+}
+
+function useMutableRect() {
+  return useMemo<trect>(
+    () => {
+      let x = 0, y = 0, width = 0, height = 0
+      return {
+        get x() { return x },
+        get y() { return y },
+        set x(v) { x = v },
+        set y(v) { y = v },
+        get width() { return width },
+        set width(v) { width = v },
+        get height() { return height },
+        set height(v) { height = v },
+      }
+    },
+    []
+  )
+}
+
 // react uses passive event listeners by default
 // to stop propagation, use a non-passive listener
 // https://stackoverflow.com/a/67258046
@@ -282,12 +323,10 @@ function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
         const dx = e.deltaX / elem.clientWidth
         const dy = e.deltaY / elem.clientHeight
         if (e.altKey) {
-          const mx = (mousedown.x * zoom.x) - scroll.x
-          const my = (mousedown.y * zoom.y) - scroll.y
           zoom.x = zoom.x + dx * direction
           zoom.y = zoom.y + dy * direction
-          scroll.x = (mousedown.x * zoom.x) - mx
-          scroll.y = (mousedown.y * zoom.y) - my
+          scroll.x = (mousedown.abs.x * zoom.x) - mousedown.rel.x
+          scroll.y = (mousedown.abs.y * zoom.y) - mousedown.rel.y
         }
         else {
           scroll.x -= dx * direction
@@ -303,4 +342,4 @@ function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
   )
 }
 
-export { Specviz, useClickRect, useSpecviz, useWheel }
+export { Specviz, useMouse, useSpecviz, useWheel }

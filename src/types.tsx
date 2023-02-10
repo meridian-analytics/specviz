@@ -13,6 +13,11 @@ type taxis = {
   format: (x: number) => string,
 }
 
+type tcoord = {
+  abs: tvector2,
+  rel: tvector2,
+}
+
 type tfunctional<T> = T | ((prevState: T) => T)
 
 type tinput = {
@@ -30,8 +35,9 @@ type tcontext = {
   annotations: Map<string, tannotation>,
   duration: number,
   input: tinput,
-  mousedown: tvector2,
-  mouseup: tvector2,
+  mousedown: tcoord,
+  mouseup: tcoord,
+  mouseRect: trect,
   scroll: tvector2,
   zoom: tvector2,
   playhead: tvector2,
@@ -71,6 +77,7 @@ type ttransport = {
 export type {
   tannotation,
   taxis,
+  tcoord,
   tfunctional,
   tinput,
   tnullable,
