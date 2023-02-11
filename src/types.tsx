@@ -4,7 +4,9 @@ import type { tvector2 } from "./vector2"
 type tannotation = {
   id: string,
   rect: trect,
-  data: Object,
+  unit: trect,
+  xaxis: taxis,
+  yaxis: taxis,
 }
 
 type taxis = {
@@ -38,6 +40,8 @@ type tcontext = {
   mousedown: tcoord,
   mouseup: tcoord,
   mouseRect: trect,
+  unitDown: tvector2,
+  unitUp: tvector2,
   scroll: tvector2,
   zoom: tvector2,
   playhead: tvector2,

@@ -29,10 +29,12 @@ function Navigator(props: {
         z
       `)
     },
-    [maskRef, scroll, zoom]
+    [maskRef]
   ))
 
   const onMouse = useMouse({
+    xaxis: null,
+    yaxis: null,
     onContextMenu: NOOP,
     onMouseDown: NOOP,
     onMouseEnter: NOOP,
@@ -44,7 +46,7 @@ function Navigator(props: {
           scroll.y += e.movementY / e.currentTarget.clientHeight * zoom.y
         }
       },
-      [input, scroll, zoom, toolState]
+      [toolState]
     ),
     onMouseUp: useCallback(
       (e) => {
@@ -67,7 +69,7 @@ function Navigator(props: {
           }
         }
       },
-      [input, mouseup, mouseRect, scroll, zoom, toolState]
+      [toolState]
     ),
   })
 

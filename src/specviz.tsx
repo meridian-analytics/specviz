@@ -1,8 +1,9 @@
-import type { tannotation, taxis, tnullable, tcommand, tcoord, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
+import type { tannotation, taxis, tnullable, tcommand, tcoord, tinput, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
 import type { tvector2 } from "./vector2"
 import { MouseEvent, ReactNode, RefObject, createContext, useContext, useEffect, useMemo, useState } from "react"
 import { clamp } from "./mathx"
 import { trect, fromPoints } from "./rect"
+import { computeUnit } from "./axis"
 
 const ZOOM_MAX: number = 5
 const STOP: ttransportstate = { type: "stop", progress: 0 }
@@ -15,6 +16,8 @@ const SpecvizContext = createContext<tcontext>({
   mousedown: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
   mouseup: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
   mouseRect: { x: 0, y: 0, width: 0, height: 0 },
+  unitDown: { x: 0, y: 0 },
+  unitUp: { x: 0, y: 0 },
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
   playhead: { x: 0, y: 0 },
@@ -45,7 +48,8 @@ function Specviz(props: {
 }) {
   const [annotations, setAnnotations] = useState<Map<string, tannotation>>(new Map())
   const [selection, setSelection] = useState<Set<tannotation>>(new Set())
-  const input = useMemo(
+
+  const input = useMemo<tinput>(
     () => {
       let buttons = 0
       let alt = false
@@ -94,7 +98,7 @@ function Specviz(props: {
         set y(v) { y = clamp(v, 0, zoom.y - 1) },
       }
     },
-    [zoom]
+    []
   )
 
   const command = useMemo<tcommand>(
@@ -162,6 +166,8 @@ function Specviz(props: {
     mousedown: useMutableCoord(),
     mouseup: useMutableCoord(),
     mouseRect: useMutableRect(),
+    unitDown: useMutableVector2(),
+    unitUp: useMutableVector2(),
     scroll,
     zoom,
     playhead: useMutableVector2(),
@@ -183,7 +189,9 @@ function useSpecviz() {
   return useContext(SpecvizContext)
 }
 
-function useMouse(listeners: {
+function useMouse(props: {
+  xaxis: tnullable<taxis>,
+  yaxis: tnullable<taxis>,
   onMouseDown: (e: MouseEvent<SVGSVGElement>) => void,
   onMouseMove: (e: MouseEvent<SVGSVGElement>) => void,
   onMouseUp: (e: MouseEvent<SVGSVGElement>) => void,
@@ -191,18 +199,18 @@ function useMouse(listeners: {
   onMouseLeave: (e: MouseEvent<SVGSVGElement>) => void,
   onContextMenu: (e: MouseEvent<SVGSVGElement>) => void,
 }) {
-  const { input, mousedown, mouseup, mouseRect, scroll, zoom } = useSpecviz()
+  const { input, mousedown, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } = useSpecviz()
   return useMemo(
     () => {
       return {
         onContextMenu(e: MouseEvent<SVGSVGElement>) {
           e.preventDefault() // disable context menu
-          listeners.onContextMenu(e)
+          props.onContextMenu(e)
         },
         onMouseDown(e: MouseEvent<SVGSVGElement>) {
           e.preventDefault() // disable native drag
           input.buttons = e.buttons
-          listeners.onMouseDown(e)
+          props.onMouseDown(e)
         },
         onMouseMove(e: MouseEvent<SVGSVGElement>) {
           const elem = e.currentTarget
@@ -214,41 +222,51 @@ function useMouse(listeners: {
             mouseup.rel.y = y
             mouseup.abs.x = (x + scroll.x) / zoom.x
             mouseup.abs.y = (y + scroll.y) / zoom.y
+            unitUp.x = computeUnit(props.xaxis, clamp(mouseup.abs.x, 0, 1))
+            unitUp.y = computeUnit(props.yaxis, clamp(mouseup.abs.y, 0, 1))
           }
           else {
             mousedown.rel.x = mouseup.rel.x = x
             mousedown.rel.y = mouseup.rel.y = y
             mousedown.abs.x = mouseup.abs.x = (x + scroll.x) / zoom.x
             mousedown.abs.y = mouseup.abs.y = (y + scroll.y) / zoom.y
+            unitDown.x = unitUp.x = computeUnit(props.xaxis, clamp(mousedown.abs.x, 0, 1))
+            unitDown.y = unitUp.y = computeUnit(props.yaxis, clamp(mousedown.abs.y, 0, 1))
           }
           const rect = fromPoints(mousedown.abs, mouseup.abs)
           mouseRect.x = rect.x
           mouseRect.y = rect.y
           mouseRect.width = rect.width
           mouseRect.height = rect.height
-          listeners.onMouseMove(e)
+          props.onMouseMove(e)
         },
         onMouseUp(e: MouseEvent<SVGSVGElement>) {
-          listeners.onMouseUp(e)
+          props.onMouseUp(e)
           input.buttons = 0
         },
         onMouseEnter(e: MouseEvent<SVGSVGElement>) {
           input.focus = e.currentTarget
-          listeners.onMouseEnter(e)
+          input.xaxis = props.xaxis
+          input.yaxis = props.yaxis
+          props.onMouseEnter(e)
         },
         onMouseLeave(e: MouseEvent<SVGSVGElement>) {
-          listeners.onMouseLeave(e)
+          props.onMouseLeave(e)
           input.buttons = 0
           input.focus = null
+          input.xaxis = null
+          input.yaxis = null
         },
       }
     },
     [
-      listeners.onMouseDown,
-      listeners.onMouseMove,
-      listeners.onMouseUp,
-      listeners.onMouseLeave,
-      listeners.onContextMenu
+      props.xaxis,
+      props.yaxis,
+      props.onMouseDown,
+      props.onMouseMove,
+      props.onMouseUp,
+      props.onMouseLeave,
+      props.onContextMenu
     ]
   )
 }
@@ -338,7 +356,7 @@ function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
         elem.removeEventListener("wheel", onWheel)
       }
     },
-    [ref, scroll, zoom, mousedown, direction]
+    [ref, direction]
   )
 }
 

@@ -1,8 +1,8 @@
-import { taxis, tselection } from "./types"
+import { tannotation, taxis, tselection } from "./types"
 import { useCallback, useRef } from "react"
 import { useMouse, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
-import { intersectPoint, intersectRect } from "./rect"
+import { fromPoints, intersectPoint, intersectRect } from "./rect"
 import { magnitude } from "./vector2"
 import { randomBytes } from "./stringx"
 import Playhead from "./playhead"
@@ -10,14 +10,13 @@ import Annotation from "./annotation"
 import Cursor from "./cursor"
 
 const NOOP = () => {}
-const NOSELECTION = { x: 0, y: 0, width: 0, height: 0 }
 
 function Visualization(props: {
   imageUrl: string,
   xaxis: taxis,
   yaxis: taxis,
 }) {
-  const { input, mouseup, mouseRect, scroll, zoom } = useSpecviz()
+  const { input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } = useSpecviz()
   const { toolState, transportState, transport } = useSpecviz()
   const { annotations, setAnnotations } = useSpecviz()
   const { setSelection } = useSpecviz()
@@ -48,26 +47,16 @@ function Visualization(props: {
           break
       }
     },
-    [svgLayer, svgSelection, scroll, zoom, mouseRect, toolState]
+    [svgLayer, svgSelection, toolState]
   ))
 
   const onMouse = useMouse({
+    xaxis: props.xaxis,
+    yaxis: props.yaxis,
     onContextMenu: NOOP,
     onMouseDown: NOOP,
-    onMouseEnter: useCallback(
-      (e) => {
-        input.xaxis = props.xaxis
-        input.yaxis = props.yaxis
-      },
-      [props.xaxis, props.yaxis]
-    ),
-    onMouseLeave: useCallback(
-      (e) => {
-        input.xaxis = null
-        input.yaxis = null
-      },
-      []
-    ),
+    onMouseEnter: NOOP,
+    onMouseLeave: NOOP,
     onMouseMove: useCallback(
       (e) => {
         if (input.buttons & 1) {
@@ -83,7 +72,7 @@ function Visualization(props: {
           }
         }
       },
-      [input, scroll, toolState]
+      [toolState]
     ),
     onMouseUp: useCallback(
       (e) => {
@@ -116,12 +105,10 @@ function Visualization(props: {
                 })
                 break
               case "zoom": // increment zoom to point
-                const mx = (mouseup.abs.x * zoom.x) - scroll.x
-                const my = (mouseup.abs.y * zoom.y) - scroll.y
                 zoom.x += 0.5
                 zoom.y += 0.5
-                scroll.x = (mouseup.abs.x * zoom.x) - mx
-                scroll.y = (mouseup.abs.y * zoom.y) - my
+                scroll.x = (mouseup.abs.x * zoom.x) - mouseup.rel.x
+                scroll.y = (mouseup.abs.y * zoom.y) - mouseup.rel.y
                 break
               case "pan": // noop
                 break
@@ -131,10 +118,12 @@ function Visualization(props: {
             switch (toolState) {
               case "annotate": // create annotation
                 const id = randomBytes(10)
-                const newAnnotation = {
+                const newAnnotation: tannotation = {
                   id,
                   rect: {...mouseRect},
-                  data: {},
+                  unit: fromPoints(unitDown, unitUp),
+                  xaxis: props.xaxis,
+                  yaxis: props.yaxis,
                 }
                 setAnnotations(a => {
                   return new Map(a).set(id, newAnnotation)
@@ -169,7 +158,7 @@ function Visualization(props: {
           transport.seek(mouseup.abs.x)
         }
       },
-      [input, mouseup, mouseRect, scroll, zoom, toolState, transport]
+      [annotations, toolState, transport]
     ),
   })
 

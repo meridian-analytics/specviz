@@ -35,7 +35,7 @@ const segment1: tsegment = {
     imageUrl: "./spectrogram.png",
     yaxis: {
       unit: "hertz",
-      intervals: [[0, 0], [.5, 2000], [1, 20000]],
+      intervals: [[0, 20000], [.5, 2000], [1, 0] ],
       format: formatHz,
     },
   },
@@ -43,7 +43,7 @@ const segment1: tsegment = {
     imageUrl: "./waveform.png",
     yaxis: {
       unit: "percent",
-      intervals: [[0, -1], [.5, 0], [1, 1]],
+      intervals: [[0, 1], [.5, 0], [1, -1]],
       format: formatPercent,
     },
   }
@@ -61,7 +61,7 @@ const segment2: tsegment = {
     imageUrl: "./spectrogram2.png",
     yaxis: {
       unit: "hertz",
-      intervals: [[0, 0], [.5, 2000], [1, 20000]],
+      intervals: [[0, 20000], [.5, 2000], [1, 0]],
       format: formatHz,
     },
   },
@@ -69,7 +69,7 @@ const segment2: tsegment = {
     imageUrl: "./waveform2.png",
     yaxis: {
       unit: "percent",
-      intervals: [[0, -1], [.5, 0], [1, 1]],
+      intervals: [[0, 1], [.5, 0], [1, -1]],
       format: formatPercent,
     },
   },

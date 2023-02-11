@@ -3,41 +3,19 @@ import { taxis } from "./types"
 import { useAnimationFrame } from "./hooks"
 import { useSpecviz } from "./specviz"
 import { formatPercent } from "./stringx"
-
-function fscale({ intervals }: taxis, q: number) {
-  if (intervals.length < 2) return -Infinity
-    let ax, ay, bx, by
-    let i = 0
-    while (i < intervals.length - 1) {
-      [ax, ay] = intervals[i];
-      [bx, by] = intervals[i + 1]
-      if (q <= bx) {
-        return ay + (by - ay) * (q - ax) / (bx - ax)
-      }
-      i += 1
-    }
-    return -Infinity
-}
+import { formatUnit } from "./axis"
 
 function Cursor(props: {
   parent: RefObject<SVGGElement>,
   xaxis: taxis,
   yaxis: taxis,
 }) {
-  const { parent, xaxis, yaxis } = props
-  const { input, mouseup, zoom, scroll } = useSpecviz()
+  const { parent } = props
+  const { input, mouseup, unitUp } = useSpecviz()
   const svgLayer = useRef<SVGGElement>(null)
   const svgXline = useRef<SVGLineElement>(null)
   const svgYline = useRef<SVGLineElement>(null)
   const svgText = useRef<SVGTextElement>(null)
-  const fx = useCallback(
-    (x: number) => xaxis.format(fscale(xaxis, x)),
-    [xaxis]
-  )
-  const fy = useCallback(
-    (y: number) => yaxis.format(fscale(yaxis, y)),
-    [yaxis]
-  )
   useAnimationFrame(useCallback(
     () => {
       const layer = svgLayer.current!
@@ -65,7 +43,7 @@ function Cursor(props: {
           yline.setAttribute("display", "none")
         }
         // text
-        text.textContent = `(${fx(mouseup.rel.x)}, ${fy(1 - mouseup.rel.y)})`
+        text.textContent = `(${formatUnit(props.xaxis, unitUp.x)}, ${formatUnit(props.yaxis, unitUp.y)})`
         if (mouseup.abs.x < .5) {
           text.setAttribute("x", formatPercent(mouseup.rel.x))
           text.setAttribute("text-anchor", "start")
@@ -87,7 +65,7 @@ function Cursor(props: {
         layer.setAttribute("display", "none")
       }
     },
-    [svgXline, svgYline, mouseup, zoom, scroll, fx, fy]
+    [svgXline, svgYline]
   ))
 
   return <g ref={svgLayer}>
