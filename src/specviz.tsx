@@ -20,7 +20,7 @@ const SpecvizContext = createContext<tcontext>({
   unitUp: { x: 0, y: 0 },
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
-  playhead: { x: 0, y: 0 },
+  playhead: { x: 0, y: 0, width: 0, height: 0 },
   selection: new Set(),
   command: {
     annotate: () => { console.error("command.annotate called outside of Specviz context") },
@@ -32,6 +32,7 @@ const SpecvizContext = createContext<tcontext>({
   toolState: "annotate",
   transport: {
     play: () => { console.error("transport.play called outside of Specviz context") },
+    loop: () => { console.error("transport.loop called outside of Specviz context") },
     stop: () => { console.error("transport.stop called outside of Specviz context") },
     seek: () => { console.error("transport.seek called outside of Specviz context") },
   },
@@ -124,6 +125,7 @@ function Specviz(props: {
 
   const [transport, setTransport] = useState<ttransport>({
     play: NOOP,
+    loop: NOOP,
     stop: NOOP,
     seek: NOOP,
   })
@@ -170,7 +172,7 @@ function Specviz(props: {
     unitUp: useMutableVector2(),
     scroll,
     zoom,
-    playhead: useMutableVector2(),
+    playhead: useMutableRect(),
     selection: selection,
     command,
     toolState,

@@ -1,4 +1,4 @@
-import { taxis } from "./types"
+import { tannotation, taxis } from "./types"
 import { StrictMode, useState } from "react"
 import { createRoot } from "react-dom/client"
 import { Specviz, useSpecviz } from "./specviz"
@@ -112,7 +112,7 @@ function MyComponent() {
       </main>
       <aside>
         <p>annotations</p>
-        <MyForm />
+        <MyAnnotations />
       </aside>
     </div>
   </Specviz>
@@ -180,11 +180,30 @@ function MyKeybinds() {
   </Bindings>
 }
 
-function MyForm() {
+function MyAnnotations() {
   const { selection } = useSpecviz()
-  return <pre>
-    {JSON.stringify(Array.from(selection), null, 2)}
-  </pre>
+  return <>
+    {Array.from(selection).map((annotation, key) =>
+      <MyForm key={key} annotation={annotation} />
+    )}
+  </>
+}
+
+function MyForm(props: { annotation: tannotation }) {
+  const { transport } = useSpecviz()
+  return <>
+    <button
+      type="button"
+      onClick={event => {
+        event.preventDefault()
+        transport.loop(props.annotation)
+      }}
+      children="loop"
+    />
+    <pre>
+      {JSON.stringify(props.annotation, null, 2)}
+    </pre>
+  </>
 }
 
 createRoot(document.getElementById("root") as HTMLElement).render(

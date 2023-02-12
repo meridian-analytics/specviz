@@ -44,7 +44,7 @@ type tcontext = {
   unitUp: tvector2,
   scroll: tvector2,
   zoom: tvector2,
-  playhead: tvector2,
+  playhead: trect,
   selection: tselection,
   command: tcommand,
   toolState: ttoolstate,
@@ -70,10 +70,12 @@ type ttoolstate = "annotate" | "select" | "zoom" | "pan"
 
 type ttransportstate =
   | { type: "play", progress: number, timeRef: number }
+  | { type: "loop", progress: number, timeRef: number, annotation: tannotation }
   | { type: "stop", progress: number }
 
 type ttransport = {
   play: () => void,
+  loop: (annotation: tannotation) => void,
   stop: () => void,
   seek: (progress: number) => void,
 }

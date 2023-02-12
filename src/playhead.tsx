@@ -11,6 +11,8 @@ function Playhead() {
       const line = svgLine.current!
       line.setAttribute("x1", String(playhead.x))
       line.setAttribute("x2", String(playhead.x))
+      line.setAttribute("y1", String(playhead.y))
+      line.setAttribute("y2", String(playhead.y + playhead.height))
     },
     [svgLine]
   ))
