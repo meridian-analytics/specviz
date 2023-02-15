@@ -1,4 +1,4 @@
-import type { tannotation, taxis, tnullable, tcommand, tcoord, tinput, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
+import type { tannotation, taxis, tnullable, tcommand, tcoord, tinput, tselection, ttoolstate, ttransport, ttransportstate, tcontext } from "./types"
 import type { tvector2 } from "./vector2"
 import { MouseEvent, ReactNode, RefObject, createContext, useContext, useEffect, useMemo, useState } from "react"
 import { clamp } from "./mathx"
@@ -20,7 +20,7 @@ const SpecvizContext = createContext<tcontext>({
   unitUp: { x: 0, y: 0 },
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
-  playhead: { x: 0, y: 0, width: 0, height: 0 },
+  playhead: { x: 0, y: 0 },
   selection: new Set(),
   command: {
     annotate: () => { console.error("command.annotate called outside of Specviz context") },
@@ -48,7 +48,7 @@ function Specviz(props: {
   children: ReactNode,
 }) {
   const [annotations, setAnnotations] = useState<Map<string, tannotation>>(new Map())
-  const [selection, setSelection] = useState<Set<tannotation>>(new Set())
+  const [selection, setSelection] = useState<tselection>(new Set())
 
   const input = useMemo<tinput>(
     () => {
@@ -109,14 +109,14 @@ function Specviz(props: {
       zoom: () => setToolState("zoom"),
       pan: () => setToolState("pan"),
       delete: () => {
-        setAnnotations(a => {
-          const result = new Map(a)
-          for (const a of selection)
-            result.delete(a.id)
-          return result
+        setAnnotations(prevState => {
+          const nextState = new Map(prevState)
+          for (const id of selection)
+            nextState.delete(id)
+          return nextState
         })
         setSelection(new Set())
-      }
+      },
     }),
     [selection]
   )
@@ -172,8 +172,8 @@ function Specviz(props: {
     unitUp: useMutableVector2(),
     scroll,
     zoom,
-    playhead: useMutableRect(),
-    selection: selection,
+    playhead: useMutableVector2(),
+    selection,
     command,
     toolState,
     transport,
@@ -358,7 +358,7 @@ function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
         elem.removeEventListener("wheel", onWheel)
       }
     },
-    [ref, direction]
+    [direction]
   )
 }
 

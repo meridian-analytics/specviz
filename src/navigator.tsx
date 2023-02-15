@@ -1,22 +1,27 @@
+import { taxis } from "./types"
 import { useCallback, useRef } from "react"
 import { useMouse, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
 import { magnitude } from "./vector2"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
+import { setPath } from "./svg"
 
 const NOOP = () => {}
 
 function Navigator(props: {
   imageUrl: string,
+  xaxis: taxis,
+  yaxis: taxis,
 }) {
+  const { imageUrl, xaxis, yaxis } = props
   const { annotations, input, mouseup, mouseRect, scroll, zoom, toolState, transportState } = useSpecviz()
   const containerRef = useRef<SVGSVGElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
   useAnimationFrame(useCallback(
     () => {
-      maskRef.current!.setAttribute("d", `
+      setPath(maskRef.current!, `
         M 0 0
         h 1
         v 1
@@ -29,7 +34,7 @@ function Navigator(props: {
         z
       `)
     },
-    [maskRef]
+    []
   ))
 
   const onMouse = useMouse({
@@ -87,20 +92,25 @@ function Navigator(props: {
       {...onMouse}
     >
       <image
-        href={props.imageUrl}
+        href={imageUrl}
         width="100%"
         height="100%"
         preserveAspectRatio="none"
       />
       {Array.from(annotations.values()).map(a =>
-        <Annotation key={a.id} annotation={a}  />
+        <Annotation
+          key={a.id}
+          annotation={a}
+          xaxis={xaxis}
+          yaxis={yaxis}
+        />
       )}
       <path
         ref={maskRef}
         className="mask"
         d=""
       />
-      <Playhead />
+      <Playhead xaxis={xaxis} yaxis={yaxis} />
     </svg>
   </div>
 

@@ -44,7 +44,7 @@ type tcontext = {
   unitUp: tvector2,
   scroll: tvector2,
   zoom: tvector2,
-  playhead: trect,
+  playhead: tvector2,
   selection: tselection,
   command: tcommand,
   toolState: ttoolstate,
@@ -56,7 +56,7 @@ type tcontext = {
   setTransportState: (func: tfunctional<ttransportstate>) => void,
 }
 
-type tselection = Set<tannotation>
+type tselection = Set<string>
 
 type tcommand = {
   annotate: () => void,

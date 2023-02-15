@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from "react"
 import { Sound, Effects } from "pizzicato"
 import { useSpecviz } from "./specviz"
 import { useAnimationFrame } from "./hooks"
+import { trect } from "./rect"
 
 const LPF = 22000
 const HPF = 0
@@ -22,40 +23,59 @@ function loopState(progress: number, timeRef: number, annotation: tannotation): 
 function Audio(props: {
   url: string,
 }) {
-  const { duration, playhead, transportState, setTransport, setTransportState } = useSpecviz()
+  const { annotations, duration, playhead, transportState, setTransport, setTransportState } = useSpecviz()
   const sound = useRef<tnullable<Sound>>(null)
   const fxLPF = useRef(new Effects.LowPassFilter({ frequency: LPF, peak: 10 }))
   const fxHPF = useRef(new Effects.HighPassFilter({ frequency: HPF, peak: 10 }))
 
   useAnimationFrame(useCallback(
     () => {
-      let delta, rect, unit
+      let delta: number
+      let focus: tannotation | undefined
+      let rect: trect
+      let unit: trect
       switch (transportState.type) {
         case "stop":
+          // frequency filter
+          fxHPF.current.frequency = HPF
+          fxLPF.current.frequency = LPF
+          // playhead
           playhead.x = transportState.progress
-          playhead.y = 0
-          playhead.height = 1
           break
         case "play":
+          // frequency filter
+          fxHPF.current.frequency = HPF
+          fxLPF.current.frequency = LPF
+          // playhead
           delta = (Date.now() - transportState.timeRef) / 1000
           playhead.x = transportState.progress + delta / duration
-          playhead.y = 0
-          playhead.height = 1
           break
         case "loop":
+          // playhead
           delta = (Date.now() - transportState.timeRef) / 1000
           playhead.x = transportState.progress + delta / duration
-          rect = transportState.annotation.rect
-          unit = transportState.annotation.unit
-          playhead.y = rect.y
-          playhead.height = rect.height
-          if (playhead.x >= rect.x + rect.width) {
-            loop(transportState.annotation)
+          // transport annotation could be stale
+          focus = annotations.get(transportState.annotation.id) // todo: antipattern?
+          if (focus == null) return stop() // focus was deleted, stop audio
+          rect = focus.rect
+          unit = focus.unit
+          // frequency filter
+          if (focus.yaxis.unit === "hertz") {
+            fxHPF.current.frequency = unit.y
+            fxLPF.current.frequency = unit.y + unit.height
+          }
+          else {
+            fxHPF.current.frequency = HPF
+            fxLPF.current.frequency = LPF
+          }
+          // loop
+          if (playhead.x < rect.x || playhead.x >= rect.x + rect.width) {
+            loop(focus)
           }
           break
       }
     },
-    [transportState, duration, sound]
+    [annotations, transportState, duration]
   ))
 
   const play = useCallback(
@@ -64,8 +84,6 @@ function Audio(props: {
         if (sound.current == null) return t
         switch(t.type) {
           case "stop":
-            fxHPF.current.frequency = HPF
-            fxLPF.current.frequency = LPF
             sound.current.play(0, t.progress * duration)
             return playState(t.progress, Date.now())
           case "play":
@@ -79,25 +97,21 @@ function Audio(props: {
 
   const loop = useCallback(
     (annotation: tannotation) => {
-      let { rect, unit } = annotation
+      const { rect, unit } = annotation
       setTransportState(t => {
         if (sound.current == null) return t
-        fxHPF.current.frequency = unit.y
-        fxLPF.current.frequency = unit.y + unit.height
         sound.current.stop()
         sound.current.play(0, unit.x)
         return loopState(rect.x, Date.now(), annotation)
       })
     },
-    [sound, duration]
+    [duration]
   )
 
   const stop = useCallback(
     () => {
       setTransportState(t => {
         if (sound.current == null) return t
-        fxHPF.current.frequency = HPF
-        fxLPF.current.frequency = LPF
         switch(t.type) {
           case "stop":
             return t
@@ -109,15 +123,13 @@ function Audio(props: {
         }
       })
     },
-    [sound, duration]
+    [duration]
   )
 
   const seek = useCallback(
     (progress: number) => {
       setTransportState(t => {
         if (sound.current == null) return t
-        fxHPF.current.frequency = HPF
-        fxLPF.current.frequency = LPF
         switch(t.type) {
           case "stop":
             return stopState(progress)
@@ -129,7 +141,7 @@ function Audio(props: {
         }
       })
     },
-    [sound, duration]
+    [duration]
   )
 
   useEffect(

@@ -2,12 +2,15 @@ import { tannotation, taxis, tselection } from "./types"
 import { useCallback, useRef } from "react"
 import { useMouse, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
-import { fromPoints, intersectPoint, intersectRect } from "./rect"
+import { fromPoints, intersectPoint, intersectRect, logical, trect } from "./rect"
 import { magnitude } from "./vector2"
 import { randomBytes } from "./stringx"
+import { clamp } from "./mathx"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
 import Cursor from "./cursor"
+import { hide, show, setRect, setTransform } from "./svg"
+import { computeRect } from "./axis"
 
 const NOOP = () => {}
 
@@ -16,10 +19,11 @@ function Visualization(props: {
   xaxis: taxis,
   yaxis: taxis,
 }) {
+  const { imageUrl, xaxis, yaxis } = props
   const { input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } = useSpecviz()
   const { toolState, transportState, transport } = useSpecviz()
   const { annotations, setAnnotations } = useSpecviz()
-  const { setSelection } = useSpecviz()
+  const { selection, setSelection } = useSpecviz()
   const svgRoot = useRef<SVGSVGElement>(null)
   const svgLayer = useRef<SVGSVGElement>(null)
   const svgSelection = useRef<SVGRectElement>(null)
@@ -28,31 +32,30 @@ function Visualization(props: {
     () => {
       const layer = svgLayer.current!
       const selection = svgSelection.current!
-      layer.setAttribute(
-        "transform",
-        `translate(${-scroll.x}, ${-scroll.y}) scale(${zoom.x}, ${zoom.y})`
-      )
+      setTransform(layer, scroll, zoom)
       switch (toolState) {
         case "annotate":
         case "select":
         case "zoom":
-          selection.setAttribute("x", String(mouseRect.x))
-          selection.setAttribute("y", String(mouseRect.y))
-          selection.setAttribute("width", String(mouseRect.width))
-          selection.setAttribute("height", String(mouseRect.height))
-          selection.setAttribute("display", "inline")
+          if (input.buttons & 1) {
+            show(selection)
+            setRect(selection, logical(mouseRect, xaxis === input.xaxis, yaxis === input.yaxis))
+          }
+          else {
+            hide(selection)
+          }
           break
         case "pan":
-          selection.setAttribute("display", "none")
+          hide(selection)
           break
       }
     },
-    [svgLayer, svgSelection, toolState]
+    [toolState, xaxis, yaxis]
   ))
 
   const onMouse = useMouse({
-    xaxis: props.xaxis,
-    yaxis: props.yaxis,
+    xaxis: xaxis,
+    yaxis: yaxis,
     onContextMenu: NOOP,
     onMouseDown: NOOP,
     onMouseEnter: NOOP,
@@ -60,35 +63,63 @@ function Visualization(props: {
     onMouseMove: useCallback(
       (e) => {
         if (input.buttons & 1) {
+          const dx = e.movementX / e.currentTarget.clientWidth
+          const dy = e.movementY / e.currentTarget.clientHeight
           switch (toolState) {
             case "annotate":
             case "select":
             case "zoom":
               break
             case "pan": // drag pan
-              scroll.x -= e.movementX / e.currentTarget.clientWidth
-              scroll.y -= e.movementY / e.currentTarget.clientHeight
+              if (selection.size == 0) { // todo: command.pan
+                scroll.x -= dx
+                scroll.y -= dy
+              }
+              else {
+                setAnnotations(prevState => { // todo: command.moveSelection
+                  let rect: trect
+                  return new Map(Array.from(
+                    prevState,
+                    ([id, a]) => [
+                      id,
+                      selection.has(a.id)
+                        ? {
+                            ...a,
+                            rect: rect = {
+                              x: clamp(a.rect.x + (xaxis === a.xaxis ? dx : 0), 0, 1 - a.rect.width),
+                              y: clamp(a.rect.y + (yaxis === a.yaxis ? dy : 0), 0, 1 - a.rect.height),
+                              width: a.rect.width,
+                              height: a.rect.height,
+                            },
+                            unit: computeRect(a.xaxis, a.yaxis, rect),
+                          }
+                        : a
+                    ]
+                  ))
+                })
+              }
               break
           }
         }
       },
-      [toolState]
+      [toolState, selection, xaxis, yaxis]
     ),
     onMouseUp: useCallback(
       (e) => {
         if (input.buttons & 1) {
           if (magnitude({x: mouseRect.width, y: mouseRect.height}) < .01) { // click
             switch (toolState) {
-              case "annotate": // noop
+              case "annotate": // todo: command.deselect
+                setSelection(new Set())
                 break
-              case "select": // select annotation
+              case "select": // todo: command.select
                 setSelection(selection => {
                   if (input.ctrl) {
                     const newSelection: tselection = new Set(selection)
                     for (const a of annotations.values()) {
-                      if (intersectPoint(a.rect, mouseup.abs)) {
-                        if (newSelection.has(a)) newSelection.delete(a)
-                        else newSelection.add(a)
+                      if (intersectPoint(logical(a.rect, xaxis === a.xaxis, yaxis === a.yaxis), mouseup.abs)) {
+                        if (newSelection.has(a.id)) newSelection.delete(a.id)
+                        else newSelection.add(a.id)
                       }
                     }
                     return newSelection
@@ -96,69 +127,77 @@ function Visualization(props: {
                   else {
                     const newSelection: tselection = new Set()
                     for (const a of annotations.values()) {
-                      if (intersectPoint(a.rect, mouseup.abs)) {
-                        newSelection.add(a)
+                      if (intersectPoint(logical(a.rect, xaxis === a.xaxis, yaxis === a.yaxis), mouseup.abs)) {
+                        newSelection.add(a.id)
                       }
                     }
                     return newSelection
                   }
                 })
                 break
-              case "zoom": // increment zoom to point
+              case "zoom": // todo: command.zoomPoint
                 zoom.x += 0.5
                 zoom.y += 0.5
                 scroll.x = (mouseup.abs.x * zoom.x) - mouseup.rel.x
                 scroll.y = (mouseup.abs.y * zoom.y) - mouseup.rel.y
                 break
-              case "pan": // noop
+              case "pan":
                 break
             }
           }
           else { // drag
             switch (toolState) {
-              case "annotate": // create annotation
+              case "annotate": // todo: command.annotate
                 const id = randomBytes(10)
                 const newAnnotation: tannotation = {
                   id,
                   rect: {...mouseRect},
                   unit: fromPoints(unitDown, unitUp),
-                  xaxis: props.xaxis,
-                  yaxis: props.yaxis,
+                  xaxis: xaxis,
+                  yaxis: yaxis,
                 }
-                setAnnotations(a => {
-                  return new Map(a).set(id, newAnnotation)
-                })
+                setAnnotations(a => new Map(a).set(id, newAnnotation))
+                setSelection(new Set([newAnnotation.id]))
+                break
+              case "select": // todo: command.select
                 setSelection(s => {
-                  return new Set([newAnnotation])
-                })
-                break
-              case "select": // select annotations
-                setSelection(() => {
-                  const newSelection: tselection = new Set()
-                  for (const a of annotations.values()) {
-                    if (intersectRect(a.rect, mouseRect)) {
-                      newSelection.add(a)
+                  if (input.ctrl) {
+                    const newSelection: tselection = new Set(s)
+                    for (const a of annotations.values()) {
+                      if (intersectRect(logical(a.rect, xaxis === a.xaxis, yaxis === a.yaxis), mouseRect)) {
+                        if (newSelection.has(a.id)) newSelection.delete(a.id)
+                        else newSelection.add(a.id)
+                      }
                     }
+                    return newSelection
                   }
-                  return newSelection
+                  else {
+                    const newSelection: tselection = new Set()
+                    for (const a of annotations.values()) {
+                      if (intersectRect(logical(a.rect, xaxis === a.xaxis, yaxis === a.yaxis), mouseRect)) {
+                        newSelection.add(a.id)
+                      }
+                    }
+                    return newSelection
+                  }
                 })
                 break
-              case "zoom": // zoom to selection
+              case "zoom": // todo: command.zoomRegion
                 zoom.x = 1 / mouseRect.width
                 zoom.y = 1 / mouseRect.height
                 scroll.x = -0.5 + (mouseRect.x + mouseRect.width / 2) * zoom.x
                 scroll.y = -0.5 + (mouseRect.y + mouseRect.height / 2) * zoom.y
                 break
-              case "pan": // noop
+              case "pan":
                 break
             }
           }
         }
-        if (input.buttons & 2) { // jump playhead to point
+        if (input.buttons & 2) { // todo: command.seek
           transport.seek(mouseup.abs.x)
         }
       },
-      [annotations, toolState, transport]
+      [annotations, toolState, transport, xaxis, yaxis]
     ),
   })
 
@@ -186,12 +225,17 @@ function Visualization(props: {
         >
           <image
             preserveAspectRatio="none"
-            href={props.imageUrl}
+            href={imageUrl}
             width="100%"
             height="100%"
           />
           {Array.from(annotations.values()).map(a =>
-            <Annotation key={a.id} annotation={a} />
+            <Annotation
+              key={a.id}
+              annotation={a}
+              xaxis={xaxis}
+              yaxis={yaxis}
+            />
           )}
           <rect
             ref={svgSelection}
@@ -201,10 +245,10 @@ function Visualization(props: {
             width="0"
             height="0"
           />
-          <Playhead />
+          <Playhead xaxis={xaxis} yaxis={yaxis} />
         </g>
       </svg>
-      <Cursor parent={svgRoot} xaxis={props.xaxis} yaxis={props.yaxis} />
+      <Cursor parent={svgRoot} xaxis={xaxis} yaxis={yaxis} />
     </svg>
   </div>
 }

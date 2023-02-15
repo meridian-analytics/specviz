@@ -1,4 +1,5 @@
 import { taxis, tnullable } from "./types"
+import { trect, normalize } from "./rect"
 
 function computeUnit(t: tnullable<taxis>, q: number) {
   if (t == null) return q
@@ -17,8 +18,19 @@ function computeUnit(t: tnullable<taxis>, q: number) {
     return -Infinity
 }
 
+function computeRect(tx: taxis, ty: taxis, rect: trect) {
+  const x = computeUnit(tx, rect.x)
+  const y = computeUnit(ty, rect.y)
+  return normalize({
+    x,
+    y,
+    width: computeUnit(tx, rect.x + rect.width) - x,
+    height: computeUnit(ty, rect.y + rect.height) - y,
+  })
+}
+
 function formatUnit(t: taxis, q: number) {
   return t.format(q)
 }
 
-export { computeUnit, formatUnit }
+export { computeRect, computeUnit, formatUnit }

@@ -35,7 +35,7 @@ const segment1: tsegment = {
     imageUrl: "./spectrogram.png",
     yaxis: {
       unit: "hertz",
-      intervals: [[0, 20000], [.5, 2000], [1, 0] ],
+      intervals: [[0, 20000], [1, 0]],
       format: formatHz,
     },
   },
@@ -75,6 +75,32 @@ const segment2: tsegment = {
   },
 }
 
+const segment3: tsegment = {
+  audio: "./audio.wav",
+  duration: 44.416,
+  xaxis: {
+    unit: "seconds",
+    intervals: [[0,0], [1, 44.416]],
+    format: formatTimestamp,
+  },
+  spectrogram: {
+    imageUrl: "./spectrogram.png",
+    yaxis: {
+      unit: "hertz",
+      intervals: [[0, 20000], [.5, 2000], [1, 0] ],
+      format: formatHz,
+    },
+  },
+  waveform: {
+    imageUrl: "./waveform.png",
+    yaxis: {
+      unit: "percent",
+      intervals: [[0, 1], [.5, 0], [1, -1]],
+      format: formatPercent,
+    },
+  }
+}
+
 function MyComponent() {
   const [data, setData] = useState(segment1)
   return <Specviz duration={data.duration}>
@@ -92,11 +118,20 @@ function MyComponent() {
         onClick={_ => setData(segment2)}
         children={segment2.audio}
       />
+      <button
+        type="button"
+        onClick={_ => setData(segment3)}
+        children={`${segment3.audio} (nonlinear)`}
+      />
       <p>{data.audio} ({data.duration} seconds)</p>
     </div>
     <div id="app">
       <main>
-        <Navigator imageUrl={data.spectrogram.imageUrl} />
+        <Navigator
+          imageUrl={data.spectrogram.imageUrl}
+          xaxis={data.xaxis}
+          yaxis={data.spectrogram.yaxis}
+        />
         <Visualization
           imageUrl={data.spectrogram.imageUrl}
           xaxis={data.xaxis}
@@ -107,7 +142,11 @@ function MyComponent() {
           xaxis={data.xaxis}
           yaxis={data.waveform.yaxis}
         />
-        <Navigator imageUrl={data.waveform.imageUrl} />
+        <Navigator
+          imageUrl={data.waveform.imageUrl}
+          xaxis={data.xaxis}
+          yaxis={data.waveform.yaxis}
+        />
         <MyAudioControls />
       </main>
       <aside>
@@ -181,10 +220,10 @@ function MyKeybinds() {
 }
 
 function MyAnnotations() {
-  const { selection } = useSpecviz()
+  const { annotations, selection } = useSpecviz()
   return <>
-    {Array.from(selection).map((annotation, key) =>
-      <MyForm key={key} annotation={annotation} />
+    {Array.from(selection).map((id, key) =>
+      <MyForm key={key} annotation={annotations.get(id)!} />
     )}
   </>
 }

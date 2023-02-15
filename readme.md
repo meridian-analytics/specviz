@@ -42,12 +42,13 @@
 - [x] audio: seek to location
 - [x] annotation: create
 - [x] annotation: playback region
-- [x] annotation: playback filter
+- [x] annotation: playback frequency filter
 - [x] annotation: drag selection preview
 - [x] annotation: click to select
 - [x] annotation: click-drag to select mulitple
 - [x] annotation: ctrl-click to add/remove selection
-- [ ] annotation: 1-dimensional variant
+- [x] annotation: 1-dimensional variant
+- [x] annotation: click-drag to move
 - [x] tools: annotation tool
 - [x] tools: selection tool
 - [x] tools: zoom tool
@@ -66,4 +67,3 @@
 - [x] ux: declarative audio/visual loading
 - [x] ux: zoom center on cursor
 - [ ] bug: audio sometimes does not stop on unmount
-- [ ] bug: delete annotation while looping its region

@@ -1,20 +1,39 @@
 import { useCallback, useRef } from "react"
 import { useSpecviz } from "./specviz"
 import { useAnimationFrame } from "./hooks"
+import { tannotation, taxis } from "./types"
+import { setX, setY } from "./svg"
+import { logical, trect } from "./rect"
 
-function Playhead() {
+function Playhead(props: {
+  xaxis: taxis,
+  yaxis: taxis,
+}) {
+  const { xaxis, yaxis } = props
+  const { annotations, playhead, transportState } = useSpecviz()
   const svgLine = useRef<SVGLineElement>(null)
-  const { playhead } = useSpecviz()
 
   useAnimationFrame(useCallback(
     () => {
       const line = svgLine.current!
-      line.setAttribute("x1", String(playhead.x))
-      line.setAttribute("x2", String(playhead.x))
-      line.setAttribute("y1", String(playhead.y))
-      line.setAttribute("y2", String(playhead.y + playhead.height))
+      let focus: tannotation | undefined
+      let rect: trect
+      switch (transportState.type) {
+        case "stop":
+        case "play":
+          setX(line, playhead.x)
+          setY(line, 0, 1)
+          break
+        case "loop":
+          focus = annotations.get(transportState.annotation.id) // todo: antipattern?
+          if (focus == null) return
+          rect = logical(focus.rect, xaxis === focus.xaxis, yaxis === focus.yaxis)
+          setX(line, playhead.x)
+          setY(line, rect.y, rect.y + rect.height)
+          break
+      }
     },
-    [svgLine]
+    [annotations, transportState]
   ))
 
   return <line

@@ -32,5 +32,23 @@ function intersectRect(a: trect, b: trect): tnullable<trect> {
   return width <= 0 || height <= 0 ? null : { x, y, width, height }
 }
 
+function logical(t: trect, x: boolean, y: boolean): trect {
+  return {
+    x: x ? t.x : 0,
+    y: y ? t.y : 0,
+    width: x ? t.width : 1,
+    height: y ? t.height : 1,
+  }
+}
+
+function normalize(t: trect): trect {
+  return {
+    x: Math.min(t.x, t.x + t.width),
+    y: Math.min(t.y, t.y + t.height),
+    width: Math.abs(t.width),
+    height: Math.abs(t.height),
+  }
+}
+
 export type { trect }
-export { fromPoints, intersectPoint, intersectRect }
+export { fromPoints, intersectPoint, intersectRect, logical, normalize }
