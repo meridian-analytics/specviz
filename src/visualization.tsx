@@ -1,16 +1,13 @@
-import { tannotation, taxis, tselection } from "./types"
+import { taxis } from "./types"
 import { useCallback, useRef } from "react"
 import { useMouse, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
-import { fromPoints, intersectPoint, intersectRect, logical, trect } from "./rect"
+import { fromPoints, logical } from "./rect"
 import { magnitude } from "./vector2"
-import { randomBytes } from "./stringx"
-import { clamp } from "./mathx"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
 import Cursor from "./cursor"
 import { hide, show, setRect, setTransform } from "./svg"
-import { computeRect } from "./axis"
 
 const NOOP = () => {}
 
@@ -20,10 +17,10 @@ function Visualization(props: {
   yaxis: taxis,
 }) {
   const { imageUrl, xaxis, yaxis } = props
-  const { input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } = useSpecviz()
+  const { command, input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } = useSpecviz()
   const { toolState, transportState, transport } = useSpecviz()
-  const { annotations, setAnnotations } = useSpecviz()
-  const { selection, setSelection } = useSpecviz()
+  const { annotations } = useSpecviz()
+  const { selection } = useSpecviz()
   const svgRoot = useRef<SVGSVGElement>(null)
   const svgLayer = useRef<SVGSVGElement>(null)
   const svgSelection = useRef<SVGRectElement>(null)
@@ -70,33 +67,12 @@ function Visualization(props: {
             case "select":
             case "zoom":
               break
-            case "pan": // drag pan
-              if (selection.size == 0) { // todo: command.pan
-                scroll.x -= dx
-                scroll.y -= dy
+            case "pan":
+              if (selection.size == 0) {
+                command.scroll(-dx, -dy)
               }
               else {
-                setAnnotations(prevState => { // todo: command.moveSelection
-                  let rect: trect
-                  return new Map(Array.from(
-                    prevState,
-                    ([id, a]) => [
-                      id,
-                      selection.has(a.id)
-                        ? {
-                            ...a,
-                            rect: rect = {
-                              x: clamp(a.rect.x + (xaxis === a.xaxis ? dx : 0), 0, 1 - a.rect.width),
-                              y: clamp(a.rect.y + (yaxis === a.yaxis ? dy : 0), 0, 1 - a.rect.height),
-                              width: a.rect.width,
-                              height: a.rect.height,
-                            },
-                            unit: computeRect(a.xaxis, a.yaxis, rect),
-                          }
-                        : a
-                    ]
-                  ))
-                })
+                command.moveSelection(dx, dy)
               }
               break
           }
@@ -109,37 +85,14 @@ function Visualization(props: {
         if (input.buttons & 1) {
           if (magnitude({x: mouseRect.width, y: mouseRect.height}) < .01) { // click
             switch (toolState) {
-              case "annotate": // todo: command.deselect
-                setSelection(new Set())
+              case "annotate":
+                command.deselect()
                 break
-              case "select": // todo: command.select
-                setSelection(selection => {
-                  if (input.ctrl) {
-                    const newSelection: tselection = new Set(selection)
-                    for (const a of annotations.values()) {
-                      if (intersectPoint(logical(a.rect, xaxis === a.xaxis, yaxis === a.yaxis), mouseup.abs)) {
-                        if (newSelection.has(a.id)) newSelection.delete(a.id)
-                        else newSelection.add(a.id)
-                      }
-                    }
-                    return newSelection
-                  }
-                  else {
-                    const newSelection: tselection = new Set()
-                    for (const a of annotations.values()) {
-                      if (intersectPoint(logical(a.rect, xaxis === a.xaxis, yaxis === a.yaxis), mouseup.abs)) {
-                        newSelection.add(a.id)
-                      }
-                    }
-                    return newSelection
-                  }
-                })
+              case "select":
+                command.selectPoint(mouseup.abs)
                 break
-              case "zoom": // todo: command.zoomPoint
-                zoom.x += 0.5
-                zoom.y += 0.5
-                scroll.x = (mouseup.abs.x * zoom.x) - mouseup.rel.x
-                scroll.y = (mouseup.abs.y * zoom.y) - mouseup.rel.y
+              case "zoom":
+                command.zoomPoint(mouseup.abs)
                 break
               case "pan":
                 break
@@ -147,46 +100,14 @@ function Visualization(props: {
           }
           else { // drag
             switch (toolState) {
-              case "annotate": // todo: command.annotate
-                const id = randomBytes(10)
-                const newAnnotation: tannotation = {
-                  id,
-                  rect: {...mouseRect},
-                  unit: fromPoints(unitDown, unitUp),
-                  xaxis: xaxis,
-                  yaxis: yaxis,
-                }
-                setAnnotations(a => new Map(a).set(id, newAnnotation))
-                setSelection(new Set([newAnnotation.id]))
+              case "annotate":
+                command.annotate({...mouseRect}, fromPoints(unitDown, unitUp), xaxis, yaxis)
                 break
-              case "select": // todo: command.select
-                setSelection(s => {
-                  if (input.ctrl) {
-                    const newSelection: tselection = new Set(s)
-                    for (const a of annotations.values()) {
-                      if (intersectRect(logical(a.rect, xaxis === a.xaxis, yaxis === a.yaxis), mouseRect)) {
-                        if (newSelection.has(a.id)) newSelection.delete(a.id)
-                        else newSelection.add(a.id)
-                      }
-                    }
-                    return newSelection
-                  }
-                  else {
-                    const newSelection: tselection = new Set()
-                    for (const a of annotations.values()) {
-                      if (intersectRect(logical(a.rect, xaxis === a.xaxis, yaxis === a.yaxis), mouseRect)) {
-                        newSelection.add(a.id)
-                      }
-                    }
-                    return newSelection
-                  }
-                })
+              case "select":
+                command.selectArea(mouseRect)
                 break
-              case "zoom": // todo: command.zoomRegion
-                zoom.x = 1 / mouseRect.width
-                zoom.y = 1 / mouseRect.height
-                scroll.x = -0.5 + (mouseRect.x + mouseRect.width / 2) * zoom.x
-                scroll.y = -0.5 + (mouseRect.y + mouseRect.height / 2) * zoom.y
+              case "zoom":
+                command.zoomArea(mouseRect)
                 break
               case "pan":
                 break

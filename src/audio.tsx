@@ -92,7 +92,7 @@ function Audio(props: {
         }
       })
     },
-    [sound, duration]
+    [duration]
   )
 
   const loop = useCallback(

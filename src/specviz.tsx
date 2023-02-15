@@ -2,8 +2,9 @@ import type { tannotation, taxis, tnullable, tcommand, tcoord, tinput, tselectio
 import type { tvector2 } from "./vector2"
 import { MouseEvent, ReactNode, RefObject, createContext, useContext, useEffect, useMemo, useState } from "react"
 import { clamp } from "./mathx"
-import { trect, fromPoints } from "./rect"
-import { computeUnit } from "./axis"
+import { randomBytes } from "./stringx"
+import { trect, fromPoints, intersectPoint, intersectRect, logical } from "./rect"
+import { computeRect, computeUnit } from "./axis"
 
 const ZOOM_MAX: number = 5
 const STOP: ttransportstate = { type: "stop", progress: 0 }
@@ -24,10 +25,21 @@ const SpecvizContext = createContext<tcontext>({
   selection: new Set(),
   command: {
     annotate: () => { console.error("command.annotate called outside of Specviz context") },
-    select: () => { console.error("command.select called outside of Specviz context") },
-    zoom: () => { console.error("command.zoom called outside of Specviz context") },
-    pan: () => { console.error("command.pan called outside of Specviz context") },
     delete: () => { console.error("command.delete called outside of Specviz context") },
+    deselect: () => { console.error("command.deselect called outside of Specviz context") },
+    moveSelection: () => { console.error("command.moveSelection called outside of Specviz context") },
+    resetView: () => { console.error("command.resetView called outside of Specviz context") },
+    scroll: () => { console.error("command.scroll called outside of Specviz context") },
+    scrollTo: () => { console.error("command.scrollTo called outside of Specviz context") },
+    selectPoint: () => { console.error("command.selectPoint called outside of Specviz context") },
+    selectArea: () => { console.error("command.selectArea called outside of Specviz context") },
+    setRectX: () => { console.error("command.setRectX called outside of Specviz context") },
+    setRectY: () => { console.error("command.setRectY called outside of Specviz context") },
+    setRectWidth: () => { console.error("command.setRectWidth called outside of Specviz context") },
+    setRectHeight: () => { console.error("command.setRectHeight called outside of Specviz context") },
+    tool: () => { console.error("command.tool called outside of Specviz context") },
+    zoomPoint: () => { console.error("command.zoomPoint called outside of Specviz context") },
+    zoomArea: () => { console.error("command.zoomArea called outside of Specviz context") },
   },
   toolState: "annotate",
   transport: {
@@ -104,11 +116,13 @@ function Specviz(props: {
 
   const command = useMemo<tcommand>(
     () => ({
-      annotate: () => setToolState("annotate"),
-      select: () => setToolState("select"),
-      zoom: () => setToolState("zoom"),
-      pan: () => setToolState("pan"),
-      delete: () => {
+      annotate(rect, unit, xaxis, yaxis) {
+        const id = randomBytes(10)
+        const a: tannotation = { id, rect, unit, xaxis, yaxis }
+        setAnnotations(prevState => new Map(prevState).set(id, a))
+        setSelection(new Set([a.id]))
+      },
+      delete() {
         setAnnotations(prevState => {
           const nextState = new Map(prevState)
           for (const id of selection)
@@ -116,6 +130,113 @@ function Specviz(props: {
           return nextState
         })
         setSelection(new Set())
+      },
+      deselect() {
+        setSelection(new Set())
+      },
+      moveSelection(dx, dy) {
+        setAnnotations(prevState => {
+          let rect: trect
+          return new Map(Array.from(
+            prevState,
+            ([id, a]) => [
+              id,
+              selection.has(a.id)
+                ? {
+                    ...a,
+                    rect: rect = {
+                      x: clamp(a.rect.x + (input.xaxis == a.xaxis ? dx : 0), 0, 1 - a.rect.width),
+                      y: clamp(a.rect.y + (input.yaxis == a.yaxis ? dy : 0), 0, 1 - a.rect.height),
+                      width: a.rect.width,
+                      height: a.rect.height,
+                    },
+                    unit: computeRect(a.xaxis, a.yaxis, rect),
+                  }
+                : a
+            ]
+          ))
+        })
+      },
+      resetView() {
+        zoom.x = 1
+        zoom.y = 1
+        scroll.x = 0
+        scroll.y = 0
+      },
+      scroll(dx, dy) {
+        scroll.x += dx
+        scroll.y += dy
+      },
+      scrollTo(pt) {
+        scroll.x = pt.x
+        scroll.y = pt.y
+      },
+      selectArea(area) {
+        setSelection(s => {
+          if (input.ctrl) {
+            const newSelection: tselection = new Set(s)
+            for (const a of annotations.values()) {
+              if (intersectRect(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), area)) {
+                if (newSelection.has(a.id)) newSelection.delete(a.id)
+                else newSelection.add(a.id)
+              }
+            }
+            return newSelection
+          }
+          else {
+            const newSelection: tselection = new Set()
+            for (const a of annotations.values()) {
+              if (intersectRect(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), area)) {
+                newSelection.add(a.id)
+              }
+            }
+            return newSelection
+          }
+        })
+      },
+      selectPoint(pt) {
+        setSelection(selection => {
+          if (input.ctrl) {
+            const newSelection: tselection = new Set(selection)
+            for (const a of annotations.values()) {
+              if (intersectPoint(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), pt)) {
+                if (newSelection.has(a.id)) newSelection.delete(a.id)
+                else newSelection.add(a.id)
+              }
+            }
+            return newSelection
+          }
+          else {
+            const newSelection: tselection = new Set()
+            for (const a of annotations.values()) {
+              if (intersectPoint(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), pt)) {
+                newSelection.add(a.id)
+              }
+            }
+            return newSelection
+          }
+        })
+      },
+      setRectX(annotation, x) {},
+      setRectY(annotation, y) {},
+      setRectWidth(annotation, width) {},
+      setRectHeight(annotation, height) {},
+      tool(t) {
+        setToolState(t)
+      },
+      zoomArea(area) {
+        zoom.x = 1 / area.width
+        zoom.y = 1 / area.height
+        scroll.x = -0.5 + (area.x + area.width / 2) * zoom.x
+        scroll.y = -0.5 + (area.y + area.height / 2) * zoom.y
+      },
+      zoomPoint(pt) {
+        const rx = pt.x * zoom.x - scroll.x
+        const ry = pt.y * zoom.y - scroll.y
+        zoom.x += 0.5
+        zoom.y += 0.5
+        scroll.x = (pt.x * zoom.x) - rx
+        scroll.y = (pt.y * zoom.y) - ry
       },
     }),
     [selection]

@@ -59,11 +59,22 @@ type tcontext = {
 type tselection = Set<string>
 
 type tcommand = {
-  annotate: () => void,
-  select: () => void,
-  zoom: () => void,
-  pan: () => void,
+  annotate: (rect: trect, unit: trect, xaxis: taxis, yaxis: taxis) => void,
   delete: () => void,
+  deselect: () => void,
+  moveSelection: (dx: number, dy: number) => void,
+  resetView: () => void,
+  scroll: (dx: number, dy: number) => void,
+  scrollTo: (pt: tvector2) => void,
+  selectArea: (rect: trect) => void,
+  selectPoint: (pt: tvector2) => void,
+  setRectX: (annotation: tannotation, x: number) => void,
+  setRectY: (annotation: tannotation, y: number) => void,
+  setRectWidth: (annotation: tannotation, width: number) => void,
+  setRectHeight: (annotation: tannotation, height: number) => void,
+  tool: (toolState: ttoolstate) => void,
+  zoomArea: (rect: trect) => void,
+  zoomPoint: (pt: tvector2) => void,
 }
 
 type ttoolstate = "annotate" | "select" | "zoom" | "pan"

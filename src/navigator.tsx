@@ -3,9 +3,9 @@ import { useCallback, useRef } from "react"
 import { useMouse, useSpecviz, useWheel } from "./specviz"
 import { useAnimationFrame } from "./hooks"
 import { magnitude } from "./vector2"
+import { setPath } from "./svg"
 import Playhead from "./playhead"
 import Annotation from "./annotation"
-import { setPath } from "./svg"
 
 const NOOP = () => {}
 
@@ -15,7 +15,7 @@ function Navigator(props: {
   yaxis: taxis,
 }) {
   const { imageUrl, xaxis, yaxis } = props
-  const { annotations, input, mouseup, mouseRect, scroll, zoom, toolState, transportState } = useSpecviz()
+  const { annotations, command, input, mouseup, mouseRect, scroll, zoom, toolState, transportState } = useSpecviz()
   const containerRef = useRef<SVGSVGElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
@@ -47,8 +47,10 @@ function Navigator(props: {
     onMouseMove: useCallback(
       (e) => {
         if (input.buttons & 1) {
-          scroll.x += e.movementX / e.currentTarget.clientWidth * zoom.x
-          scroll.y += e.movementY / e.currentTarget.clientHeight * zoom.y
+          command.scroll(
+            e.movementX / e.currentTarget.clientWidth * zoom.x,
+            e.movementY / e.currentTarget.clientHeight * zoom.y
+          )
         }
       },
       [toolState]
@@ -61,14 +63,13 @@ function Navigator(props: {
               case "annotate":
               case "select":
               case "pan":
-                scroll.x = mouseup.rel.x * zoom.x - 0.5
-                scroll.y = mouseup.rel.y * zoom.y - 0.5
+                command.scrollTo({
+                  x: mouseup.rel.x * zoom.x - 0.5,
+                  y: mouseup.rel.y * zoom.y - 0.5
+                })
                 break
               case "zoom":
-                zoom.x = 1
-                zoom.y = 1
-                scroll.x = 0
-                scroll.y = 0
+                command.resetView()
                 break
             }
           }

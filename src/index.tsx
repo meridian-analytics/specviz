@@ -163,28 +163,28 @@ function MyAudioControls() {
     <button
       title="A"
       type="button"
-      onClick={_ => command.annotate()}
+      onClick={_ => command.tool("annotate")}
       className={toolState === "annotate" ? "active" : ""}
       children="Annotate"
     />
     <button
       title="S"
       type="button"
-      onClick={_ => command.select()}
+      onClick={_ => command.tool("select")}
       className={toolState === "select" ? "active" : ""}
       children="Select"
     />
     <button
       title="D"
       type="button"
-      onClick={_ => command.zoom()}
+      onClick={_ => command.tool("zoom")}
       className={toolState === "zoom" ? "active" : ""}
       children="Zoom"
     />
     <button
       title="F"
       type="button"
-      onClick={_ => command.pan()}
+      onClick={_ => command.tool("pan")}
       className={toolState === "pan" ? "active" : ""}
       children="Pan"
     />
@@ -210,10 +210,15 @@ function MyKeybinds() {
   const { command, transport } = useSpecviz()
   return <Bindings>
     <Keypress bind="Backspace" onKeyDown={command.delete} />
-    <Keypress bind="a" onKeyDown={command.annotate} />
-    <Keypress bind="s" onKeyDown={command.select} />
-    <Keypress bind="d" onKeyDown={command.zoom} />
-    <Keypress bind="f" onKeyDown={command.pan} />
+    <Keypress bind="Escape" onKeyDown={command.deselect} />
+    <Keypress bind="ArrowLeft" onKeyDown={e => { e.preventDefault(); command.moveSelection(-.01, 0) }} />
+    <Keypress bind="ArrowRight" onKeyDown={e => { e.preventDefault(); command.moveSelection(.01, 0) }} />
+    <Keypress bind="ArrowUp" onKeyDown={e => { e.preventDefault(); command.moveSelection(0, -.03) }} />
+    <Keypress bind="ArrowDown" onKeyDown={e => { e.preventDefault(); command.moveSelection(0, .03) }} />
+    <Keypress bind="a" onKeyDown={() => command.tool("annotate")} />
+    <Keypress bind="s" onKeyDown={() => command.tool("select")} />
+    <Keypress bind="d" onKeyDown={() => command.tool("zoom")} />
+    <Keypress bind="f" onKeyDown={() => command.tool("pan")} />
     <Keypress bind="z" onKeyDown={transport.play} />
     <Keypress bind="x" onKeyDown={transport.stop} />
   </Bindings>
