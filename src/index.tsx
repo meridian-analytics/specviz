@@ -268,8 +268,10 @@ function MyForm(props: { annotation: tannotation }) {
         Duration
       </div>
       <div>
-        // todo: this is a hack to invert the y-axis
-        // todo: axis context
+        {/*
+          todo: this is a hack to invert the y-axis
+          todo: axis context
+        */}
         <Encoder
           state={1 - annotation.rect.y - annotation.rect.height}
           setState={v => command.setRectY(annotation, v)}
