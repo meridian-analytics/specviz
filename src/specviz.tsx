@@ -172,48 +172,48 @@ function Specviz(props: {
         scroll.y = pt.y
       },
       selectArea(area) {
-        setSelection(s => {
+        setSelection(prevState => {
           if (input.ctrl) {
-            const newSelection: tselection = new Set(s)
+            const nextState: tselection = new Set(prevState)
             for (const a of annotations.values()) {
               if (intersectRect(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), area)) {
-                if (newSelection.has(a.id)) newSelection.delete(a.id)
-                else newSelection.add(a.id)
+                if (nextState.has(a.id)) nextState.delete(a.id)
+                else nextState.add(a.id)
               }
             }
-            return newSelection
+            return nextState
           }
           else {
-            const newSelection: tselection = new Set()
+            const nextState: tselection = new Set()
             for (const a of annotations.values()) {
               if (intersectRect(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), area)) {
-                newSelection.add(a.id)
+                nextState.add(a.id)
               }
             }
-            return newSelection
+            return nextState
           }
         })
       },
       selectPoint(pt) {
-        setSelection(selection => {
+        setSelection(prevState => {
           if (input.ctrl) {
-            const newSelection: tselection = new Set(selection)
+            const nextState: tselection = new Set(prevState)
             for (const a of annotations.values()) {
               if (intersectPoint(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), pt)) {
-                if (newSelection.has(a.id)) newSelection.delete(a.id)
-                else newSelection.add(a.id)
+                if (nextState.has(a.id)) nextState.delete(a.id)
+                else nextState.add(a.id)
               }
             }
-            return newSelection
+            return nextState
           }
           else {
-            const newSelection: tselection = new Set()
+            const nextState: tselection = new Set()
             for (const a of annotations.values()) {
               if (intersectPoint(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), pt)) {
-                newSelection.add(a.id)
+                nextState.add(a.id)
               }
             }
-            return newSelection
+            return nextState
           }
         })
       },
@@ -239,7 +239,7 @@ function Specviz(props: {
         scroll.y = (pt.y * zoom.y) - ry
       },
     }),
-    [selection]
+    [annotations, selection]
   )
 
   const [toolState, setToolState] = useState<ttoolstate>("annotate")
