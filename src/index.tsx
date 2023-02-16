@@ -5,6 +5,7 @@ import { Specviz, useSpecviz } from "./specviz"
 import Visualization from "./visualization"
 import Navigator from "./navigator"
 import Audio from "./audio"
+import Encoder from "./encoder"
 import { Bindings, Keypress } from "./keybinds"
 import { formatHz, formatPercent, formatTimestamp } from "./stringx"
 import "./index.css"
@@ -149,10 +150,7 @@ function MyComponent() {
         />
         <MyAudioControls />
       </main>
-      <aside>
-        <p>annotations</p>
-        <MyAnnotations />
-      </aside>
+      <MyAnnotations />
     </div>
   </Specviz>
 }
@@ -226,28 +224,65 @@ function MyKeybinds() {
 
 function MyAnnotations() {
   const { annotations, selection } = useSpecviz()
-  return <>
-    {Array.from(selection).map((id, key) =>
-      <MyForm key={key} annotation={annotations.get(id)!} />
-    )}
-  </>
+  return selection.size > 0
+    ? <aside>
+        {Array.from(selection).map((id, key) =>
+          <MyForm key={key} annotation={annotations.get(id)!} />
+        )}
+      </aside>
+    : <></>
 }
 
 function MyForm(props: { annotation: tannotation }) {
-  const { transport } = useSpecviz()
-  return <>
-    <button
-      type="button"
-      onClick={event => {
-        event.preventDefault()
-        transport.loop(props.annotation)
-      }}
-      children="loop"
-    />
-    <pre>
-      {JSON.stringify(props.annotation, null, 2)}
-    </pre>
-  </>
+  const { annotation } = props
+  const { command, transport } = useSpecviz()
+  return <div className="annotation-form">
+    <div className="title">
+      <div>{annotation.id}</div>
+      <button
+        type="button"
+        onClick={event => {
+          event.preventDefault()
+          transport.loop(props.annotation)
+        }}
+        children="loop"
+      />
+    </div>
+    <div className="encoders">
+      <div>
+        <Encoder
+          state={annotation.rect.x}
+          setState={v => command.setRectX(annotation, v)}
+          value={annotation.unit.x} unit={annotation.xaxis.unit}
+        />
+        Offset
+      </div>
+      <div>
+        <Encoder
+          state={annotation.rect.width}
+          setState={v => command.setRectWidth(annotation, v)}
+          value={annotation.unit.width} unit={annotation.xaxis.unit}
+        />
+        Duration
+      </div>
+      <div>
+        <Encoder
+          state={annotation.rect.y}
+          setState={v => command.setRectY(annotation, v)}
+          value={annotation.unit.y} unit={annotation.yaxis.unit}
+        />
+        Cutoff
+      </div>
+      <div>
+        <Encoder
+          state={annotation.rect.height}
+          setState={v => command.setRectHeight(annotation, v)}
+          value={annotation.unit.height} unit={annotation.yaxis.unit}
+        />
+        Range
+      </div>
+    </div>
+  </div>
 }
 
 createRoot(document.getElementById("root") as HTMLElement).render(

@@ -9,7 +9,7 @@ body {
 }
 
 #app main {
-  width: 60%;
+  flex-grow: 1;
 }
 
 #app main div ~ div {
@@ -17,10 +17,31 @@ body {
 }
 
 #app aside {
-  width: 35%;
-  padding: 0 1rem;
+  width: 38%;
+  margin-left: 1rem;
+}
+
+.annotation-form {
+  border: 1px solid black;
   border-radius: 0.25rem;
-  border: 1px solid #000;
+  margin-bottom: 1rem;
+}
+.annotation-form .title {
+  background-color: black;
+  color: white;
+  display: flex;
+  padding: 0.5rem;
+}
+
+.annotation-form .title div {
+  flex-grow: 1;
+}
+
+.annotation-form .encoders {
+  padding: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
 }
 
 /* specviz defaults */
@@ -111,4 +132,19 @@ body {
 
 button.active {
   color: #D5008F;
+}
+
+.encoder {
+  stroke: black;
+  stroke-width: 0.05;
+  fill: none;
+}
+
+.encoder-marker {
+  fill: black;
+}
+
+.encoder-text {
+  font-size: 0.3pt;
+  text-align: center;
 }

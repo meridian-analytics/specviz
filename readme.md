@@ -49,6 +49,9 @@
 - [x] annotation: ctrl-click to add/remove selection
 - [x] annotation: 1-dimensional variant
 - [x] annotation: click-drag to move
+- [x] encoder: adjust annotation region
+- [x] encoder: wheel to adjust
+- [ ] encoder: use axis context
 - [x] tools: annotation tool
 - [x] tools: selection tool
 - [x] tools: zoom tool
@@ -67,3 +70,4 @@
 - [x] ux: declarative audio/visual loading
 - [x] ux: zoom center on cursor
 - [ ] bug: audio sometimes does not stop on unmount
+- [ ] bug: y-axis encoders behave "inverted"

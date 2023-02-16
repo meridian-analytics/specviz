@@ -217,10 +217,66 @@ function Specviz(props: {
           }
         })
       },
-      setRectX(annotation, x) {},
-      setRectY(annotation, y) {},
-      setRectWidth(annotation, width) {},
-      setRectHeight(annotation, height) {},
+      setRectX(a, dx) {
+        setAnnotations(prevState => {
+          const nextState = new Map(prevState)
+          const rect: trect = {
+            x: clamp(a.rect.x + dx, 0, 1 - a.rect.width),
+            y: a.rect.y,
+            width: a.rect.width,
+            height: a.rect.height,
+          }
+          return nextState.set(
+            a.id,
+            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
+          )
+        })
+      },
+      setRectY(a, dy) {
+        setAnnotations(prevState => {
+          const nextState = new Map(prevState)
+          const rect: trect = {
+            x: a.rect.x,
+            y: clamp(a.rect.y + dy, 0, 1 - a.rect.height),
+            width: a.rect.width,
+            height: a.rect.height,
+          }
+          return nextState.set(
+            a.id,
+            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
+          )
+        })
+      },
+      setRectWidth(a, dw) {
+        setAnnotations(prevState => {
+          const nextState = new Map(prevState)
+          const rect: trect = {
+            x: a.rect.x,
+            y: a.rect.y,
+            width: clamp(a.rect.width + dw, 0.01, 1 - a.rect.x),
+            height: a.rect.height,
+          }
+          return nextState.set(
+            a.id,
+            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
+          )
+        })
+      },
+      setRectHeight(a, dh) {
+        setAnnotations(prevState => {
+          const nextState = new Map(prevState)
+          const rect: trect = {
+            x: a.rect.x,
+            y: a.rect.y,
+            width: a.rect.width,
+            height: clamp(a.rect.height + dh, 0.01, 1 - a.rect.y),
+          }
+          return nextState.set(
+            a.id,
+            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
+          )
+        })
+      },
       tool(t) {
         setToolState(t)
       },
