@@ -253,7 +253,8 @@ function MyForm(props: { annotation: tannotation }) {
         <Encoder
           state={annotation.rect.x}
           setState={v => command.setRectX(annotation, v)}
-          value={annotation.unit.x} unit={annotation.xaxis.unit}
+          value={annotation.unit.x}
+          unit={annotation.xaxis.unit}
         />
         Offset
       </div>
@@ -261,15 +262,19 @@ function MyForm(props: { annotation: tannotation }) {
         <Encoder
           state={annotation.rect.width}
           setState={v => command.setRectWidth(annotation, v)}
-          value={annotation.unit.width} unit={annotation.xaxis.unit}
+          value={annotation.unit.width}
+          unit={annotation.xaxis.unit}
         />
         Duration
       </div>
       <div>
+        // todo: this is a hack to invert the y-axis
+        // todo: axis context
         <Encoder
-          state={annotation.rect.y}
+          state={1 - annotation.rect.y - annotation.rect.height}
           setState={v => command.setRectY(annotation, v)}
-          value={annotation.unit.y} unit={annotation.yaxis.unit}
+          value={annotation.unit.y}
+          unit={annotation.yaxis.unit}
         />
         Cutoff
       </div>
@@ -277,7 +282,8 @@ function MyForm(props: { annotation: tannotation }) {
         <Encoder
           state={annotation.rect.height}
           setState={v => command.setRectHeight(annotation, v)}
-          value={annotation.unit.height} unit={annotation.yaxis.unit}
+          value={annotation.unit.height}
+          unit={annotation.yaxis.unit}
         />
         Range
       </div>
