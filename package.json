@@ -20,5 +20,10 @@
     "@vitejs/plugin-react": "^3.1.0",
     "typescript": "^4.9.5",
     "vite": "^4.1.4"
+  },
+  "exports": {
+    ".": "./src/index.tsx",
+    "./format": "./src/stringx.tsx",
+    "./keybinds": "./src/keybinds.tsx"
   }
 }
