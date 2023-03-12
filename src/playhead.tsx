@@ -1,6 +1,5 @@
 import { useCallback, useRef } from "react"
-import { useSpecviz } from "./specviz"
-import { useAnimationFrame } from "./hooks"
+import { useAnimationFrame, useSpecviz } from "./hooks"
 import { tannotation, taxis } from "./types"
 import { setX, setY } from "./svg"
 import { logical, trect } from "./rect"

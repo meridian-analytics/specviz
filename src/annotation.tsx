@@ -1,6 +1,6 @@
-import type { tannotation, taxis } from "./types"
+import { tannotation, taxis } from "./types"
 import { useMemo } from "react"
-import { useSpecviz } from "./specviz"
+import { useSpecviz } from "./hooks"
 import { logical } from "./rect"
 
 function Annotation(props: {

@@ -1,24 +1,12 @@
-import { tannotation, tnullable, ttransportstate } from "./types"
+import { tannotation, tnullable } from "./types"
 import { useCallback, useEffect, useRef } from "react"
 import { Sound, Effects } from "pizzicato"
-import { useSpecviz } from "./specviz"
-import { useAnimationFrame } from "./hooks"
+import { useAnimationFrame, useSpecviz } from "./hooks"
 import { trect } from "./rect"
+import * as transport from "./transport"
 
 const LPF = 22000
 const HPF = 0
-
-function playState(progress: number, timeRef: number): ttransportstate {
-  return { type: "play", progress, timeRef }
-}
-
-function stopState(progress: number): ttransportstate {
-  return { type: "stop", progress }
-}
-
-function loopState(progress: number, timeRef: number, annotation: tannotation): ttransportstate {
-  return { type: "loop", progress, timeRef, annotation }
-}
 
 function Audio(props: {
   url: string,
@@ -85,7 +73,7 @@ function Audio(props: {
         switch(t.type) {
           case "stop":
             sound.current.play(0, t.progress * duration)
-            return playState(t.progress, Date.now())
+            return transport.play(t.progress, Date.now())
           case "play":
           case "loop":
             return t
@@ -102,7 +90,7 @@ function Audio(props: {
         if (sound.current == null) return t
         sound.current.stop()
         sound.current.play(0, unit.x)
-        return loopState(rect.x, Date.now(), annotation)
+        return transport.loop(rect.x, Date.now(), annotation)
       })
     },
     [duration]
@@ -119,7 +107,7 @@ function Audio(props: {
           case "loop":
             sound.current.stop()
             const delta = (Date.now() - t.timeRef) / 1000
-            return stopState(t.progress + delta / duration)
+            return transport.stop(t.progress + delta / duration)
         }
       })
     },
@@ -132,12 +120,12 @@ function Audio(props: {
         if (sound.current == null) return t
         switch(t.type) {
           case "stop":
-            return stopState(progress)
+            return transport.stop(progress)
           case "play":
           case "loop":
             sound.current.stop()
             sound.current.play(0, progress * duration)
-            return playState(progress, Date.now())
+            return transport.play(progress, Date.now())
         }
       })
     },

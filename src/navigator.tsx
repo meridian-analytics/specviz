@@ -1,7 +1,6 @@
 import { taxis } from "./types"
 import { useCallback, useRef } from "react"
-import { useMouse, useSpecviz, useWheel } from "./specviz"
-import { useAnimationFrame } from "./hooks"
+import { useAnimationFrame, useMouse, useSpecviz, useWheel } from "./hooks"
 import { magnitude } from "./vector2"
 import { setPath } from "./svg"
 import Playhead from "./playhead"
