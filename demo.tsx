@@ -1,10 +1,9 @@
 import { StrictMode, useState } from "react"
 import { createRoot } from "react-dom/client"
-import { tannotation, taxis } from "../src/types"
-import { Specviz, Audio, Encoder, Navigator, Visualization, useSpecviz } from "../src/index"
-import { Bindings, Keypress } from "../src/keybinds"
-import { formatHz, formatPercent, formatTimestamp } from "../src/stringx"
-import "./index.css"
+import { tannotation, taxis } from "./src/types"
+import { Specviz, Audio, Encoder, Navigator, Visualization, useSpecviz } from "./src/index"
+import { Bindings, Keypress } from "./src/keybinds"
+import { formatHz, formatPercent, formatTimestamp } from "./src/stringx"
 
 type tsegment = {
   audio: string,

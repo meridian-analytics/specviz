@@ -1,6 +1,5 @@
 {
   "name": "specviz-react",
-  "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -21,9 +20,10 @@
     "typescript": "^4.9.5",
     "vite": "^4.1.4"
   },
+  "files": ["dist"],
   "exports": {
-    ".": "./src/index.tsx",
-    "./format": "./src/stringx.tsx",
-    "./keybinds": "./src/keybinds.tsx"
+    ".": "./dist/specviz-react.js",
+    "./format": "./dist/format.js",
+    "./keybinds": "./dist/keybinds.js"
   }
 }
