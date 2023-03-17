@@ -1,0 +1,14 @@
+import { trect } from "./rect.jsx";
+import { tvector2 } from "./vector2.jsx";
+type tpositional = SVGLineElement | SVGRectElement | SVGTextElement;
+type tformat = (q: number) => string;
+declare function hide(svg: SVGElement): void;
+declare function show(svg: SVGElement): void;
+declare function setAnchor(svg: SVGTextElement, anchor: tvector2, format?: tformat): void;
+declare function setPath(svg: SVGPathElement, path: string): void;
+declare function setRect(svg: SVGRectElement, rect: trect, format?: tformat): void;
+declare function setText(svg: SVGTextElement, text: string): void;
+declare function setTransform(svg: SVGElement, translate: tvector2, scale: tvector2): void;
+declare function setX(svg: tpositional, x1: number, x2?: number, format?: tformat): void;
+declare function setY(svg: tpositional, y1: number, y2?: number, format?: tformat): void;
+export { hide, show, setAnchor, setPath, setRect, setText, setTransform, setX, setY };

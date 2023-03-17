@@ -22,8 +22,17 @@
   },
   "files": ["dist"],
   "exports": {
-    ".": "./dist/specviz-react.js",
-    "./format": "./dist/format.js",
-    "./keybinds": "./dist/keybinds.js"
+    ".": {
+      "types": "./types/src/index.d.ts",
+      "import": "./dist/specviz-react.js"
+    },
+    "./format": {
+      "types": "./types/src/stringx.d.ts",
+      "import": "./dist/format.js"
+    },
+    "./keybinds": {
+      "types": "./types/src/keybinds.d.ts",
+      "import": "./dist/keybinds.js"
+    }
   }
 }
