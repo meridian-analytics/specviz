@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react"
-import { useSpecviz } from "./hooks"
+import { useSpecviz } from "./hooks.jsx"
 
 function Encoder(props: {
   state: number,

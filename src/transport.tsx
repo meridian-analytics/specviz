@@ -1,4 +1,4 @@
-import { tannotation, ttransportstate } from "./types"
+import { tannotation, ttransportstate } from "./types.jsx"
 
 function play(progress: number, timeRef: number): ttransportstate {
   return { type: "play", progress, timeRef }

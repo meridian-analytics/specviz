@@ -1,5 +1,5 @@
-import { trect } from "./rect"
-import { tvector2 } from "./vector2"
+import { trect } from "./rect.jsx"
+import { tvector2 } from "./vector2.jsx"
 
 type tpositional =
   | SVGLineElement

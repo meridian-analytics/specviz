@@ -1,5 +1,5 @@
-import type { trect } from "./rect"
-import type { tvector2 } from "./vector2"
+import type { trect } from "./rect.jsx"
+import type { tvector2 } from "./vector2.jsx"
 
 type tannotation = {
   id: string,

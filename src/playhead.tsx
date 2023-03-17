@@ -1,8 +1,8 @@
 import { useCallback, useRef } from "react"
-import { useAnimationFrame, useSpecviz } from "./hooks"
-import { tannotation, taxis } from "./types"
-import { setX, setY } from "./svg"
-import { logical, trect } from "./rect"
+import { useAnimationFrame, useSpecviz } from "./hooks.jsx"
+import { tannotation, taxis } from "./types.jsx"
+import { setX, setY } from "./svg.jsx"
+import { logical, trect } from "./rect.jsx"
 
 function Playhead(props: {
   xaxis: taxis,

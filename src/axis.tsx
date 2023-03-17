@@ -1,5 +1,5 @@
-import { taxis, tnullable } from "./types"
-import { trect, normalize } from "./rect"
+import { taxis, tnullable } from "./types.jsx"
+import { trect, normalize } from "./rect.jsx"
 
 function computeUnit(t: tnullable<taxis>, q: number) {
   if (t == null) return q

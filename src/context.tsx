@@ -1,6 +1,6 @@
 import { createContext } from "react"
-import { tcontext } from "./types"
-import { stop } from "./transport"
+import { tcontext } from "./types.jsx"
+import { stop } from "./transport.jsx"
 
 const SpecvizContext = createContext<tcontext>({
   annotations: new Map(),

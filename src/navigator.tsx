@@ -1,10 +1,10 @@
-import { taxis } from "./types"
 import { useCallback, useRef } from "react"
-import { useAnimationFrame, useMouse, useSpecviz, useWheel } from "./hooks"
-import { magnitude } from "./vector2"
-import { setPath } from "./svg"
-import Playhead from "./playhead"
-import Annotation from "./annotation"
+import { taxis } from "./types.jsx"
+import { useAnimationFrame, useMouse, useSpecviz, useWheel } from "./hooks.jsx"
+import { magnitude } from "./vector2.jsx"
+import { setPath } from "./svg.jsx"
+import Playhead from "./playhead.jsx"
+import Annotation from "./annotation.jsx"
 
 const NOOP = () => {}
 

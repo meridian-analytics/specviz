@@ -1,9 +1,9 @@
-import { tannotation, tnullable } from "./types"
 import { useCallback, useEffect, useRef } from "react"
 import { Sound, Effects } from "pizzicato"
-import { useAnimationFrame, useSpecviz } from "./hooks"
-import { trect } from "./rect"
-import * as transport from "./transport"
+import { tannotation, tnullable } from "./types.jsx"
+import { useAnimationFrame, useSpecviz } from "./hooks.jsx"
+import { trect } from "./rect.jsx"
+import * as transport from "./transport.jsx"
 
 const LPF = 22000
 const HPF = 0

@@ -1,13 +1,13 @@
-import { tannotation, taxis, tnullable, tcommand, tinput, tselection, ttoolstate, ttransport, ttransportstate } from "./types"
 import { ReactNode, useEffect, useMemo, useState } from "react"
-import { computeRect } from "./axis"
-import { useMutableCoord, useMutableRect, useMutableVector2 } from "./hooks"
-import { clamp } from "./mathx"
-import { trect, intersectPoint, intersectRect, logical } from "./rect"
-import { randomBytes } from "./stringx"
-import { stop } from "./transport"
-import { tvector2 } from "./vector2"
-import SpecvizContext from "./context"
+import { tannotation, taxis, tnullable, tcommand, tinput, tselection, ttoolstate, ttransport, ttransportstate } from "./types.jsx"
+import { computeRect } from "./axis.jsx"
+import { useMutableCoord, useMutableRect, useMutableVector2 } from "./hooks.jsx"
+import { clamp } from "./mathx.jsx"
+import { trect, intersectPoint, intersectRect, logical } from "./rect.jsx"
+import { randomBytes } from "./stringx.jsx"
+import { stop } from "./transport.jsx"
+import { tvector2 } from "./vector2.jsx"
+import SpecvizContext from "./context.jsx"
 
 const ZOOM_MAX: number = 5
 const NOOP = () => {}

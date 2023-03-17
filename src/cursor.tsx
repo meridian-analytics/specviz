@@ -1,9 +1,9 @@
 import { RefObject, useCallback, useRef } from "react"
-import { taxis } from "./types"
-import { useAnimationFrame, useSpecviz } from "./hooks"
-import { formatPercent } from "./stringx"
-import { formatUnit } from "./axis"
-import { hide, show, setAnchor, setText, setX, setY } from "./svg"
+import { taxis } from "./types.jsx"
+import { useAnimationFrame, useSpecviz } from "./hooks.jsx"
+import { formatPercent } from "./stringx.jsx"
+import { formatUnit } from "./axis.jsx"
+import { hide, show, setAnchor, setText, setX, setY } from "./svg.jsx"
 
 function Cursor(props: {
   parent: RefObject<SVGGElement>,
