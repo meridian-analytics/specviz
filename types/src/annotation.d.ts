@@ -1,5 +1,6 @@
 /// <reference types="react" />
-import { tannotation, taxis } from "./types.jsx";
+import { tannotation } from "./types.jsx";
+import { taxis } from "./axis.jsx";
 declare function Annotation(props: {
     annotation: tannotation;
     xaxis: taxis;

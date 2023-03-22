@@ -1,5 +1,6 @@
 import { MouseEvent, RefObject } from "react";
-import { tnullable, taxis, tcoord } from "./types.jsx";
+import { tnullable, tcoord } from "./types.jsx";
+import { taxis } from "./axis.jsx";
 import { trect } from "./rect.jsx";
 import { tvector2 } from "./vector2.jsx";
 declare function useAnimationFrame(callback: (frameId: number) => void): void;

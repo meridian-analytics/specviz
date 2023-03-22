@@ -1,5 +1,5 @@
 import { RefObject } from "react";
-import { taxis } from "./types.jsx";
+import { taxis } from "./axis.jsx";
 declare function Cursor(props: {
     parent: RefObject<SVGGElement>;
     xaxis: taxis;

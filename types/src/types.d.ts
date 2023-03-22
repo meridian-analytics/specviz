@@ -1,3 +1,4 @@
+import type { taxis } from "./axis.jsx";
 import type { trect } from "./rect.jsx";
 import type { tvector2 } from "./vector2.jsx";
 type tannotation = {
@@ -6,11 +7,6 @@ type tannotation = {
     unit: trect;
     xaxis: taxis;
     yaxis: taxis;
-};
-type taxis = {
-    unit: "hertz" | "seconds" | "percent";
-    intervals: Array<[number, number]>;
-    format: (x: number) => string;
 };
 type tcoord = {
     abs: tvector2;

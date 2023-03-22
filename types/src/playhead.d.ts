@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { taxis } from "./types.jsx";
+import { taxis } from "./axis.jsx";
 declare function Playhead(props: {
     xaxis: taxis;
     yaxis: taxis;
