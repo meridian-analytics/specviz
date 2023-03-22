@@ -30,7 +30,6 @@ type tnullable<T> = T | null
 
 type tcontext = {
   annotations: Map<string, tannotation>,
-  duration: number,
   input: tinput,
   mousedown: tcoord,
   mouseup: tcoord,

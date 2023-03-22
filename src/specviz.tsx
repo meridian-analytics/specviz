@@ -13,7 +13,6 @@ const ZOOM_MAX: number = 5
 const NOOP = () => {}
 
 function Specviz(props: {
-  duration: number,
   children: ReactNode,
 }) {
   const [annotations, setAnnotations] = useState<Map<string, tannotation>>(new Map())
@@ -297,7 +296,6 @@ function Specviz(props: {
 
   return <SpecvizContext.Provider value={{
     annotations,
-    duration: props.duration,
     input,
     mousedown: useMutableCoord(),
     mouseup: useMutableCoord(),

@@ -4,7 +4,6 @@ import { stop } from "./transport.jsx"
 
 const SpecvizContext = createContext<tcontext>({
   annotations: new Map(),
-  duration: 0,
   input: { buttons: 0, alt: false, ctrl: false, focus: null, xaxis: null, yaxis: null },
   mousedown: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
   mouseup: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },

@@ -14,34 +14,34 @@
 
 **&lt;Specviz&gt;**
 
-Context boundary for a single instance of specviz. All children have access to the shared context. If an audio component is loaded, the `duration` must be specified.
+Context boundary for a single instance of specviz. All children have access to the shared context.
 
 ```ts
 Specviz(props: {
-  duration: number,
   children: ReactNode,
 })
 ```
 
 ```jsx
-<Specviz duration={60}>
+<Specviz>
   …
 </Specviz>
 ```
 
-**&lt;Audio&gt; UNSTABLE API**
+**&lt;Audio&gt;**
 
 Load audio into the Specviz context. Currently supports a single audio source. Loading additional sources will override the previous source.
 
 ```ts
 Audio(props: {
-  url: string,
+  src: string,
+  duration: number,
 })
 ```
 
 ```jsx
-<Specviz duration={60}>
-  <Audio url="path/to/source.wav" />
+<Specviz>
+  <Audio src="path/to/source.wav" duration={60} />
   …
 </Specviz>
 ```
@@ -66,7 +66,7 @@ import { formatHz, formatTimestamp } from "specviz/format"
 const xaxis = linear(0, 60, "seconds", formatTimestamp)
 const yaxis = linear(20000, 0, "hertz", formatHz)
 
-<Specviz duration={60}>
+<Specviz>
   <Visualization
     imageUrl="path/to/spectrogram.png"
     xaxis={xaxis}
@@ -97,7 +97,7 @@ import { formatHz, formatTimestamp } from "specviz/format"
 const xaxis = linear(0, 60, "seconds", formatTimestamp)
 const yaxis = linear(20000, 0, "hertz", formatHz)
 
-<Specviz duration={60}>
+<Specviz>
   <Navigator
     imageUrl="path/to/spectrogram.png"
     xaxis={xaxis}

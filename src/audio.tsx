@@ -9,9 +9,11 @@ const LPF = 22000
 const HPF = 0
 
 function Audio(props: {
-  url: string,
+  src: string,
+  duration: number,
 }) {
-  const { annotations, duration, playhead, transportState, setTransport, setTransportState } = useSpecviz()
+  const { src, duration } = props
+  const { annotations, playhead, transportState, setTransport, setTransportState } = useSpecviz()
   const sound = useRef<tnullable<Sound>>(null)
   const fxLPF = useRef(new Effects.LowPassFilter({ frequency: LPF, peak: 10 }))
   const fxHPF = useRef(new Effects.HighPassFilter({ frequency: HPF, peak: 10 }))
@@ -93,7 +95,7 @@ function Audio(props: {
         return transport.loop(rect.x, Date.now(), annotation)
       })
     },
-    [duration]
+    []
   )
 
   const stop = useCallback(
@@ -135,7 +137,7 @@ function Audio(props: {
   useEffect(
     () => {
       const newSound = new Sound(
-        props.url,
+        src,
         err => {
           if (err) return console.error(err)
           if (sound.current != null) sound.current.stop()
@@ -147,7 +149,7 @@ function Audio(props: {
       )
       return stop
     },
-    [props.url, play, loop, stop, seek]
+    [src, play, loop, stop, seek]
   )
 
   return <></>

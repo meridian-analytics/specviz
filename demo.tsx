@@ -64,8 +64,8 @@ const segment3: tsegment = {
 
 function MyComponent() {
   const [data, setData] = useState(segment1)
-  return <Specviz duration={data.duration}>
-    <Audio url={data.audio} />
+  return <Specviz>
+    <Audio src={data.audio} duration={data.duration} />
     <MyKeybinds />
     <h3>specviz-react</h3>
     <div className="segments">
