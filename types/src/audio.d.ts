@@ -1,5 +1,6 @@
 /// <reference types="react" />
 declare function Audio(props: {
-    url: string;
+    src: string;
+    duration: number;
 }): JSX.Element;
 export default Audio;
