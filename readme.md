@@ -52,7 +52,7 @@ Load visualization image and axes into the Specviz context. Annotation data, zoo
 
 ```ts
 Visualization(props: {
-  imageUrl: string,
+  src: string,
   xaxis: taxis,
   yaxis: taxis,
 })
@@ -68,7 +68,7 @@ const yaxis = linear(20000, 0, "hertz", formatHz)
 
 <Specviz>
   <Visualization
-    imageUrl="path/to/spectrogram.png"
+    src="path/to/spectrogram.png"
     xaxis={xaxis}
     yaxis={yaxis}
   />
@@ -83,7 +83,7 @@ Load navigator image and axes into the Specviz context. Similar to Visualization
 
 ```ts
 Navigator(props: {
-  imageUrl: string,
+  src: string,
   xaxis: taxis,
   yaxis: taxis,
 })
@@ -99,12 +99,12 @@ const yaxis = linear(20000, 0, "hertz", formatHz)
 
 <Specviz>
   <Navigator
-    imageUrl="path/to/spectrogram.png"
+    src="path/to/spectrogram.png"
     xaxis={xaxis}
     yaxis={yaxis}
   />
   <Visualization
-    imageUrl="path/to/spectrogram.png"
+    src="path/to/spectrogram.png"
     xaxis={xaxis}
     yaxis={yaxis}
   />

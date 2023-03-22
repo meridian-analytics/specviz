@@ -9,11 +9,11 @@ import Annotation from "./annotation.jsx"
 const NOOP = () => {}
 
 function Navigator(props: {
-  imageUrl: string,
+  src: string,
   xaxis: taxis,
   yaxis: taxis,
 }) {
-  const { imageUrl, xaxis, yaxis } = props
+  const { src, xaxis, yaxis } = props
   const { annotations, command, input, mouseup, mouseRect, scroll, zoom, toolState, transportState } = useSpecviz()
   const containerRef = useRef<SVGSVGElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
@@ -92,7 +92,7 @@ function Navigator(props: {
       {...onMouse}
     >
       <image
-        href={imageUrl}
+        href={src}
         width="100%"
         height="100%"
         preserveAspectRatio="none"

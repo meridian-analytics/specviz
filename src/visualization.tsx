@@ -11,11 +11,11 @@ import Playhead from "./playhead.jsx"
 const NOOP = () => {}
 
 function Visualization(props: {
-  imageUrl: string,
+  src: string,
   xaxis: taxis,
   yaxis: taxis,
 }) {
-  const { imageUrl, xaxis, yaxis } = props
+  const { src, xaxis, yaxis } = props
   const { command, input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } = useSpecviz()
   const { toolState, transportState, transport } = useSpecviz()
   const { annotations } = useSpecviz()
@@ -145,7 +145,7 @@ function Visualization(props: {
         >
           <image
             preserveAspectRatio="none"
-            href={imageUrl}
+            href={src}
             width="100%"
             height="100%"
           />

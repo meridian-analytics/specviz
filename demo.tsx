@@ -11,11 +11,11 @@ type tsegment = {
   duration: number,
   xaxis: taxis,
   spectrogram: {
-    imageUrl: string,
+    image: string,
     yaxis: taxis,
   },
   waveform: {
-    imageUrl: string,
+    image: string,
     yaxis: taxis,
   },
 }
@@ -25,11 +25,11 @@ const segment1: tsegment = {
   duration: 44.416,
   xaxis: linear(0, 44.416, "seconds", formatTimestamp),
   spectrogram: {
-    imageUrl: "./spectrogram.png",
+    image: "./spectrogram.png",
     yaxis: linear(20000, 0, "hertz", formatHz),
   },
   waveform: {
-    imageUrl: "./waveform.png",
+    image: "./waveform.png",
     yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
   }
 }
@@ -39,11 +39,11 @@ const segment2: tsegment = {
   duration: 44.416,
   xaxis: linear(0, 44.416, "seconds", formatTimestamp),
   spectrogram: {
-    imageUrl: "./spectrogram2.png",
+    image: "./spectrogram2.png",
     yaxis: linear(20000, 0, "hertz", formatHz),
   },
   waveform: {
-    imageUrl: "./waveform2.png",
+    image: "./waveform2.png",
     yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
   },
 }
@@ -53,11 +53,11 @@ const segment3: tsegment = {
   duration: 44.416,
   xaxis: linear(0, 44.416, "seconds", formatTimestamp),
   spectrogram: {
-    imageUrl: "./spectrogram.png",
+    image: "./spectrogram.png",
     yaxis: linear(20000, 0, "hertz", formatHz),
   },
   waveform: {
-    imageUrl: "./waveform.png",
+    image: "./waveform.png",
     yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
   }
 }
@@ -89,22 +89,22 @@ function MyComponent() {
     <div id="app">
       <main>
         <Navigator
-          imageUrl={data.spectrogram.imageUrl}
+          src={data.spectrogram.image}
           xaxis={data.xaxis}
           yaxis={data.spectrogram.yaxis}
         />
         <Visualization
-          imageUrl={data.spectrogram.imageUrl}
+          src={data.spectrogram.image}
           xaxis={data.xaxis}
           yaxis={data.spectrogram.yaxis}
         />
         <Visualization
-          imageUrl={data.waveform.imageUrl}
+          src={data.waveform.image}
           xaxis={data.xaxis}
           yaxis={data.waveform.yaxis}
         />
         <Navigator
-          imageUrl={data.waveform.imageUrl}
+          src={data.waveform.image}
           xaxis={data.xaxis}
           yaxis={data.waveform.yaxis}
         />
