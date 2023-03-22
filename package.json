@@ -28,6 +28,10 @@
       "types": "./types/src/index.d.ts",
       "import": "./dist/specviz-react.js"
     },
+    "./axis": {
+      "types": "./types/src/axis.d.ts",
+      "import": "./dist/axis.js"
+    },
     "./format": {
       "types": "./types/src/stringx.d.ts",
       "import": "./dist/format.js"

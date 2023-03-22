@@ -4,6 +4,7 @@
 * [hooks](#hooks)
 * [types](#types)
 * [css styling](#css)
+* [axis module](#axis)
 * [format module](#format)
 * [keybinds module](#keybinds)
 * [default bindings](#default-bindings)
@@ -24,7 +25,7 @@ Specviz(props: {
 
 ```jsx
 <Specviz duration={60}>
-  ⋯
+  …
 </Specviz>
 ```
 
@@ -41,7 +42,7 @@ Audio(props: {
 ```jsx
 <Specviz duration={60}>
   <Audio url="path/to/source.wav" />
-  ⋯
+  …
 </Specviz>
 ```
 
@@ -58,17 +59,12 @@ Visualization(props: {
 ```
 
 ```jsx
-const xaxis = {
-  unit: "seconds",
-  intervals: [[0,0], [1, 44.416]],
-  format: formatTimestamp,
-}
+import { Specviz, Visualization } from "specviz"
+import { linear } from "specviz/axis"
+import { formatHz, formatTimestamp } from "specviz/format"
 
-const yaxis = {
-  unit: "hertz",
-  intervals: [[0, 20000], [1, 0]],
-  format: formatHz,
-}
+const xaxis = linear(0, 60, "seconds", formatTimestamp)
+const yaxis = linear(20000, 0, "hertz", formatHz)
 
 <Specviz duration={60}>
   <Visualization
@@ -76,7 +72,7 @@ const yaxis = {
     xaxis={xaxis}
     yaxis={yaxis}
   />
-  ⋯
+  …
 </Specviz>
 ```
 
@@ -94,17 +90,12 @@ Navigator(props: {
 ```
 
 ```jsx
-const xaxis = {
-  unit: "seconds",
-  intervals: [[0,0], [1, 44.416]],
-  format: formatTimestamp,
-}
+import { Specviz, Navigator, Visualization } from "specviz"
+import { linear } from "specviz/axis"
+import { formatHz, formatTimestamp } from "specviz/format"
 
-const yaxis = {
-  unit: "hertz",
-  intervals: [[0, 20000], [1, 0]],
-  format: formatHz,
-}
+const xaxis = linear(0, 60, "seconds", formatTimestamp)
+const yaxis = linear(20000, 0, "hertz", formatHz)
 
 <Specviz duration={60}>
   <Navigator
@@ -117,7 +108,7 @@ const yaxis = {
     xaxis={xaxis}
     yaxis={yaxis}
   />
-  ⋯
+  …
 </Specviz>
 ```
 
@@ -148,7 +139,7 @@ function EditAnnotation({ annotation }) {
         />
         Offset
       </div>
-      ⋯
+      …
     </div>
   </div>
 }
@@ -167,14 +158,14 @@ useSpecviz(): SpecvizContext
 
 ```jsx
 function MyComponent(props) {
-  const { ⋯ } = useSpecviz()
-  return ⋯
+  const { … } = useSpecviz()
+  return …
 }
 ```
 ```jsx
 <Specviz>
   <MyComponent />
-  ⋯
+  …
 </Specviz>
 ```
 
@@ -192,7 +183,7 @@ type tcontext = {
   toolState: ttoolstate,
   transport: ttransport,
   setAnnotations: (func: tfunctional<Map<string, tannotation>>) => void,
-  ⋯
+  …
 }
 ```
 
@@ -281,10 +272,14 @@ Here is an example annotation created from the `command.annotate` command. Note 
 **axis**
 
 ```ts
+type taxisunit = "hertz" | "seconds" | "percent"
+
+type taxisformat = (x: number) => string
+
 type taxis = {
-  unit: "hertz" | "seconds" | "percent",
+  unit: taxisunit,
+  format: taxisformat,
   intervals: Array<[number, number]>,
-  format: (x: number) => string,
 }
 ```
 
@@ -341,21 +336,54 @@ The following selectors are available to apply styling to specific Specviz compo
 ```
 
 <small>[back to top](#top)</small>
-### <a name="format"></a> format
+### <a name="axis"></a> axis module
+
+Axis module for creating axis contexts.
+
+```ts
+computeUnit(t: taxis, x: number): number
+
+computeRect(tx: taxis, ty: taxis, r: trect): trect
+
+formatUnit(t: taxis, x: number): string
+
+linear(
+  min: number,
+  max: number,
+  unit: taxisunit = "percent",
+  format: taxisformat = String
+): taxis
+
+nonlinear(
+  intervals: Array<[number, number]>,
+  unit: taxisunit = "percent",
+  format: taxisformat = String
+): taxis
+```
+
+```js
+import { linear, nonlinear, … } from "specviz/axis"
+```
+
+<small>[back to top](#top)</small>
+### <a name="format"></a> format module
 
 String formatters for numeric values.
 
 ```ts
-formatHz(value: number) => string
-formatPercent(value: number) => string
-formatTimestamp(value: number) => string
+formatHz(value: number): string
+
+formatPercent(value: number): string
+
+formatTimestamp(value: number): string
 ```
+
 ```js
-import { formatHz, ⋯ } from "specviz-react/format"
+import { formatHz, formatPercent, … } from "specviz-react/format"
 ```
 
 <small>[back to top](#top)</small>
-### <a name="keybinds"></a> keybinds
+### <a name="keybinds"></a> keybinds module
 
 Optional module for configuring simple keybinds to Specviz commands and transport controls.
 

@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react"
 import { useAnimationFrame, useSpecviz } from "./hooks.jsx"
-import { tannotation, taxis } from "./types.jsx"
+import { tannotation } from "./types.jsx"
+import { taxis } from "./axis.jsx"
 import { setX, setY } from "./svg.jsx"
 import { logical, trect } from "./rect.jsx"
 

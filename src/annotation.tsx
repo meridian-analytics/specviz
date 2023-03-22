@@ -1,5 +1,6 @@
 import { useMemo } from "react"
-import { tannotation, taxis } from "./types.jsx"
+import { tannotation } from "./types.jsx"
+import { taxis } from "./axis.jsx"
 import { useSpecviz } from "./hooks.jsx"
 import { logical } from "./rect.jsx"
 

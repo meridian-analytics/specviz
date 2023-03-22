@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react"
-import { taxis } from "./types.jsx"
+import { taxis } from "./axis.jsx"
 import { useAnimationFrame, useMouse, useSpecviz, useWheel } from "./hooks.jsx"
 import { magnitude } from "./vector2.jsx"
 import { setPath } from "./svg.jsx"

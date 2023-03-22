@@ -1,5 +1,15 @@
-import { taxis, tnullable } from "./types.jsx"
+import { tnullable } from "./types.jsx"
 import { trect, normalize } from "./rect.jsx"
+
+type taxisunit = "hertz" | "seconds" | "percent"
+
+type taxisformat = (x: number) => string
+
+type taxis = {
+  unit: taxisunit,
+  format: taxisformat,
+  intervals: Array<[number, number]>,
+}
 
 function computeUnit(t: tnullable<taxis>, q: number) {
   if (t == null) return q
@@ -33,4 +43,21 @@ function formatUnit(t: taxis, q: number) {
   return t.format(q)
 }
 
-export { computeRect, computeUnit, formatUnit }
+function linear(min: number, max: number, unit: taxisunit = "percent", format: taxisformat = String): taxis {
+  return {
+    unit,
+    format,
+    intervals: [[0, min], [1, max]],
+  }
+}
+
+function nonlinear(intervals: Array<[number, number]>, unit: taxisunit = "percent", format: taxisformat = String): taxis {
+  return {
+    unit,
+    format,
+    intervals,
+  }
+}
+
+export type { taxis }
+export { computeRect, computeUnit, formatUnit, linear, nonlinear }

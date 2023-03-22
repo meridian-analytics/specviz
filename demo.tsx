@@ -1,6 +1,7 @@
 import { StrictMode, useState } from "react"
 import { createRoot } from "react-dom/client"
-import { tannotation, taxis } from "./src/types.jsx"
+import { tannotation } from "./src/types.jsx"
+import { taxis, linear, nonlinear } from "./src/axis.jsx"
 import { Specviz, Audio, Encoder, Navigator, Visualization, useSpecviz } from "./src/index.jsx"
 import { Bindings, Keypress } from "./src/keybinds.jsx"
 import { formatHz, formatPercent, formatTimestamp } from "./src/stringx.jsx"
@@ -22,78 +23,42 @@ type tsegment = {
 const segment1: tsegment = {
   audio: "./audio.wav",
   duration: 44.416,
-  xaxis: {
-    unit: "seconds",
-    intervals: [[0,0], [1, 44.416]],
-    format: formatTimestamp,
-  },
+  xaxis: linear(0, 44.416, "seconds", formatTimestamp),
   spectrogram: {
     imageUrl: "./spectrogram.png",
-    yaxis: {
-      unit: "hertz",
-      intervals: [[0, 20000], [1, 0]],
-      format: formatHz,
-    },
+    yaxis: linear(20000, 0, "hertz", formatHz),
   },
   waveform: {
     imageUrl: "./waveform.png",
-    yaxis: {
-      unit: "percent",
-      intervals: [[0, 1], [.5, 0], [1, -1]],
-      format: formatPercent,
-    },
+    yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
   }
 }
 
 const segment2: tsegment = {
   audio: "./audio2.wav",
   duration: 44.416,
-  xaxis: {
-    unit: "seconds",
-    intervals: [[0, 0], [1, 44.416]],
-    format: formatTimestamp,
-  },
+  xaxis: linear(0, 44.416, "seconds", formatTimestamp),
   spectrogram: {
     imageUrl: "./spectrogram2.png",
-    yaxis: {
-      unit: "hertz",
-      intervals: [[0, 20000], [.5, 2000], [1, 0]],
-      format: formatHz,
-    },
+    yaxis: linear(20000, 0, "hertz", formatHz),
   },
   waveform: {
     imageUrl: "./waveform2.png",
-    yaxis: {
-      unit: "percent",
-      intervals: [[0, 1], [.5, 0], [1, -1]],
-      format: formatPercent,
-    },
+    yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
   },
 }
 
 const segment3: tsegment = {
   audio: "./audio.wav",
   duration: 44.416,
-  xaxis: {
-    unit: "seconds",
-    intervals: [[0,0], [1, 44.416]],
-    format: formatTimestamp,
-  },
+  xaxis: linear(0, 44.416, "seconds", formatTimestamp),
   spectrogram: {
     imageUrl: "./spectrogram.png",
-    yaxis: {
-      unit: "hertz",
-      intervals: [[0, 20000], [.5, 2000], [1, 0] ],
-      format: formatHz,
-    },
+    yaxis: linear(20000, 0, "hertz", formatHz),
   },
   waveform: {
     imageUrl: "./waveform.png",
-    yaxis: {
-      unit: "percent",
-      intervals: [[0, 1], [.5, 0], [1, -1]],
-      format: formatPercent,
-    },
+    yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
   }
 }
 

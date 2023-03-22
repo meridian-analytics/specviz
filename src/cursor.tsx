@@ -1,5 +1,5 @@
 import { RefObject, useCallback, useRef } from "react"
-import { taxis } from "./types.jsx"
+import { taxis } from "./axis.jsx"
 import { useAnimationFrame, useSpecviz } from "./hooks.jsx"
 import { formatPercent } from "./stringx.jsx"
 import { formatUnit } from "./axis.jsx"
