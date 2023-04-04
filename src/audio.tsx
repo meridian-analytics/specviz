@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react"
 import { Sound, Effects } from "pizzicato"
 import { tannotation, tnullable } from "./types.jsx"
 import { useAnimationFrame, useSpecviz } from "./hooks.jsx"
+import { subscribe } from "./func.jsx"
 import { trect } from "./rect.jsx"
 import * as transport from "./transport.jsx"
 
@@ -136,6 +137,7 @@ function Audio(props: {
 
   useEffect(
     () => {
+      const unsub = subscribe(window, "blur", stop)
       const newSound = new Sound(
         src,
         err => {
@@ -147,7 +149,10 @@ function Audio(props: {
           setTransport({ play, loop, stop, seek })
         }
       )
-      return stop
+      return () => {
+        stop()
+        unsub()
+      }
     },
     [src, play, loop, stop, seek]
   )
