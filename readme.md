@@ -126,6 +126,8 @@ Encoder(props: {
 ```
 
 ```jsx
+import { Encoder, useSpecviz } from "specviz-react"
+
 function EditAnnotation({ annotation }) {
   const { command } = useSpecviz()
   return <div className="myform">
