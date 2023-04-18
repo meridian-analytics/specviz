@@ -166,7 +166,7 @@ function useMutableRect() {
 // to stop propagation, use a non-passive listener
 // https://stackoverflow.com/a/67258046
 function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
-  const { mousedown, scroll, zoom } = useSpecviz()
+  const { command, mousedown, zoom } = useSpecviz()
   useEffect(
     () => {
       const elem = ref.current!
@@ -175,14 +175,20 @@ function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
         const dx = e.deltaX / elem.clientWidth
         const dy = e.deltaY / elem.clientHeight
         if (e.altKey) {
-          zoom.x = zoom.x + dx * direction
-          zoom.y = zoom.y + dy * direction
-          scroll.x = (mousedown.abs.x * zoom.x) - mousedown.rel.x
-          scroll.y = (mousedown.abs.y * zoom.y) - mousedown.rel.y
+          command.zoom(
+            dx * direction,
+            dy * direction,
+          )
+          command.scrollTo({
+            x: (mousedown.abs.x * zoom.x) - mousedown.rel.x,
+            y: (mousedown.abs.y * zoom.y) - mousedown.rel.y,
+          })
         }
         else {
-          scroll.x -= dx * direction
-          scroll.y -= dy * direction
+          command.scroll(
+            -dx * direction,
+            -dy * direction,
+          )
         }
       }
       elem.addEventListener("wheel", onWheel, { passive: false })

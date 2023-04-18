@@ -29,6 +29,7 @@ const SpecvizContext = createContext<tcontext>({
     setRectWidth: () => { console.error("command.setRectWidth called outside of Specviz context") },
     setRectHeight: () => { console.error("command.setRectHeight called outside of Specviz context") },
     tool: () => { console.error("command.tool called outside of Specviz context") },
+    zoom: () => { console.error("command.zoom called outside of Specviz context") },
     zoomPoint: () => { console.error("command.zoomPoint called outside of Specviz context") },
     zoomArea: () => { console.error("command.zoomArea called outside of Specviz context") },
   },

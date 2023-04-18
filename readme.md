@@ -209,6 +209,7 @@ type tcommand = {
   setRectWidth: (annotation: tannotation, width: number) => void,
   setRectHeight: (annotation: tannotation, height: number) => void,
   tool: (toolState: ttoolstate) => void,
+  zoom: (dx: number, dy: number) => void,
   zoomArea: (rect: trect) => void,
   zoomPoint: (pt: tvector2) => void,
 }

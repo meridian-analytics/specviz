@@ -236,6 +236,10 @@ function Specviz(props: {
       tool(t) {
         setToolState(t)
       },
+      zoom(dx, dy) {
+        zoom.x += dx
+        zoom.y += dy
+      },
       zoomArea(area) {
         zoom.x = 1 / area.width
         zoom.y = 1 / area.height
