@@ -44,6 +44,10 @@ body {
   text-align: center;
 }
 
+.annotation-form .encoders svg {
+  display: block;
+}
+
 /* specviz defaults */
 .visualization {
   height: 200px;

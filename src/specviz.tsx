@@ -188,6 +188,24 @@ function Specviz(props: {
           )
         })
       },
+      setRectX1(a, dx) {
+        // todo: implement
+      },
+      setRectX2(a, dx) {
+        setAnnotations(prevState => {
+          const nextState = new Map(prevState)
+          const rect: trect = {
+            x: a.rect.x,
+            y: a.rect.y,
+            width: clamp(a.rect.width + dx, 0.01, 1 - a.rect.x),
+            height: a.rect.height,
+          }
+          return nextState.set(
+            a.id,
+            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
+          )
+        })
+      },
       setRectY(a, dy) {
         setAnnotations(prevState => {
           const nextState = new Map(prevState)
@@ -203,14 +221,14 @@ function Specviz(props: {
           )
         })
       },
-      setRectWidth(a, dw) {
+      setRectY1(a, dy) {
         setAnnotations(prevState => {
           const nextState = new Map(prevState)
           const rect: trect = {
             x: a.rect.x,
-            y: a.rect.y,
-            width: clamp(a.rect.width + dw, 0.01, 1 - a.rect.x),
-            height: a.rect.height,
+            y: clamp(a.rect.y + dy, 0, a.rect.y + a.rect.height - 0.01),
+            width: a.rect.width,
+            height: clamp(a.rect.height - Math.max(dy, -a.rect.y), 0.01, 1 - a.rect.y),
           }
           return nextState.set(
             a.id,
@@ -218,14 +236,14 @@ function Specviz(props: {
           )
         })
       },
-      setRectHeight(a, dh) {
+      setRectY2(a, dy) {
         setAnnotations(prevState => {
           const nextState = new Map(prevState)
           const rect: trect = {
             x: a.rect.x,
             y: a.rect.y,
             width: a.rect.width,
-            height: clamp(a.rect.height + dh, 0.01, 1 - a.rect.y),
+            height: clamp(a.rect.height + dy, 0.01, 1 - a.rect.y),
           }
           return nextState.set(
             a.id,

@@ -221,35 +221,34 @@ function MyForm(props: { annotation: tannotation }) {
       <div>
         <Encoder
           state={annotation.rect.width}
-          setState={v => command.setRectWidth(annotation, v)}
+          setState={v => command.setRectX2(annotation, v)}
           value={annotation.unit.width}
           unit={annotation.xaxis.unit}
         />
         Duration
       </div>
       <div>
-        {/*
-          todo: this is a hack to invert the y-axis
-          todo: axis context
-        */}
+        {/* todo: axis context */}
         <Encoder
           state={1 - annotation.rect.y - annotation.rect.height}
-          setState={v => command.setRectY(annotation, v)}
+          setState={v => command.setRectY2(annotation, v)}
           value={annotation.unit.y}
           unit={annotation.yaxis.unit}
         />
-        Cutoff
+        HPF
       </div>
       <div>
+        {/* todo: axis context */}
         <Encoder
-          state={annotation.rect.height}
-          setState={v => command.setRectHeight(annotation, v)}
-          value={annotation.unit.height}
+          state={1 - annotation.rect.y}
+          setState={v => command.setRectY1(annotation, v)}
+          value={annotation.unit.y + annotation.unit.height}
           unit={annotation.yaxis.unit}
         />
-        Range
+        LPF
       </div>
     </div>
+    <pre>{JSON.stringify(annotation, null, 2)}</pre>
   </div>
 }
 
