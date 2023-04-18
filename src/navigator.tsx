@@ -37,8 +37,6 @@ function Navigator(props: {
   ))
 
   const onMouse = useMouse({
-    xaxis: null,
-    yaxis: null,
     onContextMenu: NOOP,
     onMouseDown: NOOP,
     onMouseEnter: NOOP,

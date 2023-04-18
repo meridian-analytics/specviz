@@ -11,8 +11,7 @@ type taxis = {
   intervals: Array<[number, number]>,
 }
 
-function computeUnit(t: tnullable<taxis>, q: number) {
-  if (t == null) return q
+function computeUnit(t: taxis, q: number) {
   const { intervals: s } = t
   if (s.length < 2) return -Infinity
   let ax, ay, bx, by

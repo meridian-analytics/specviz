@@ -24,8 +24,8 @@ function useAnimationFrame(callback: (frameId: number) => void) {
 }
 
 function useMouse(props: {
-  xaxis: tnullable<taxis>,
-  yaxis: tnullable<taxis>,
+  xaxis?: taxis,
+  yaxis?: taxis,
   onMouseDown: (e: MouseEvent<SVGSVGElement>) => void,
   onMouseMove: (e: MouseEvent<SVGSVGElement>) => void,
   onMouseUp: (e: MouseEvent<SVGSVGElement>) => void,
@@ -56,16 +56,16 @@ function useMouse(props: {
             mouseup.rel.y = y
             mouseup.abs.x = (x + scroll.x) / zoom.x
             mouseup.abs.y = (y + scroll.y) / zoom.y
-            unitUp.x = computeUnit(props.xaxis, clamp(mouseup.abs.x, 0, 1))
-            unitUp.y = computeUnit(props.yaxis, clamp(mouseup.abs.y, 0, 1))
+            if (props.xaxis != null) unitUp.x = computeUnit(props.xaxis, clamp(mouseup.abs.x, 0, 1))
+            if (props.yaxis != null) unitUp.y = computeUnit(props.yaxis, clamp(mouseup.abs.y, 0, 1))
           }
           else {
             mousedown.rel.x = mouseup.rel.x = x
             mousedown.rel.y = mouseup.rel.y = y
             mousedown.abs.x = mouseup.abs.x = (x + scroll.x) / zoom.x
             mousedown.abs.y = mouseup.abs.y = (y + scroll.y) / zoom.y
-            unitDown.x = unitUp.x = computeUnit(props.xaxis, clamp(mousedown.abs.x, 0, 1))
-            unitDown.y = unitUp.y = computeUnit(props.yaxis, clamp(mousedown.abs.y, 0, 1))
+            if (props.xaxis != null) unitDown.x = unitUp.x = computeUnit(props.xaxis, clamp(mousedown.abs.x, 0, 1))
+            if (props.yaxis != null) unitDown.y = unitUp.y = computeUnit(props.yaxis, clamp(mousedown.abs.y, 0, 1))
           }
           const rect = fromPoints(mousedown.abs, mouseup.abs)
           mouseRect.x = rect.x
@@ -80,8 +80,8 @@ function useMouse(props: {
         },
         onMouseEnter(e: MouseEvent<SVGSVGElement>) {
           input.focus = e.currentTarget
-          input.xaxis = props.xaxis
-          input.yaxis = props.yaxis
+          if (props.xaxis != null) input.xaxis = props.xaxis
+          if (props.yaxis != null) input.yaxis = props.yaxis
           props.onMouseEnter(e)
         },
         onMouseLeave(e: MouseEvent<SVGSVGElement>) {
