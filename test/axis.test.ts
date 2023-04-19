@@ -145,3 +145,15 @@ test("axis.computeRect normalized", () => {
     height: 19980, // normalized
   })
 })
+
+test("axis.computeRectInverse", () => {
+  const xaxis = axis.linear(0, 60, "seconds", String)
+  const yaxis = axis.linear(20, 20000, "hertz", String)
+  const rect = { x: 0, y: 20, width: 60, height: 19980 }
+  expect(axis.computeRectInverse(xaxis, yaxis, rect)).toEqual({
+    x: 0,
+    y: 0,
+    width: 1,
+    height: 1,
+  })
+})

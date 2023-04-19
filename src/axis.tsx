@@ -32,22 +32,28 @@ function computeUnitInverse(t: taxis, q: number): number {
   while (i < s.length - 1) {
     [ax, ay] = s[i];
     [bx, by] = s[i + 1]
-    if (ay <= q && q <= by) return ax + (q - ay) * (bx - ax) / (by - ay)
+    if (ay <= q && q <= by) return ax + (bx - ax) * (q - ay) / (by - ay)
     i += 1
   }
   return -Infinity
 }
 
-function computeRect(tx: taxis, ty: taxis, rect: trect) {
-  const x = computeUnit(tx, rect.x)
-  const y = computeUnit(ty, rect.y)
-  return normalize({
-    x,
-    y,
-    width: computeUnit(tx, rect.x + rect.width) - x,
-    height: computeUnit(ty, rect.y + rect.height) - y,
-  })
+function computeRectAux(func: (t: taxis, q: number) => number) {
+  return (tx: taxis, ty: taxis, rect: trect) => {
+    const x = func(tx, rect.x)
+    const y = func(ty, rect.y)
+    return normalize({
+      x,
+      y,
+      width: func(tx, rect.x + rect.width) - x,
+      height: func(ty, rect.y + rect.height) - y,
+    })
+  }
 }
+
+const computeRect = computeRectAux(computeUnit)
+
+const computeRectInverse = computeRectAux(computeUnitInverse)
 
 function formatUnit(t: taxis, q: number) {
   return t.format(q)
@@ -70,4 +76,4 @@ function nonlinear(intervals: Array<[number, number]>, unit: taxisunit = "percen
 }
 
 export type { taxis }
-export { computeRect, computeUnit, computeUnitInverse, formatUnit, linear, nonlinear }
+export { computeRect, computeRectInverse, computeUnit, computeUnitInverse, formatUnit, linear, nonlinear }
