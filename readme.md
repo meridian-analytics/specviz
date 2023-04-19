@@ -7,6 +7,7 @@
 * [axis module](#axis)
 * [format module](#format)
 * [keybinds module](#keybinds)
+* [data serialization](#serialization)
 * [default bindings](#default-bindings)
 * [features roadmap](#roadmap)
 
@@ -18,6 +19,7 @@ Context boundary for a single instance of specviz. All children have access to t
 
 ```ts
 Specviz(props: {
+  initAnnotations?: Map<string, tannotation>,
   children: ReactNode,
 })
 ```
@@ -59,9 +61,9 @@ Visualization(props: {
 ```
 
 ```jsx
-import { Specviz, Visualization } from "specviz"
-import { linear } from "specviz/axis"
-import { formatHz, formatTimestamp } from "specviz/format"
+import { Specviz, Visualization } from "specviz-react"
+import { linear } from "specviz-react/axis"
+import { formatHz, formatTimestamp } from "specviz-react/format"
 
 const xaxis = linear(0, 60, "seconds", formatTimestamp)
 const yaxis = linear(20000, 0, "hertz", formatHz)
@@ -90,9 +92,9 @@ Navigator(props: {
 ```
 
 ```jsx
-import { Specviz, Navigator, Visualization } from "specviz"
-import { linear } from "specviz/axis"
-import { formatHz, formatTimestamp } from "specviz/format"
+import { Specviz, Navigator, Visualization } from "specviz-react"
+import { linear } from "specviz-react/axis"
+import { formatHz, formatTimestamp } from "specviz-react/format"
 
 const xaxis = linear(0, 60, "seconds", formatTimestamp)
 const yaxis = linear(20000, 0, "hertz", formatHz)
@@ -367,7 +369,7 @@ nonlinear(
 ```
 
 ```js
-import { linear, nonlinear, … } from "specviz/axis"
+import { linear, nonlinear, … } from "specviz-react/axis"
 ```
 
 <small>[back to top](#top)</small>
@@ -423,6 +425,48 @@ function MyKeybinds() {
     <Keypress bind="x" onKeyDown={transport.stop} />
   </Bindings>
 }
+```
+
+<small>[back to top](#top)</small>
+### <a name="#serialization"></a> data serialization UNSTABLE API
+
+To save annotations for later recall, use `serializeAnnotations`.
+
+```jsx
+function MyComponent() {
+  const { annotations } = useSpecviz()
+  function onSubmit(event) {
+    event.preventDefault()
+    const mydata = serializeAnnotations(annotations)
+    console.log(JSON.stringify(mydata, null, 2))
+  })
+  return <form onSubmit={onSubmit}>
+    …
+  </form>
+}
+```
+
+To be usable within Specviz, annotations need to be reinserted into an axis context. Use `deserializeAnnotations` to properly recall saved data.
+
+```jsx
+import { Specviz, deserializeAnnotations } from "specviz-react"
+import { linear, nonlinear } from "specviz-react/axis"
+import { formatHz, formatTimestamp, formatPercent } from "specviz-react/format"
+import serialdata from "mydata.json"
+
+const axisTime = linear(0, 44.416, "seconds", formatTimestamp)
+const axisHertz = linear(20000, 0, "hertz", formatHz)
+const amplitudeAxis = nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent)
+
+const mydata = deserializeAnnotations(serialdata, new Map([
+  ["seconds", axisTime],
+  ["hertz", axisHertz],
+  ["percent", amplitudeAxis],
+]))
+
+<Specviz initAnnotations={mydata}>
+  …
+</Specviz>
 ```
 
 <small>[back to top](#top)</small>

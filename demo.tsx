@@ -5,6 +5,8 @@ import { taxis, linear, nonlinear } from "./src/axis.jsx"
 import { Specviz, Audio, Encoder, Navigator, Visualization, useSpecviz } from "./src/index.jsx"
 import { Bindings, Keypress } from "./src/keybinds.jsx"
 import { formatHz, formatPercent, formatTimestamp } from "./src/stringx.jsx"
+import { deserializeAnnotations } from "./src/index.jsx"
+import demoAnnotations from "./demo-annotations.json"
 
 type tsegment = {
   audio: string,
@@ -20,51 +22,60 @@ type tsegment = {
   },
 }
 
+const axisHertz = linear(20000, 0, "hertz", formatHz)
+const axisTime = linear(0, 44.416, "seconds", formatTimestamp)
+const amplitudeAxis = nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent)
+
 const segment1: tsegment = {
   audio: "./audio.wav",
   duration: 44.416,
-  xaxis: linear(0, 44.416, "seconds", formatTimestamp),
+  xaxis: axisTime,
   spectrogram: {
     image: "./spectrogram.png",
-    yaxis: linear(20000, 0, "hertz", formatHz),
+    yaxis: axisHertz,
   },
   waveform: {
     image: "./waveform.png",
-    yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
+    yaxis: amplitudeAxis,
   }
 }
 
 const segment2: tsegment = {
   audio: "./audio2.wav",
   duration: 44.416,
-  xaxis: linear(0, 44.416, "seconds", formatTimestamp),
+  xaxis: axisTime,
   spectrogram: {
     image: "./spectrogram2.png",
-    yaxis: linear(20000, 0, "hertz", formatHz),
+    yaxis: axisHertz,
   },
   waveform: {
     image: "./waveform2.png",
-    yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
+    yaxis: amplitudeAxis,
   },
 }
 
 const segment3: tsegment = {
   audio: "./audio.wav",
   duration: 44.416,
-  xaxis: linear(0, 44.416, "seconds", formatTimestamp),
+  xaxis: axisTime,
   spectrogram: {
     image: "./spectrogram.png",
-    yaxis: linear(20000, 0, "hertz", formatHz),
+    yaxis: axisHertz,
   },
   waveform: {
     image: "./waveform.png",
-    yaxis: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
+    yaxis: amplitudeAxis,
   }
 }
 
 function MyComponent() {
   const [data, setData] = useState(segment1)
-  return <Specviz>
+  const annos = deserializeAnnotations(demoAnnotations, new Map([
+    ["seconds", axisTime],
+    ["hertz", axisHertz],
+    ["percent", amplitudeAxis],
+  ]))
+  return <Specviz initAnnotations={annos}>
     <Audio src={data.audio} duration={data.duration} />
     <MyKeybinds />
     <h3>specviz-react</h3>

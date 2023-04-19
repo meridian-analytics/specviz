@@ -13,10 +13,12 @@ const ZOOM_MAX: number = 5
 const NOOP = () => {}
 
 function Specviz(props: {
+  initAnnotations?: Map<string, tannotation>,
   children: ReactNode,
 }) {
-  const [annotations, setAnnotations] = useState<Map<string, tannotation>>(new Map())
-  const [selection, setSelection] = useState<tselection>(new Set())
+  const { initAnnotations, children } = props
+  const [annotations, setAnnotations] = useState(() => initAnnotations ?? new Map<string, tannotation>())
+  const [selection, setSelection] = useState<tselection>(() => new Set())
 
   const input = useMemo<tinput>(
     () => {
@@ -92,7 +94,7 @@ function Specviz(props: {
       },
       moveSelection(dx, dy) {
         setAnnotations(prevState => {
-          let rect: trect
+          let $: trect
           return new Map(Array.from(
             prevState,
             ([id, a]) => [
@@ -100,13 +102,13 @@ function Specviz(props: {
               selection.has(a.id)
                 ? {
                     ...a,
-                    rect: rect = {
+                    rect: $ = {
                       x: clamp(a.rect.x + (input.xaxis == a.xaxis ? dx : 0), 0, 1 - a.rect.width),
                       y: clamp(a.rect.y + (input.yaxis == a.yaxis ? dy : 0), 0, 1 - a.rect.height),
                       width: a.rect.width,
                       height: a.rect.height,
                     },
-                    unit: computeRect(a.xaxis, a.yaxis, rect),
+                    unit: computeRect(a.xaxis, a.yaxis, $),
                   }
                 : a
             ]
@@ -337,7 +339,7 @@ function Specviz(props: {
     setTransport,
     setTransportState,
   }}>
-    {props.children}
+    {children}
   </SpecvizContext.Provider>
 }
 
