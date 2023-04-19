@@ -428,7 +428,7 @@ function MyKeybinds() {
 ```
 
 <small>[back to top](#top)</small>
-### <a name="#serialization"></a> data serialization UNSTABLE API
+### <a name="serialization"></a> data serialization UNSTABLE API
 
 To save annotations for later recall, use `serializeAnnotations`.
 
