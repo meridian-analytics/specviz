@@ -18,7 +18,21 @@ function computeUnit(t: taxis, q: number) {
   while (i < s.length - 1) {
     [ax, ay] = s[i];
     [bx, by] = s[i + 1]
-    if (q <= bx) return ay + (by - ay) * (q - ax) / (bx - ax)
+    if (ax <= q && q <= bx) return ay + (by - ay) * (q - ax) / (bx - ax)
+    i += 1
+  }
+  return -Infinity
+}
+
+function computeUnitInverse(t: taxis, q: number): number {
+  const s = t.intervals.sort(([ax, ay], [bx, by]) => ay - by) // todo: memoize
+  if (s.length < 2) return -Infinity
+  let ax, ay, bx, by
+  let i = 0
+  while (i < s.length - 1) {
+    [ax, ay] = s[i];
+    [bx, by] = s[i + 1]
+    if (ay <= q && q <= by) return ax + (q - ay) * (bx - ax) / (by - ay)
     i += 1
   }
   return -Infinity
@@ -56,4 +70,4 @@ function nonlinear(intervals: Array<[number, number]>, unit: taxisunit = "percen
 }
 
 export type { taxis }
-export { computeRect, computeUnit, formatUnit, linear, nonlinear }
+export { computeRect, computeUnit, computeUnitInverse, formatUnit, linear, nonlinear }
