@@ -25,7 +25,7 @@ function computeUnit(t: taxis, q: number) {
 }
 
 function computeUnitInverse(t: taxis, q: number): number {
-  const s = t.intervals.sort(([ax, ay], [bx, by]) => ay - by) // todo: memoize
+  const s = [...t.intervals].sort(([ax, ay], [bx, by]) => ay - by) // todo: memoize
   if (s.length < 2) return -Infinity
   let ax, ay, bx, by
   let i = 0

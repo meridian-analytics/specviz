@@ -122,6 +122,12 @@ test("axis.formatUnit", () => {
   expect(axis.formatUnit(t2, 99)).toBe("foo 99 bar")
 })
 
+test("axis.computeUnit isomorphic", () => {
+  const t = axis.nonlinear([[0, 100], [.5, 10], [1, 0]], "percent", String)
+  expect(axis.computeUnit(t, axis.computeUnitInverse(t, 55))).toBe(55)
+  expect(axis.computeUnitInverse(t, axis.computeUnit(t, 0.25))).toBe(0.25)
+})
+
 test("axis.computeRect", () => {
   const xaxis = axis.linear(0, 60, "seconds", String)
   const yaxis = axis.linear(20, 20000, "hertz", String)
