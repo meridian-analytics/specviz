@@ -2,6 +2,13 @@ import type { taxis } from "./axis.jsx"
 import type { trect } from "./rect.jsx"
 import type { tvector2 } from "./vector2.jsx"
 
+type tserialannotation = {
+  id: string,
+  unit: trect,
+  xunit: string,
+  yunit: string,
+}
+
 type tannotation = {
   id: string,
   rect: trect,
@@ -97,6 +104,7 @@ export type {
   tnullable,
   tcontext,
   tselection,
+  tserialannotation,
   tcommand,
   ttoolstate,
   ttransportstate,
