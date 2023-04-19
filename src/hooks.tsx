@@ -1,5 +1,5 @@
 import { MouseEvent, RefObject, useContext, useEffect, useMemo } from "react"
-import { tnullable, tcoord } from "./types.jsx"
+import { tcoord } from "./types.jsx"
 import { taxis, computeUnit } from "./axis.jsx"
 import { clamp } from "./mathx.jsx"
 import { trect, fromPoints } from "./rect.jsx"
