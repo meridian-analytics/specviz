@@ -12,7 +12,7 @@ function h(i, t) {
   return -1 / 0;
 }
 function m(i, t) {
-  const e = i.intervals.sort(([x, f], [y, s]) => f - s);
+  const e = [...i.intervals].sort(([x, f], [y, s]) => f - s);
   if (e.length < 2)
     return -1 / 0;
   let n, r, o, l, u = 0;
