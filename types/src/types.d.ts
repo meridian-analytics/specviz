@@ -1,6 +1,12 @@
 import type { taxis } from "./axis.jsx";
 import type { trect } from "./rect.jsx";
 import type { tvector2 } from "./vector2.jsx";
+type tserialannotation = {
+    id: string;
+    unit: trect;
+    xunit: string;
+    yunit: string;
+};
 type tannotation = {
     id: string;
     rect: trect;
@@ -54,11 +60,14 @@ type tcommand = {
     scrollTo: (pt: tvector2) => void;
     selectArea: (rect: trect) => void;
     selectPoint: (pt: tvector2) => void;
-    setRectX: (annotation: tannotation, x: number) => void;
-    setRectY: (annotation: tannotation, y: number) => void;
-    setRectWidth: (annotation: tannotation, width: number) => void;
-    setRectHeight: (annotation: tannotation, height: number) => void;
+    setRectX: (annotation: tannotation, dx: number) => void;
+    setRectX1: (annotation: tannotation, dx: number) => void;
+    setRectX2: (annotation: tannotation, dx: number) => void;
+    setRectY: (annotation: tannotation, dy: number) => void;
+    setRectY1: (annotation: tannotation, dy: number) => void;
+    setRectY2: (annotation: tannotation, dy: number) => void;
     tool: (toolState: ttoolstate) => void;
+    zoom: (dx: number, dy: number) => void;
     zoomArea: (rect: trect) => void;
     zoomPoint: (pt: tvector2) => void;
 };
@@ -82,4 +91,4 @@ type ttransport = {
     stop: () => void;
     seek: (progress: number) => void;
 };
-export type { tannotation, taxis, tcoord, tfunctional, tinput, tnullable, tcontext, tselection, tcommand, ttoolstate, ttransportstate, ttransport, };
+export type { tannotation, taxis, tcoord, tfunctional, tinput, tnullable, tcontext, tselection, tserialannotation, tcommand, ttoolstate, ttransportstate, ttransport, };

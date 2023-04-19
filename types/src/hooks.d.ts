@@ -1,12 +1,12 @@
 import { MouseEvent, RefObject } from "react";
-import { tnullable, tcoord } from "./types.jsx";
+import { tcoord } from "./types.jsx";
 import { taxis } from "./axis.jsx";
 import { trect } from "./rect.jsx";
 import { tvector2 } from "./vector2.jsx";
 declare function useAnimationFrame(callback: (frameId: number) => void): void;
 declare function useMouse(props: {
-    xaxis: tnullable<taxis>;
-    yaxis: tnullable<taxis>;
+    xaxis?: taxis;
+    yaxis?: taxis;
     onMouseDown: (e: MouseEvent<SVGSVGElement>) => void;
     onMouseMove: (e: MouseEvent<SVGSVGElement>) => void;
     onMouseUp: (e: MouseEvent<SVGSVGElement>) => void;
