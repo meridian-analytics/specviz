@@ -35,7 +35,7 @@ function deserialize(serialAnnotations: Array<tserialannotation>, axes: Map<stri
       continue
     }
     const rect = computeRectInverse(xaxis, yaxis, a.unit)
-    state.set(a.id, { id: a.id, rect, unit: a.unit, xaxis, yaxis })
+    state.set(a.id, { id: a.id, fields: a.fields, rect, unit: a.unit, xaxis, yaxis })
   }
   return state
 }
@@ -43,6 +43,7 @@ function deserialize(serialAnnotations: Array<tserialannotation>, axes: Map<stri
 function serialize(annotations: Map<string, tannotation>): Array<tserialannotation> {
   return Array.from(annotations.values(), a => ({
     id: a.id,
+    fields: a.fields,
     unit: a.unit,
     xunit: a.xaxis.unit,
     yunit: a.yaxis.unit,
