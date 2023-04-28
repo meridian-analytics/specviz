@@ -76,7 +76,7 @@ function Specviz(props: {
     () => ({
       annotate(rect, unit, xaxis, yaxis) {
         const id = randomBytes(10)
-        const a: tannotation = { id, rect, unit, xaxis, yaxis }
+        const a: tannotation = { id, fields: {}, rect, unit, xaxis, yaxis }
         setAnnotations(prevState => new Map(prevState).set(id, a))
         setSelection(new Set([a.id]))
       },
@@ -173,6 +173,13 @@ function Specviz(props: {
             }
             return nextState
           }
+        })
+      },
+      setFields(a, fields) {
+        setAnnotations(prevState => {
+          const nextState = new Map(prevState)
+          nextState.set(a.id, { ...a, fields })
+          return nextState
         })
       },
       setRectX(a, dx) {

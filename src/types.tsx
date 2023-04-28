@@ -4,6 +4,7 @@ import type { tvector2 } from "./vector2.jsx"
 
 type tserialannotation = {
   id: string,
+  fields: Object,
   unit: trect,
   xunit: string,
   yunit: string,
@@ -11,6 +12,7 @@ type tserialannotation = {
 
 type tannotation = {
   id: string,
+  fields: Object,
   rect: trect,
   unit: trect,
   xaxis: taxis,
@@ -69,6 +71,7 @@ type tcommand = {
   scrollTo: (pt: tvector2) => void,
   selectArea: (rect: trect) => void,
   selectPoint: (pt: tvector2) => void,
+  setFields: (annotation: tannotation, fields: Object) => void,
   setRectX: (annotation: tannotation, dx: number) => void,
   setRectX1: (annotation: tannotation, dx: number) => void,
   setRectX2: (annotation: tannotation, dx: number) => void,

@@ -9,12 +9,14 @@ const yaxis = linear(20000, 20, "hertz", String)
 const serialized: Array<tserialannotation> = [
   {
     id: "one",
+    fields: { foo: "bar" },
     unit: { x: 0, y: 20, width: 60, height: 19980 },
     xunit: "seconds",
     yunit: "hertz",
   },
   {
     id: "two",
+    fields: {},
     unit: { x: 15, y: 5015, width: 30, height: 9990 },
     xunit: "seconds",
     yunit: "hertz",
@@ -24,6 +26,7 @@ const serialized: Array<tserialannotation> = [
 const deserialized: Map<string, tannotation> = new Map([
   ["one", {
     id: "one",
+    fields: { foo: "bar" },
     rect: { x: 0, y: 0, width: 1, height: 1 },
     unit: { x: 0, y: 20, width: 60, height: 19980 },
     xaxis,
@@ -31,6 +34,7 @@ const deserialized: Map<string, tannotation> = new Map([
   }],
   ["two", {
     id: "two",
+    fields: {},
     rect: { x: 0.25, y: 0.25, width: 0.5, height: 0.5 },
     unit: { x: 15, y: 5015, width: 30, height: 9990 },
     xaxis,

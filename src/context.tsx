@@ -24,6 +24,7 @@ const SpecvizContext = createContext<tcontext>({
     scrollTo: () => { console.error("command.scrollTo called outside of Specviz context") },
     selectPoint: () => { console.error("command.selectPoint called outside of Specviz context") },
     selectArea: () => { console.error("command.selectArea called outside of Specviz context") },
+    setFields: () => { console.error("command.setFields called outside of Specviz context") },
     setRectX: () => { console.error("command.setRectX called outside of Specviz context") },
     setRectX1: () => { console.error("command.setRectX1 called outside of Specviz context") },
     setRectX2: () => { console.error("command.setRectX2 called outside of Specviz context") },
