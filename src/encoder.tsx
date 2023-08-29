@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react"
 import { useSpecviz } from "./hooks.jsx"
+import { tregion } from "./types.js"
 
 function Encoder(props: {
   state: number,
@@ -67,6 +68,58 @@ function Encoder(props: {
       children={unit}
     />
   </svg>
+}
+  
+Encoder.X = function EncoderX(region: tregion) {
+  const { command, regionCache } = useSpecviz()
+  const rect = regionCache.get(region.id)!
+  return (
+    <Encoder
+      state={rect.x}
+      setState={v => command.setRectX(region, v)}
+      value={region.x}
+      unit={region.xunit}
+    />
+  )
+}
+
+Encoder.X2 = function EncoderX2(region: tregion) {
+  const { command, regionCache } = useSpecviz()
+  const rect = regionCache.get(region.id)!
+  return (
+    <Encoder
+      state={rect.width}
+      setState={v => command.setRectX2(region, v)}
+      value={region.width}
+      unit={region.xunit}
+    />
+  )
+}
+
+Encoder.Y1 = function EncoderY1(region: tregion) {
+  const { command, regionCache } = useSpecviz()
+  const rect = regionCache.get(region.id)!
+  return (
+    <Encoder
+      state={1 - rect.y}
+      setState={v => command.setRectY1(region, v)}
+      value={region.y + region.height}
+      unit={region.yunit}
+    />
+  )
+}
+
+Encoder.Y2 = function EncoderY2(region: tregion) {
+  const { command, regionCache } = useSpecviz()
+  const rect = regionCache.get(region.id)!
+  return (
+    <Encoder
+      state={1 - rect.y - rect.height}
+      setState={v => command.setRectY2(region, v)}
+      value={region.y}
+      unit={region.yunit}
+    />
+  )
 }
 
 export default Encoder

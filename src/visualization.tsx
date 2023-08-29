@@ -18,7 +18,7 @@ function Visualization(props: {
   const { src, xaxis, yaxis } = props
   const { command, input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } = useSpecviz()
   const { toolState, transportState, transport } = useSpecviz()
-  const { annotations } = useSpecviz()
+  const { regions } = useSpecviz()
   const { selection } = useSpecviz()
   const svgRoot = useRef<SVGSVGElement>(null)
   const svgLayer = useRef<SVGSVGElement>(null)
@@ -77,7 +77,7 @@ function Visualization(props: {
           }
         }
       },
-      [toolState, selection, xaxis, yaxis]
+      [command, toolState, selection, xaxis, yaxis]
     ),
     onMouseUp: useCallback(
       (e) => {
@@ -117,7 +117,7 @@ function Visualization(props: {
           transport.seek(mouseup.abs.x)
         }
       },
-      [annotations, toolState, transport, xaxis, yaxis]
+      [command, toolState, transport, xaxis, yaxis]
     ),
   })
 
@@ -149,10 +149,10 @@ function Visualization(props: {
             width="100%"
             height="100%"
           />
-          {Array.from(annotations.values()).map(a =>
+          {Array.from(regions.values(), region =>
             <Annotation
-              key={a.id}
-              annotation={a}
+              key={region.id}
+              region={region}
               xaxis={xaxis}
               yaxis={yaxis}
             />

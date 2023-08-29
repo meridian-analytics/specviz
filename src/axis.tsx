@@ -11,6 +11,7 @@ type taxis = {
 }
 
 function computeUnit(t: taxis, q: number) {
+  if (t == null) return -Infinity
   const { intervals: s } = t
   if (s.length < 2) return -Infinity
   let ax, ay, bx, by
@@ -25,6 +26,7 @@ function computeUnit(t: taxis, q: number) {
 }
 
 function computeUnitInverse(t: taxis, q: number): number {
+  if (t == null) return -Infinity
   const s = [...t.intervals].sort(([ax, ay], [bx, by]) => ay - by) // todo: memoize
   if (s.length < 2) return -Infinity
   let ax, ay, bx, by

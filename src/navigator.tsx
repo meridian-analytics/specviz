@@ -14,7 +14,7 @@ function Navigator(props: {
   yaxis: taxis,
 }) {
   const { src, xaxis, yaxis } = props
-  const { annotations, command, input, mouseup, mouseRect, scroll, zoom, toolState, transportState } = useSpecviz()
+  const { regions, command, input, mouseup, mouseRect, scroll, zoom, toolState, transportState } = useSpecviz()
   const containerRef = useRef<SVGSVGElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
@@ -50,7 +50,7 @@ function Navigator(props: {
           )
         }
       },
-      [toolState]
+      [command, toolState]
     ),
     onMouseUp: useCallback(
       (e) => {
@@ -72,7 +72,7 @@ function Navigator(props: {
           }
         }
       },
-      [toolState]
+      [command, toolState]
     ),
   })
 
@@ -95,10 +95,10 @@ function Navigator(props: {
         height="100%"
         preserveAspectRatio="none"
       />
-      {Array.from(annotations.values()).map(a =>
+      {Array.from(regions.values(), region =>
         <Annotation
-          key={a.id}
-          annotation={a}
+          key={region.id}
+          region={region}
           xaxis={xaxis}
           yaxis={yaxis}
         />

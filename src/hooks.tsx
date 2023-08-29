@@ -1,5 +1,5 @@
-import { MouseEvent, RefObject, useContext, useEffect, useMemo } from "react"
-import { tcoord } from "./types.jsx"
+import { DependencyList, MouseEvent, RefObject, useContext, useEffect, useMemo, useState } from "react"
+import { tcoord, tregion } from "./types.jsx"
 import { taxis, computeUnit } from "./axis.jsx"
 import { clamp } from "./mathx.jsx"
 import { trect, fromPoints } from "./rect.jsx"
@@ -21,6 +21,16 @@ function useAnimationFrame(callback: (frameId: number) => void) {
     },
     [callback]
   )
+}
+
+/** useAxes: returns a memoized object for use with Specviz axes property */
+function useAxes(props: () => Record<string, taxis>, deps?: DependencyList) {
+  return useMemo(props, deps ?? [])
+}
+
+/** useRegionState: provides state control for Specviz component */
+function useRegionState(init?: Map<string, tregion> | (() => Map<string, tregion>)) {
+  return useState(init ?? new Map<string, tregion>())
 }
 
 function useMouse(props: {
@@ -204,4 +214,14 @@ function useSpecviz() {
   return useContext(SpecvizContext)
 }
 
-export { useAnimationFrame, useMouse, useMutableVector2, useMutableCoord, useMutableRect, useSpecviz, useWheel }
+export {
+  useAnimationFrame,
+  useAxes,
+  useMouse,
+  useMutableVector2,
+  useMutableCoord,
+  useMutableRect,
+  useRegionState,
+  useSpecviz,
+  useWheel,
+}

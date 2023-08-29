@@ -3,7 +3,6 @@ import { tcontext } from "./types.jsx"
 import { stop } from "./transport.jsx"
 
 const SpecvizContext = createContext<tcontext>({
-  annotations: new Map(),
   input: { buttons: 0, alt: false, ctrl: false, focus: null, xaxis: null, yaxis: null },
   mousedown: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
   mouseup: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
@@ -13,6 +12,8 @@ const SpecvizContext = createContext<tcontext>({
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
   playhead: { x: 0, y: 0 },
+  regions: new Map(),
+  regionCache: new Map(),
   selection: new Set(),
   command: {
     annotate: () => { console.error("command.annotate called outside of Specviz context") },
@@ -24,7 +25,6 @@ const SpecvizContext = createContext<tcontext>({
     scrollTo: () => { console.error("command.scrollTo called outside of Specviz context") },
     selectPoint: () => { console.error("command.selectPoint called outside of Specviz context") },
     selectArea: () => { console.error("command.selectArea called outside of Specviz context") },
-    setFields: () => { console.error("command.setFields called outside of Specviz context") },
     setRectX: () => { console.error("command.setRectX called outside of Specviz context") },
     setRectX1: () => { console.error("command.setRectX1 called outside of Specviz context") },
     setRectX2: () => { console.error("command.setRectX2 called outside of Specviz context") },
@@ -44,7 +44,7 @@ const SpecvizContext = createContext<tcontext>({
     seek: () => { console.error("transport.seek called outside of Specviz context") },
   },
   transportState: stop(0),
-  setAnnotations: _ => { console.error("setAnnotations called outside of Specviz context") },
+  setRegions: _ => { console.error("setRegions called outside of Specviz context") },
   setSelection: _ => { console.error("setSelection called outside of Specviz context") },
   setTransport: _ => { console.error("setTransport called outside of Specviz context") },
   setTransportState: _ => { console.error("setTransportState called outside of Specviz context") },

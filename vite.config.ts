@@ -20,6 +20,7 @@ export default defineConfig({
         "specviz-react": "src/index.tsx",
         "axis": "src/axis.tsx",
         "format": "src/stringx.tsx",
+        "hooks": "src/hooks.tsx",
         "rect": "src/rect.tsx",
         "keybinds": "src/keybinds.tsx",
       },

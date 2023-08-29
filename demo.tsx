@@ -1,81 +1,84 @@
-import { StrictMode, useState } from "react"
+import { StrictMode, useEffect, useState } from "react"
 import { createRoot } from "react-dom/client"
-import { tannotation } from "./src/types.jsx"
-import { taxis, linear, nonlinear } from "./src/axis.jsx"
+import { tregion } from "./src/types.jsx"
+import { linear, nonlinear } from "./src/axis.jsx"
 import { Specviz, Audio, Encoder, Navigator, Visualization, useSpecviz } from "./src/index.jsx"
 import { Bindings, Keypress } from "./src/keybinds.jsx"
 import { formatHz, formatPercent, formatTimestamp } from "./src/stringx.jsx"
-import { deserializeAnnotations } from "./src/index.jsx"
-import demoAnnotations from "./demo-annotations.json"
+import { useAxes, useRegionState } from "./src/hooks.js"
 
 type tsegment = {
-  audio: string,
-  duration: number,
-  xaxis: taxis,
-  spectrogram: {
-    image: string,
-    yaxis: taxis,
-  },
-  waveform: {
-    image: string,
-    yaxis: taxis,
-  },
+  audio: string
+  duration: number
+  spectrogram: string
+  waveform: string
 }
-
-const axisHertz = linear(20000, 0, "hertz", formatHz)
-const axisTime = linear(0, 44.416, "seconds", formatTimestamp)
-const amplitudeAxis = nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent)
 
 const segment1: tsegment = {
   audio: "./audio.wav",
   duration: 44.416,
-  xaxis: axisTime,
-  spectrogram: {
-    image: "./spectrogram.png",
-    yaxis: axisHertz,
-  },
-  waveform: {
-    image: "./waveform.png",
-    yaxis: amplitudeAxis,
-  }
+  spectrogram: "./spectrogram.png",
+  waveform: "./waveform.png",
 }
 
 const segment2: tsegment = {
   audio: "./audio2.wav",
   duration: 44.416,
-  xaxis: axisTime,
-  spectrogram: {
-    image: "./spectrogram2.png",
-    yaxis: axisHertz,
-  },
-  waveform: {
-    image: "./waveform2.png",
-    yaxis: amplitudeAxis,
-  },
+  spectrogram: "./spectrogram.png",
+  waveform: "./waveform.png",
 }
 
-const segment3: tsegment = {
-  audio: "./audio.wav",
-  duration: 44.416,
-  xaxis: axisTime,
-  spectrogram: {
-    image: "./spectrogram.png",
-    yaxis: axisHertz,
-  },
-  waveform: {
-    image: "./waveform.png",
-    yaxis: amplitudeAxis,
-  }
-}
+const initRegions = new Map([
+  ["df10e63bc928a9850b6f", {
+    "id": "df10e63bc928a9850b6f",
+    "x": 5.096308207705192,
+    "y": 10743.75,
+    "width": 2.5295544388609716,
+    "height": 6200,
+    "xunit": "seconds",
+    "yunit": "hertz"
+  }],
+  
+  ["b77d59d5089b139b2f49", {
+    "id": "b77d59d5089b139b2f49",
+    "x": 11.233969507191292,
+    "y": 4943.75,
+    "width": 6.138781151470651,
+    "height": 9200,
+    "xunit": "seconds",
+    "yunit": "hertz",
+    "additional": "ok",
+    "someField": 1,
+  }],
+  
+  ["81f3bab0f30023a82aa4", {
+    "id": "81f3bab0f30023a82aa4",
+    "x": 20.81046810348551,
+    "y": 9543.75,
+    "width": 4.849637109661813,
+    "height": 6100,
+    "xunit": "seconds",
+    "yunit": "hertz",
+    "anyField": 123,
+  }]
+])
 
 function MyComponent() {
   const [data, setData] = useState(segment1)
-  const annos = deserializeAnnotations(demoAnnotations, new Map([
-    ["seconds", axisTime],
-    ["hertz", axisHertz],
-    ["percent", amplitudeAxis],
-  ]))
-  return <Specviz initAnnotations={annos}>
+
+  const axes = useAxes(() => ({
+    seconds: linear(0, 44.416, "seconds", formatTimestamp),
+    hertz: linear(20000, 0, "hertz", formatHz),
+    percent: nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent),
+  }))
+
+  const [regions, setRegions] = useRegionState(initRegions)
+
+  return <Specviz
+    axes={axes}
+    regions={regions}
+    setRegions={setRegions}
+  >
     <Audio src={data.audio} duration={data.duration} />
     <MyKeybinds />
     <h3>specviz-react</h3>
@@ -90,34 +93,29 @@ function MyComponent() {
         onClick={_ => setData(segment2)}
         children={segment2.audio}
       />
-      <button
-        type="button"
-        onClick={_ => setData(segment3)}
-        children={`${segment3.audio} (nonlinear)`}
-      />
       <p>{data.audio} ({data.duration} seconds)</p>
     </div>
     <div id="app">
       <main>
         <Navigator
-          src={data.spectrogram.image}
-          xaxis={data.xaxis}
-          yaxis={data.spectrogram.yaxis}
+          src={data.spectrogram}
+          xaxis={axes.seconds}
+          yaxis={axes.hertz}
         />
         <Visualization
-          src={data.spectrogram.image}
-          xaxis={data.xaxis}
-          yaxis={data.spectrogram.yaxis}
+          src={data.spectrogram}
+          xaxis={axes.seconds}
+          yaxis={axes.hertz}
         />
         <Visualization
-          src={data.waveform.image}
-          xaxis={data.xaxis}
-          yaxis={data.waveform.yaxis}
+          src={data.waveform}
+          xaxis={axes.seconds}
+          yaxis={axes.percent}
         />
         <Navigator
-          src={data.waveform.image}
-          xaxis={data.xaxis}
-          yaxis={data.waveform.yaxis}
+          src={data.waveform}
+          xaxis={axes.seconds}
+          yaxis={axes.percent}
         />
         <MyAudioControls />
       </main>
@@ -194,72 +192,49 @@ function MyKeybinds() {
 }
 
 function MyAnnotations() {
-  const { annotations, selection } = useSpecviz()
+  const { regions, selection } = useSpecviz()
   return selection.size > 0
     ? <aside>
         {Array.from(selection).map((id, key) =>
-          <MyForm key={key} annotation={annotations.get(id)!} />
+          <MyForm key={key} {...regions.get(id) as tregion} />
         )}
       </aside>
     : <></>
 }
 
-function MyForm(props: { annotation: tannotation }) {
-  const { annotation } = props
-  const { command, transport } = useSpecviz()
+function MyForm(region: tregion ) {
+  const { transport } = useSpecviz()
   return <div className="annotation-form">
     <div className="title">
-      <div>{annotation.id}</div>
+      <div>{region.id}</div>
       <button
         type="button"
         onClick={event => {
           event.preventDefault()
-          transport.loop(props.annotation)
+          transport.loop(region.id)
         }}
         children="loop"
       />
     </div>
     <div className="encoders">
       <div>
-        <Encoder
-          state={annotation.rect.x}
-          setState={v => command.setRectX(annotation, v)}
-          value={annotation.unit.x}
-          unit={annotation.xaxis.unit}
-        />
+        <Encoder.X {...region} />
         Offset
       </div>
       <div>
-        <Encoder
-          state={annotation.rect.width}
-          setState={v => command.setRectX2(annotation, v)}
-          value={annotation.unit.width}
-          unit={annotation.xaxis.unit}
-        />
+        <Encoder.X2 {...region} />
         Duration
       </div>
       <div>
-        {/* todo: axis context */}
-        <Encoder
-          state={1 - annotation.rect.y - annotation.rect.height}
-          setState={v => command.setRectY2(annotation, v)}
-          value={annotation.unit.y}
-          unit={annotation.yaxis.unit}
-        />
-        HPF
-      </div>
-      <div>
-        {/* todo: axis context */}
-        <Encoder
-          state={1 - annotation.rect.y}
-          setState={v => command.setRectY1(annotation, v)}
-          value={annotation.unit.y + annotation.unit.height}
-          unit={annotation.yaxis.unit}
-        />
+        <Encoder.Y1 {...region} />
         LPF
       </div>
+      <div>
+        <Encoder.Y2 {...region} />
+        HPF
+      </div>
     </div>
-    <pre>{JSON.stringify(annotation, null, 2)}</pre>
+    <pre>{JSON.stringify(region, null, 2)}</pre>
   </div>
 }
 

@@ -1,6 +1,6 @@
-import { ReactNode, useEffect, useMemo, useState } from "react"
-import { tannotation, tnullable, tcommand, tinput, tselection, ttoolstate, ttransport, ttransportstate } from "./types.jsx"
-import { taxis, computeRect } from "./axis.jsx"
+import { Dispatch, SetStateAction, ReactNode, useEffect, useMemo, useState, useCallback } from "react"
+import { tregion, tnullable, tcommand, tinput, tselection, ttoolstate, ttransport, ttransportstate } from "./types.jsx"
+import { taxis, computeRect, computeRectInverse } from "./axis.jsx"
 import { useMutableCoord, useMutableRect, useMutableVector2 } from "./hooks.jsx"
 import { clamp } from "./mathx.jsx"
 import { trect, intersectPoint, intersectRect, logical } from "./rect.jsx"
@@ -12,14 +12,13 @@ import SpecvizContext from "./context.jsx"
 const ZOOM_MAX: number = 5
 const NOOP = () => {}
 
-function Specviz(props: {
-  initAnnotations?: Map<string, tannotation>,
-  children: ReactNode,
-}) {
-  const { initAnnotations, children } = props
-  const [annotations, setAnnotations] = useState(() => initAnnotations ?? new Map<string, tannotation>())
-  const [selection, setSelection] = useState<tselection>(() => new Set())
 
+function Specviz(props: {
+  axes: Record<string, taxis>
+  regions: Map<string, tregion>
+  setRegions: Dispatch<SetStateAction<Map<string, tregion>>>
+  children: ReactNode
+}) {
   const input = useMemo<tinput>(
     () => {
       let buttons = 0
@@ -72,48 +71,66 @@ function Specviz(props: {
     []
   )
 
+  const [selection, setSelection] = useState<tselection>(() => new Set())
+
+  const regionCache = useMemo(
+    () => new Map(Array.from(
+      props.regions.values(),
+      r => (
+        props.axes[r.xunit] == null && console.error(`Specviz.axes does not specify ${r.xunit}`, props.axes),
+        props.axes[r.yunit] == null && console.error(`Specviz.axes does not specify ${r.yunit}`, props.axes),
+        [r.id, computeRectInverse(props.axes[r.xunit], props.axes[r.yunit], r)] // bug: r.xunit and r.yunit needs to be compute on *all* axes with the same unit
+      ),
+    )),
+    [props.axes, props.regions],
+  )
+  
+  const updateRegion = useCallback(
+    (r: tregion, func: (prev: trect) => trect) => ({
+      ...r,
+      ...computeRect(
+        props.axes[r.xunit],
+        props.axes[r.yunit],
+        func(regionCache.get(r.id)!)
+      ),
+    }),
+    [regionCache, props.axes],
+  )
+
   const command = useMemo<tcommand>(
     () => ({
       annotate(rect, unit, xaxis, yaxis) {
         const id = randomBytes(10)
-        const a: tannotation = { id, fields: {}, rect, unit, xaxis, yaxis }
-        setAnnotations(prevState => new Map(prevState).set(id, a))
-        setSelection(new Set([a.id]))
+        props.setRegions(prev => new Map(prev).set(
+          id,
+          { id, ...unit, xunit: xaxis.unit, yunit: yaxis.unit }
+        ))
+        setSelection(new Set([id]))
       },
       delete() {
-        setAnnotations(prevState => {
-          const nextState = new Map(prevState)
-          for (const id of selection)
-            nextState.delete(id)
-          return nextState
-        })
+        props.setRegions(prev => new Map(function *() {
+          for (const [id, region] of prev.entries())
+            if (!selection.has(id))
+              yield [id, region]
+        }()))
         setSelection(new Set())
       },
       deselect() {
         setSelection(new Set())
       },
       moveSelection(dx, dy) {
-        setAnnotations(prevState => {
-          let $: trect
-          return new Map(Array.from(
-            prevState,
-            ([id, a]) => [
-              id,
-              selection.has(a.id)
-                ? {
-                    ...a,
-                    rect: $ = {
-                      x: clamp(a.rect.x + (input.xaxis == a.xaxis ? dx : 0), 0, 1 - a.rect.width),
-                      y: clamp(a.rect.y + (input.yaxis == a.yaxis ? dy : 0), 0, 1 - a.rect.height),
-                      width: a.rect.width,
-                      height: a.rect.height,
-                    },
-                    unit: computeRect(a.xaxis, a.yaxis, $),
-                  }
-                : a
-            ]
-          ))
-        })
+        props.setRegions(prev => new Map(Array.from(
+          prev,
+          ([id, region]) => {
+            if (!selection.has(id)) return [id, region]
+            return [id, updateRegion(region, rect => ({
+              x: clamp(rect.x + (input.xaxis?.unit == region.xunit ? dx : 0), 0, 1 - rect.width),
+              y: clamp(rect.y + (input.yaxis?.unit == region.yunit ? dy : 0), 0, 1 - rect.height),
+              width: rect.width,
+              height: rect.height,
+            }))]
+          },
+        )))
       },
       resetView() {
         zoom.x = 1
@@ -130,22 +147,40 @@ function Specviz(props: {
         scroll.y = pt.y
       },
       selectArea(area) {
-        setSelection(prevState => {
+        setSelection(prev => {
           if (input.ctrl) {
-            const nextState: tselection = new Set(prevState)
-            for (const a of annotations.values()) {
-              if (intersectRect(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), area)) {
-                if (nextState.has(a.id)) nextState.delete(a.id)
-                else nextState.add(a.id)
+            const nextState: tselection = new Set(prev)
+            for (const r of props.regions.values()) {
+              if (
+                intersectRect(
+                  logical(
+                    regionCache.get(r.id)!,
+                    input.xaxis?.unit == r.xunit,
+                    input.yaxis?.unit == r.yunit,
+                  ),
+                  area
+                )
+              ) {
+                if (nextState.has(r.id)) nextState.delete(r.id)
+                else nextState.add(r.id)
               }
             }
             return nextState
           }
           else {
             const nextState: tselection = new Set()
-            for (const a of annotations.values()) {
-              if (intersectRect(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), area)) {
-                nextState.add(a.id)
+            for (const r of props.regions.values()) {
+              if (
+                intersectRect(
+                  logical(
+                    regionCache.get(r.id)!,
+                    input.xaxis?.unit == r.xunit,
+                    input.yaxis?.unit == r.yunit,
+                  ),
+                  area
+                )
+              ) {
+                nextState.add(r.id)
               }
             }
             return nextState
@@ -156,109 +191,85 @@ function Specviz(props: {
         setSelection(prevState => {
           if (input.ctrl) {
             const nextState: tselection = new Set(prevState)
-            for (const a of annotations.values()) {
-              if (intersectPoint(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), pt)) {
-                if (nextState.has(a.id)) nextState.delete(a.id)
-                else nextState.add(a.id)
+            for (const r of props.regions.values()) {
+              if (
+                intersectPoint(
+                  logical(
+                    regionCache.get(r.id)!,
+                    input.xaxis?.unit == r.xunit,
+                    input.yaxis?.unit == r.yunit,
+                  ),
+                  pt,
+                )
+              ) {
+                if (nextState.has(r.id)) nextState.delete(r.id)
+                else nextState.add(r.id)
               }
             }
             return nextState
           }
           else {
             const nextState: tselection = new Set()
-            for (const a of annotations.values()) {
-              if (intersectPoint(logical(a.rect, input.xaxis == a.xaxis, input.yaxis == a.yaxis), pt)) {
-                nextState.add(a.id)
+            for (const r of props.regions.values()) {
+              if (
+                intersectPoint(
+                  logical(
+                    regionCache.get(r.id)!,
+                    input.xaxis?.unit == r.xunit,
+                    input.yaxis?.unit == r.yunit,
+                  ),
+                  pt,
+                )
+              ) {
+                nextState.add(r.id)
               }
             }
             return nextState
           }
         })
       },
-      setFields(a, fields) {
-        setAnnotations(prevState => {
-          const nextState = new Map(prevState)
-          nextState.set(a.id, { ...a, fields })
-          return nextState
-        })
-      },
-      setRectX(a, dx) {
-        setAnnotations(prevState => {
-          const nextState = new Map(prevState)
-          const rect: trect = {
-            x: clamp(a.rect.x + dx, 0, 1 - a.rect.width),
-            y: a.rect.y,
-            width: a.rect.width,
-            height: a.rect.height,
-          }
-          return nextState.set(
-            a.id,
-            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
-          )
-        })
+      setRectX(region, dx) {
+        props.setRegions(prev => new Map(prev).set(region.id, updateRegion(region, rect => ({
+          x: clamp(rect.x + dx, 0, 1 - rect.width),
+          y: rect.y,
+          width: rect.width,
+          height: rect.height,
+        }))))
       },
       setRectX1(a, dx) {
         // todo: implement
       },
-      setRectX2(a, dx) {
-        setAnnotations(prevState => {
-          const nextState = new Map(prevState)
-          const rect: trect = {
-            x: a.rect.x,
-            y: a.rect.y,
-            width: clamp(a.rect.width + dx, 0.01, 1 - a.rect.x),
-            height: a.rect.height,
-          }
-          return nextState.set(
-            a.id,
-            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
-          )
-        })
+      setRectX2(region, dx) {
+        props.setRegions(prev => new Map(prev).set(region.id, updateRegion(region, rect => ({
+          x: rect.x,
+          y: rect.y,
+          width: clamp(rect.width + dx, 0.01, 1 - rect.x),
+          height: rect.height,
+        }))))
       },
-      setRectY(a, dy) {
-        setAnnotations(prevState => {
-          const nextState = new Map(prevState)
-          const rect: trect = {
-            x: a.rect.x,
-            y: clamp(a.rect.y + dy, 0, 1 - a.rect.height),
-            width: a.rect.width,
-            height: a.rect.height,
-          }
-          return nextState.set(
-            a.id,
-            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
-          )
-        })
+      setRectY(region, dy) {
+        props.setRegions(prev => new Map(prev).set(region.id, updateRegion(region, rect => ({
+          x: rect.x,
+          y: clamp(rect.y + dy, 0, 1 - rect.height),
+          width: rect.width,
+          height: rect.height,
+        }))))
       },
-      setRectY1(a, dy) {
-        setAnnotations(prevState => {
-          const nextState = new Map(prevState)
-          const rect: trect = {
-            x: a.rect.x,
-            y: clamp(a.rect.y + dy, 0, a.rect.y + a.rect.height - 0.01),
-            width: a.rect.width,
-            height: clamp(a.rect.height - Math.max(dy, -a.rect.y), 0.01, 1 - a.rect.y),
-          }
-          return nextState.set(
-            a.id,
-            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
-          )
-        })
+      setRectY1(region, dy) {
+        props.setRegions(prev => new Map(prev).set(region.id, updateRegion(region, rect => ({
+          x: rect.x,
+          y: clamp(rect.y + dy, 0, rect.y + rect.height - 0.01),
+          width: rect.width,
+          height: clamp(rect.height - Math.max(dy, -rect.y), 0.01, 1 - rect.y),
+        }))))
       },
-      setRectY2(a, dy) {
-        setAnnotations(prevState => {
-          const nextState = new Map(prevState)
-          const rect: trect = {
-            x: a.rect.x,
-            y: a.rect.y,
-            width: a.rect.width,
-            height: clamp(a.rect.height + dy, 0.01, 1 - a.rect.y),
-          }
-          return nextState.set(
-            a.id,
-            { ...a, rect, unit: computeRect(a.xaxis, a.yaxis, rect) }
-          )
-        })
+      setRectY2(region, dy) {
+        props.setRegions(prev => new Map(prev).set(region.id, updateRegion(region, rect => ({
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: clamp(rect.height + dy, 0.01, 1 - rect.y),
+        }))))
       },
       tool(t) {
         setToolState(t)
@@ -282,7 +293,7 @@ function Specviz(props: {
         scroll.y = (pt.y * zoom.y) - ry
       },
     }),
-    [annotations, selection]
+    [props.regions, regionCache, selection, updateRegion]
   )
 
   const [toolState, setToolState] = useState<ttoolstate>("annotate")
@@ -326,7 +337,6 @@ function Specviz(props: {
   )
 
   return <SpecvizContext.Provider value={{
-    annotations,
     input,
     mousedown: useMutableCoord(),
     mouseup: useMutableCoord(),
@@ -336,17 +346,19 @@ function Specviz(props: {
     scroll,
     zoom,
     playhead: useMutableVector2(),
+    regions: props.regions,
+    regionCache,
     selection,
     command,
     toolState,
     transport,
     transportState,
-    setAnnotations,
+    setRegions: props.setRegions,
     setSelection,
     setTransport,
     setTransportState,
   }}>
-    {children}
+    {props.children}
   </SpecvizContext.Provider>
 }
 

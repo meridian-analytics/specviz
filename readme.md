@@ -7,7 +7,6 @@
 * [axis module](#axis)
 * [format module](#format)
 * [keybinds module](#keybinds)
-* [data serialization](#serialization)
 * [default bindings](#default-bindings)
 * [features roadmap](#roadmap)
 
@@ -19,15 +18,46 @@ Context boundary for a single instance of specviz. All children have access to t
 
 ```ts
 Specviz(props: {
-  initAnnotations?: Map<string, tannotation>,
-  children: ReactNode,
+  axes: Record<string, taxis>
+  regions: Map<string, tregion>
+  setRegions: Dispatch<SetStateAction<Map<string, tregion>>>
+  children: ReactNode
 })
 ```
 
 ```jsx
-<Specviz>
-  …
-</Specviz>
+import { Specviz, useAxes, useRegionState } from "specviz-react"
+import { linear, nonlinear } from "specviz-react/axis"
+import * as F from "specviz-react/format"
+import DATA from "savedata.json"
+
+function MyComponent() {
+  // define axes
+  const axes = useAxes(() => ({
+    seconds: linear(0, 60, "seconds", F.formatTimestamp),
+    hertz: linear(20000, 0, "hertz", F.formatHz),
+    // …
+  }))
+
+  // state for controlled component
+  const [regions, setRegions] = useRegionState(DATA)
+
+  // create specviz context
+  return (
+    <Specviz axes={axes} regions={regions} setRegions={setRegions}>
+      <Navigator
+        src="path/to/spectrogram.png"
+        xaxis={axes.seconds}
+        yaxis={axes.hertz}
+      />
+      <Visualization
+        src="path/to/spectrogram.png"
+        xaxis={axes.seconds}
+        yaxis={axes.hertz}
+      />
+    </Specviz>
+  )
+}
 ```
 
 **&lt;Audio&gt;**
@@ -42,7 +72,7 @@ Audio(props: {
 ```
 
 ```jsx
-<Specviz>
+<Specviz …>
   <Audio src="path/to/source.wav" duration={60} />
   …
 </Specviz>
@@ -61,23 +91,30 @@ Visualization(props: {
 ```
 
 ```jsx
-import { Specviz, Visualization } from "specviz-react"
+import { Specviz, useAxes, useRegionState } from "specviz-react"
 import { linear } from "specviz-react/axis"
-import { formatHz, formatTimestamp } from "specviz-react/format"
+import * as F from "specviz-react/format"
 
-const xaxis = linear(0, 60, "seconds", formatTimestamp)
-const yaxis = linear(20000, 0, "hertz", formatHz)
+function MyComponent() {
+  const axes = useAxes(() => ({
+    seconds: linear(0, 60, "seconds", F.formatTimestamp),
+    hertz: linear(20000, 0, "hertz", F.formatHz),
+    // …
+  }))
 
-<Specviz>
-  <Visualization
-    src="path/to/spectrogram.png"
-    xaxis={xaxis}
-    yaxis={yaxis}
-  />
-  …
-</Specviz>
+  const [regions, setRegions] = useRegionState()
+
+  return (
+    <Specviz axes={axes} regions={regions} setRegions={setRegions}>
+      <Visualization
+        src="path/to/spectrogram.png"
+        xaxis={axes.seconds}
+        yaxis={axes.hertz}
+      />
+    </Specviz>
+  )
+}
 ```
-
 
 **&lt;Navigator&gt;**
 
@@ -92,26 +129,34 @@ Navigator(props: {
 ```
 
 ```jsx
-import { Specviz, Navigator, Visualization } from "specviz-react"
+import { Specviz, useAxes, useRegionState } from "specviz-react"
 import { linear } from "specviz-react/axis"
-import { formatHz, formatTimestamp } from "specviz-react/format"
+import * as F from "specviz-react/format"
 
-const xaxis = linear(0, 60, "seconds", formatTimestamp)
-const yaxis = linear(20000, 0, "hertz", formatHz)
+function MyComponent() {
+  const axes = useAxes(() => ({
+    seconds: linear(0, 60, "seconds", F.formatTimestamp),
+    hertz: linear(20000, 0, "hertz", F.formatHz),
+    // …
+  }))
 
-<Specviz>
-  <Navigator
-    src="path/to/spectrogram.png"
-    xaxis={xaxis}
-    yaxis={yaxis}
-  />
-  <Visualization
-    src="path/to/spectrogram.png"
-    xaxis={xaxis}
-    yaxis={yaxis}
-  />
-  …
-</Specviz>
+  const [regions, setRegions] = useRegionState()
+
+  return (
+    <Specviz axes={axes} regions={regions} setRegions={setRegions}>
+      <Navigator
+        src="path/to/spectrogram.png"
+        xaxis={axes.seconds}
+        yaxis={axes.hertz}
+      />
+      <Visualization
+        src="path/to/spectrogram.png"
+        xaxis={axes.seconds}
+        yaxis={axes.hertz}
+      />
+    </Specviz>
+  )
+}
 ```
 
 **&lt;Encoder&gt;**
@@ -127,6 +172,17 @@ Encoder(props: {
 })
 ```
 
+Region encoders are provided for convenience.
+
+```ts
+Encoder.X(props: tregion)
+Encoder.X1(props: tregion)
+Encoder.X2(props: tregion)
+Encoder.Y(props: tregion)
+Encoder.Y1(props: tregion)
+Encoder.Y2(props: tregion)
+```
+
 ```jsx
 import { Encoder, useSpecviz } from "specviz-react"
 
@@ -134,16 +190,10 @@ function EditAnnotation({ annotation }) {
   const { command } = useSpecviz()
   return <div className="myform">
     <div className="encoders">
-      <div>
-        <Encoder
-          state={annotation.rect.x}
-          setState={v => command.setRectX(annotation, v)}
-          value={annotation.unit.x}
-          unit={annotation.xaxis.unit}
-        />
-        Offset
-      </div>
-      …
+      <div><Encoder.X {...region} /> Offset</div>
+      <div><Encoder.X2 {...region} /> Duration</div>
+      <div><Encoder.Y1 {...region} /> LPF</div>
+      <div><Encoder.Y2 {...region} /> HPF</div>
     </div>
   </div>
 }
@@ -151,6 +201,28 @@ function EditAnnotation({ annotation }) {
 
 <small>[back to top](#top)</small>
 ### <a name="hooks"></a> hooks
+
+**useAxes()**
+
+```ts
+useAxes(props: () => Record<string, taxis>, deps?: DependencyList)
+  :Record<string, taxis>
+```
+
+```ts
+import { useAxes } from "specviz-react"
+```
+
+**useRegionState()**
+
+```ts
+useRegionState(init?: Map<string, tregion> | (() => Map<string, tregion>))
+  :[Map<string, tregion>, Dispatch<SetStateAction<Map<string, tregion>>>]
+```
+
+```ts
+import { useRegionState } from "specviz-react"
+```
 
 **useSpecviz()**
 
@@ -161,11 +233,14 @@ useSpecviz(): SpecvizContext
 ```
 
 ```jsx
+import { Specviz, useSpecviz } from "specviz-react"
+
 function MyComponent(props) {
   const { … } = useSpecviz()
   return …
 }
 ```
+
 ```jsx
 <Specviz>
   <MyComponent />
@@ -182,11 +257,11 @@ All state is available in the Specviz context however only select properties are
 
 ```ts
 type tcontext = {
-  annotations: Map<string, tannotation>,
-  command: tcommand,
-  toolState: ttoolstate,
-  transport: ttransport,
-  setAnnotations: (func: tfunctional<Map<string, tannotation>>) => void,
+  command: tcommand
+  regions: Map<string, tregion>
+  setRegions: Dispatch<SetStateAction<Map<string, tregion>>>
+  toolState: ttoolstate
+  transport: ttransport
   …
 }
 ```
@@ -206,12 +281,12 @@ type tcommand = {
   scrollTo: (pt: tvector2) => void,
   selectArea: (rect: trect) => void,
   selectPoint: (pt: tvector2) => void,
-  setRectX: (annotation: tannotation, dx: number) => void,
-  setRectX1: (annotation: tannotation, dx: number) => void,
-  setRectX2: (annotation: tannotation, dx: number) => void,
-  setRectY: (annotation: tannotation, dy: number) => void,
-  setRectY1: (annotation: tannotation, dy: number) => void,
-  setRectY2: (annotation: tannotation, dy: number) => void,
+  setRectX: (region: tregion, dx: number) => void,
+  setRectX1: (region: tregion, dx: number) => void,
+  setRectX2: (region: tregion, dx: number) => void,
+  setRectY: (region: tregion, dy: number) => void,
+  setRectY1: (region: tregion, dy: number) => void,
+  setRectY2: (region: tregion, dy: number) => void,
   tool: (toolState: ttoolstate) => void,
   zoom: (dx: number, dy: number) => void,
   zoomArea: (rect: trect) => void,
@@ -226,53 +301,25 @@ Interface for audio transport controls. `loop` will replay a selected annotation
 ```ts
 type ttransport = {
   play: () => void,
-  loop: (annotation: tannotation) => void,
+  loop: (regionid: number) => void,
   stop: () => void,
   seek: (progress: number) => void, // float 0..1
 }
 ```
 
-**annotation**
+**regions**
 
-Specviz records annotation boundaries in a `rect` property in the range of (0,0) to (1,1). The `unit` property is the corresponding unit values as computed from the input axes. Annotations capture the axes of the visualization they are created in. This is important because a time/frequency annotation can render on a spectrogram visualization, but must render differently on a time/amplitude waveform visualization.
-
-```ts
-type tannotation = {
-  id: string,
-  rect: trect,
-  unit: trect,
-  xaxis: taxis,
-  yaxis: taxis,
-}
-```
-
-Here is an example annotation created from the `command.annotate` command. Note the (0,0) origin is located in the top-left of the visualization and navigator components -
+Regions capture the axes of the visualization they are created in. This is important because a time/frequency region can render on a spectrogram visualization, but must render differently on a time/amplitude waveform visualization. This interface specifies the minimum required fields, however any additional fields may be included.
 
 ```ts
-{
-  id: "9315126e8d674e0b42b7",
-  rect: {
-    x: .25,
-    y: .25,
-    width: .5,
-    height: .5,
-  },
-  unit: {
-    x: 15,
-    y: 2500,
-    width: 30,
-    height: 10000,
-  },
-  xaxis: {
-    unit: "seconds",
-    intervals: [[0,0], [1,60]], // 0 - 60 seconds
-    format: String
-  },
-  yaxis: {
-    unit: "hertz",
-    intervals: [[0, 20000], [1, 0]], // 0 - 20,000 hz
-    format: String,
-  }
+interface tregion {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+  xunit: string
+  yunit: string
 }
 ```
 
@@ -405,6 +452,7 @@ Keypress(props: {
   onKeyUp?: (e: KeyboardEvent) => void,
 })
 ```
+
 ```ts
 import { Bindings, Keypress } from "specviz-react/keybinds"
 
@@ -425,48 +473,6 @@ function MyKeybinds() {
     <Keypress bind="x" onKeyDown={transport.stop} />
   </Bindings>
 }
-```
-
-<small>[back to top](#top)</small>
-### <a name="serialization"></a> data serialization UNSTABLE API
-
-To save annotations for later recall, use `serializeAnnotations`.
-
-```jsx
-function MyComponent() {
-  const { annotations } = useSpecviz()
-  function onSubmit(event) {
-    event.preventDefault()
-    const mydata = serializeAnnotations(annotations)
-    console.log(JSON.stringify(mydata, null, 2))
-  })
-  return <form onSubmit={onSubmit}>
-    …
-  </form>
-}
-```
-
-To be usable within Specviz, annotations need to be reinserted into an axis context. Use `deserializeAnnotations` to properly recall saved data.
-
-```jsx
-import { Specviz, deserializeAnnotations } from "specviz-react"
-import { linear, nonlinear } from "specviz-react/axis"
-import { formatHz, formatTimestamp, formatPercent } from "specviz-react/format"
-import serialdata from "mydata.json"
-
-const axisTime = linear(0, 44.416, "seconds", formatTimestamp)
-const axisHertz = linear(20000, 0, "hertz", formatHz)
-const amplitudeAxis = nonlinear([[0, 1], [.5, 0], [1, -1]], "percent", formatPercent)
-
-const mydata = deserializeAnnotations(serialdata, new Map([
-  ["seconds", axisTime],
-  ["hertz", axisHertz],
-  ["percent", amplitudeAxis],
-]))
-
-<Specviz initAnnotations={mydata}>
-  …
-</Specviz>
 ```
 
 <small>[back to top](#top)</small>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react"
 import { Sound, Effects } from "pizzicato"
-import { tannotation, tnullable } from "./types.jsx"
+import { tnullable, tregion } from "./types.jsx"
 import { useAnimationFrame, useSpecviz } from "./hooks.jsx"
 import { subscribe } from "./func.jsx"
 import { trect } from "./rect.jsx"
@@ -14,7 +14,7 @@ function Audio(props: {
   duration: number,
 }) {
   const { src, duration } = props
-  const { annotations, playhead, transportState, setTransport, setTransportState } = useSpecviz()
+  const { regions, regionCache, playhead, transportState, setTransport, setTransportState } = useSpecviz()
   const sound = useRef<tnullable<Sound>>(null)
   const fxLPF = useRef(new Effects.LowPassFilter({ frequency: LPF, peak: 10 }))
   const fxHPF = useRef(new Effects.HighPassFilter({ frequency: HPF, peak: 10 }))
@@ -22,7 +22,7 @@ function Audio(props: {
   useAnimationFrame(useCallback(
     () => {
       let delta: number
-      let focus: tannotation | undefined
+      let focus: tregion | undefined
       let rect: trect
       let unit: trect
       switch (transportState.type) {
@@ -46,12 +46,12 @@ function Audio(props: {
           delta = (Date.now() - transportState.timeRef) / 1000
           playhead.x = transportState.progress + delta / duration
           // transport annotation could be stale
-          focus = annotations.get(transportState.annotation.id) // todo: antipattern?
+          focus = regions.get(transportState.id) // todo: antipattern?
           if (focus == null) return stop() // focus was deleted, stop audio
-          rect = focus.rect
-          unit = focus.unit
+          unit = focus
+          rect = regionCache.get(focus.id)!
           // frequency filter
-          if (focus.yaxis.unit === "hertz") {
+          if (focus.yunit === "hertz") {
             fxHPF.current.frequency = unit.y
             fxLPF.current.frequency = unit.y + unit.height
           }
@@ -61,12 +61,12 @@ function Audio(props: {
           }
           // loop
           if (playhead.x < rect.x || playhead.x >= rect.x + rect.width) {
-            loop(focus)
+            loop(focus.id)
           }
           break
       }
     },
-    [annotations, transportState, duration]
+    [regions, regionCache, transportState, duration]
   ))
 
   const play = useCallback(
@@ -87,16 +87,17 @@ function Audio(props: {
   )
 
   const loop = useCallback(
-    (annotation: tannotation) => {
-      const { rect, unit } = annotation
+    (id: string) => {
+      const unit = regions.get(id)!
+      const rect = regionCache.get(id)!
       setTransportState(t => {
         if (sound.current == null) return t
         sound.current.stop()
         sound.current.play(0, unit.x)
-        return transport.loop(rect.x, Date.now(), annotation)
+        return transport.loop(rect.x, Date.now(), id)
       })
     },
-    []
+    [regions, regionCache]
   )
 
   const stop = useCallback(

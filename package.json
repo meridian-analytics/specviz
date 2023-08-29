@@ -38,6 +38,10 @@
       "types": "./types/src/stringx.d.ts",
       "import": "./dist/format.js"
     },
+    "./hooks": {
+      "types": "./types/src/hooks.d.ts",
+      "import": "./dist/hooks.js"
+    },
     "./keybinds": {
       "types": "./types/src/keybinds.d.ts",
       "import": "./dist/keybinds.js"
