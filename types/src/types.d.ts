@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from "react";
 import type { taxis } from "./axis.jsx";
 import type { trect } from "./rect.jsx";
 import type { tvector2 } from "./vector2.jsx";
@@ -8,19 +9,19 @@ type tserialannotation = {
     xunit: string;
     yunit: string;
 };
-type tannotation = {
+interface tregion {
     id: string;
-    fields: Object;
-    rect: trect;
-    unit: trect;
-    xaxis: taxis;
-    yaxis: taxis;
-};
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    xunit: string;
+    yunit: string;
+}
 type tcoord = {
     abs: tvector2;
     rel: tvector2;
 };
-type tfunctional<T> = T | ((prevState: T) => T);
 type tinput = {
     buttons: number;
     alt: boolean;
@@ -31,7 +32,6 @@ type tinput = {
 };
 type tnullable<T> = T | null;
 type tcontext = {
-    annotations: Map<string, tannotation>;
     input: tinput;
     mousedown: tcoord;
     mouseup: tcoord;
@@ -41,15 +41,17 @@ type tcontext = {
     scroll: tvector2;
     zoom: tvector2;
     playhead: tvector2;
+    regions: Map<string, tregion>;
+    regionCache: Map<string, trect>;
     selection: tselection;
     command: tcommand;
     toolState: ttoolstate;
     transport: ttransport;
     transportState: ttransportstate;
-    setAnnotations: (func: tfunctional<Map<string, tannotation>>) => void;
-    setSelection: (func: tfunctional<tselection>) => void;
-    setTransport: (func: tfunctional<ttransport>) => void;
-    setTransportState: (func: tfunctional<ttransportstate>) => void;
+    setSelection: Dispatch<SetStateAction<tselection>>;
+    setTransport: Dispatch<SetStateAction<ttransport>>;
+    setRegions: Dispatch<SetStateAction<Map<string, tregion>>>;
+    setTransportState: Dispatch<SetStateAction<ttransportstate>>;
 };
 type tselection = Set<string>;
 type tcommand = {
@@ -62,13 +64,12 @@ type tcommand = {
     scrollTo: (pt: tvector2) => void;
     selectArea: (rect: trect) => void;
     selectPoint: (pt: tvector2) => void;
-    setFields: (annotation: tannotation, fields: Object) => void;
-    setRectX: (annotation: tannotation, dx: number) => void;
-    setRectX1: (annotation: tannotation, dx: number) => void;
-    setRectX2: (annotation: tannotation, dx: number) => void;
-    setRectY: (annotation: tannotation, dy: number) => void;
-    setRectY1: (annotation: tannotation, dy: number) => void;
-    setRectY2: (annotation: tannotation, dy: number) => void;
+    setRectX: (region: tregion, dx: number) => void;
+    setRectX1: (region: tregion, dx: number) => void;
+    setRectX2: (region: tregion, dx: number) => void;
+    setRectY: (region: tregion, dy: number) => void;
+    setRectY1: (region: tregion, dy: number) => void;
+    setRectY2: (region: tregion, dy: number) => void;
     tool: (toolState: ttoolstate) => void;
     zoom: (dx: number, dy: number) => void;
     zoomArea: (rect: trect) => void;
@@ -83,15 +84,15 @@ type ttransportstate = {
     type: "loop";
     progress: number;
     timeRef: number;
-    annotation: tannotation;
+    id: string;
 } | {
     type: "stop";
     progress: number;
 };
 type ttransport = {
     play: () => void;
-    loop: (annotation: tannotation) => void;
+    loop: (id: string) => void;
     stop: () => void;
     seek: (progress: number) => void;
 };
-export type { tannotation, taxis, tcoord, tfunctional, tinput, tnullable, tcontext, tselection, tserialannotation, tcommand, ttoolstate, ttransportstate, ttransport, };
+export type { taxis, tcoord, tinput, tnullable, tcontext, tselection, tserialannotation, tcommand, ttoolstate, ttransportstate, ttransport, tregion, };

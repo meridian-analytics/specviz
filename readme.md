@@ -541,5 +541,3 @@ Some actions are currently hard-coded and cannot be reconfigured through the key
 - [x] ux: 2-dimensional zoom
 - [x] ux: declarative audio/visual loading
 - [x] ux: zoom center on cursor
-- [ ] bug: audio sometimes does not stop on unmount
-- [ ] bug: y-axis encoders behave "inverted"

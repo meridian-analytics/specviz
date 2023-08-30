@@ -1,7 +1,10 @@
-import { ReactNode } from "react";
-import { tannotation } from "./types.jsx";
+import { Dispatch, SetStateAction, ReactNode } from "react";
+import { tregion } from "./types.jsx";
+import { taxis } from "./axis.jsx";
 declare function Specviz(props: {
-    initAnnotations?: Map<string, tannotation>;
+    axes: Record<string, taxis>;
+    regions: Map<string, tregion>;
+    setRegions: Dispatch<SetStateAction<Map<string, tregion>>>;
     children: ReactNode;
 }): JSX.Element;
 export default Specviz;
