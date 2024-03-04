@@ -1,5 +1,5 @@
-import { StrictMode, useState } from "react"
-import { createRoot } from "react-dom/client"
+import * as R from "react"
+import * as ReactDOM from "react-dom/client"
 import { tregion } from "./src/types.jsx"
 import { linear, nonlinear } from "./src/axis.jsx"
 import { Specviz, Encoder, Navigator, Visualization, useSpecviz } from "./src/index.jsx"
@@ -7,7 +7,7 @@ import { Bindings, Keypress } from "./src/keybinds.jsx"
 import { formatHz, formatPercent, formatTimestamp } from "./src/stringx.jsx"
 import { useAxes, useRegionState } from "./src/hooks.js"
 import * as Audio2 from "./src/audio2"
-import * as AudioFx from "./src/audiofx"
+import * as Focus from "./src/focus.jsx"
 
 type tsegment = {
   audio: string
@@ -70,8 +70,8 @@ function Duration() {
   return <>({audio.buffer.duration})</>
 }
 
-function MyComponent() {
-  const [data, setData] = useState(segment1)
+export default function MyComponent() {
+  const [data, setData] = R.useState(segment1)
 
   const axes = useAxes(() => ({
     seconds: linear(0, 44.416, "seconds", formatTimestamp),
@@ -86,11 +86,8 @@ function MyComponent() {
     regions={regions}
     setRegions={setRegions}
   >
-    <AudioFx.Provider>
-      <Audio2.Audio
-        fx={AudioFx.default as any}
-        url={data.audio}
-      >
+    <Focus.Provider>
+      <Audio2.Audio url={data.audio}>
         <MyKeybinds />
         <h3>specviz-react</h3>
         <div className="segments">
@@ -133,14 +130,14 @@ function MyComponent() {
           <MyAnnotations />
         </div>
       </Audio2.Audio>
-    </AudioFx.Provider>
+    </Focus.Provider>
   </Specviz>
 }
 
 function MyAudioControls() {
   const { command, toolState } = useSpecviz()
   const audio = Audio2.useAudio()
-  const audioFx = AudioFx.useContext()
+  const focus = Focus.useContext()
   return <p>
     <button
       title="A"
@@ -181,7 +178,10 @@ function MyAudioControls() {
     <button
       title="X"
       type="button"
-      onClick={_ => audio.transport.stop()}
+      onClick={_ => {
+        audio.transport.stop()
+        focus.setFocusRegion(null)
+      }}
       className={audio.transport.state.pause ? "active" : ""}
       children="Stop"
     />
@@ -190,6 +190,7 @@ function MyAudioControls() {
 
 function MyKeybinds() {
   const { command } = useSpecviz()
+  const focus = Focus.useContext()
   const audio = Audio2.useAudio()
   return <Bindings>
     <Keypress bind="Backspace" onKeyDown={command.delete} />
@@ -202,8 +203,11 @@ function MyKeybinds() {
     <Keypress bind="s" onKeyDown={() => command.tool("select")} />
     <Keypress bind="d" onKeyDown={() => command.tool("zoom")} />
     <Keypress bind="f" onKeyDown={() => command.tool("pan")} />
-    <Keypress bind="z" onKeyDown={audio.transport.play} />
-    <Keypress bind="x" onKeyDown={audio.transport.stop} />
+    <Keypress bind="z" onKeyDown={() => audio.transport.play()} />
+    <Keypress bind="x" onKeyDown={() => {
+      audio.transport.stop()
+      focus.setFocusRegion(null)
+    }} />
   </Bindings>
 }
 
@@ -219,17 +223,30 @@ function MyAnnotations() {
 }
 
 function MyForm(region: tregion ) {
-  const audioFx = AudioFx.useContext()
+  const audio = Audio2.useAudio()
+  const focus = Focus.useContext()
   return <div className="annotation-form">
     <div className="title">
       <div>{region.id}</div>
-      <button
-        type="button"
-        onClick={() => {
-          audioFx.setFocusRegion(region.id)
-        }}
-        children="loop"
-      />
+      {focus.region && audio.fx.loop && region.id == focus.region.id ? (
+        <button
+          type="button"
+          onClick={() => {
+            audio.transport.stop()
+            focus.setFocusRegion(null)
+          }}
+          children="stop"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            focus.setFocusRegion(region.id)
+            audio.transport.play()
+          }}
+          children="play"
+        />
+      )}
     </div>
     <div className="encoders">
       <div>
@@ -253,10 +270,10 @@ function MyForm(region: tregion ) {
   </div>
 }
 
-createRoot(document.getElementById("root") as HTMLElement).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <R.StrictMode>
     <div style={{padding: 20, backgroundColor: "#E8FDF5" }}>
       <MyComponent />
     </div>
-  </StrictMode>
+  </R.StrictMode>
 )

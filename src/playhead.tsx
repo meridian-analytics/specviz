@@ -9,22 +9,19 @@ function Playhead(props: {
   yaxis: taxis,
 }) {
   const line = useRef<SVGLineElement>(null)
-  const { audioContext, buffer, transport } = Audio2.useAudio()
+  const { buffer, transport } = Audio2.useAudio()
   useAnimationFrame(useCallback(
     () => {
       if (line.current) {
-        const seek = transport.state.pause
-          ? transport.state.seek
-          : audioContext.currentTime - transport.state.timecode
+        const seek = transport.getSeek(transport.state)
         setX(line.current, seek / buffer.duration)
         setY(line.current, 0, 1) // todo: y-axis on spectrograms
       }
     },
     [
       buffer.duration,
-      transport.state.pause,
-      transport.state.seek,
-      transport.state.timecode,  
+      transport.getSeek,
+      transport.state,
     ]
   ))
   

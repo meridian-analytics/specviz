@@ -7,7 +7,7 @@ type State = {
   focusRegion: null | string
 }
 
-interface Context extends Audio2.FxContext {
+type Context = {
   region: null | T.tregion
   setFocusRegion: (regionId: State["focusRegion"]) => void
 }
@@ -42,40 +42,43 @@ export function Provider(props: ProviderProps) {
   const region = state.focusRegion
     ? specviz.regions.get(state.focusRegion) ?? null
     : null
+    
+  const fx: Audio2.FxContext.Context = R.useMemo(
+    () => {
+      return region == null
+        ? Audio2.FxContext.default
+        : {
+            hpf: region.yunit === "hertz" ? region.y : undefined,
+            lpf: region.yunit === "hertz" ? region.y + region.height : undefined,
+            loop: [region.x, region.x + region.width],
+          }
+    },
+    [
+      Audio2.FxContext.default,
+      region == null,
+      region?.yunit,
+      region?.x,
+      region?.y,
+      region?.width,
+      region?.height,
+    ],
+  )
   
-  if (region == null) {
-    return (
-      <Context.Provider
-        children={props.children}
-        value={{
-          region: null,
-          setFocusRegion,
-        }}
-      />
-    )  
-  }
-
-  const hpf = region.yunit === "hertz" ? region.y : undefined
-  const lpf = region.yunit === "hertz" ? region.y + region.height : undefined
-  const loopStart = region.x
-  const loopEnd = region.x + region.width
-
   return (
     <Context.Provider 
-      children={props.children}
       value={{
         region,
         setFocusRegion,
-        hpf,
-        lpf,
-        loop: [loopStart, loopEnd],
       }}
-    />
+    >
+      <Audio2.FxContext.Provider
+        children={props.children}
+        value={fx}
+      />
+    </Context.Provider>
   )
 }
 
 export function useContext() {
   return R.useContext(Context)
 }
-
-export default Context

@@ -1,6 +1,7 @@
 import * as R from "react"
 import * as AudioContext from "./AudioContext.js"
-import AudioEffect, * as AE from "./AudioEffect.js"
+import * as FxContext from "./FxContext.js"
+import AudioEffect from "./AudioEffect.js"
 
 export type State = {
   pause: boolean
@@ -8,14 +9,14 @@ export type State = {
   timecode: number
 }
 
-export function clampLoop(seek: number, start: number, end: number) {
+function clampLoop(seek: number, loop: [number, number]) {
   return (
     // left bound
-    seek < start
-      ? start
+    seek < loop[0]
+      ? loop[0]
       : // right bound
-        seek > end
-        ? start
+        seek > loop[1]
+        ? loop[0]
         : // in bound
           seek
   )
@@ -23,9 +24,10 @@ export function clampLoop(seek: number, start: number, end: number) {
 
 export type Context = {
   state: State
-  play: () => void
-  stop: () => void
+  play: (seek?: number) => void
+  stop: (seek?: number) => void
   seek: (seek: number) => void
+  getSeek: (state: State) => number
 }
 
 const defaultContext: Context = {
@@ -43,63 +45,30 @@ const defaultContext: Context = {
   seek() {
     throw Error("seek called outside of context")
   },
+  getSeek() {
+    throw Error("getSeek called outside of context")
+  },
 }
 
 const Context = R.createContext(defaultContext)
 
-export interface FxContext {
-  hpf?: number
-  lpf?: number
-  loop?: [number, number]
-}
-
 type ProviderProps = {
-  fx: R.Context<FxContext>
   children: R.ReactNode
 }
 
 export function Provider(props: ProviderProps) {
   const audioContext = AudioContext.useContext()
-  const [state, setState] = R.useState(defaultContext.state)
-
-  const audioFx = R.useContext(props.fx)
-
-  const onEnd: AE.AudioEffectProps["onEnd"] = () => {
-    setState(prev => {
-      return { ...prev, pause: true, seek: 0 }
-    })
-  }
-
-  const derivedLoop: AE.AudioEffectProps["loop"] = audioFx.loop
-    ? [audioFx.loop[0], audioFx.loop[1], () => {
-      setState(prev => {
-        if (prev.pause || !audioFx.loop) return prev
-        const timecode = audioContext.currentTime - audioFx.loop[0]
-        return { ...prev, seek: audioFx.loop[0], timecode }
-      })
-    }]
-    : undefined
-
-  const derivedHpf: AE.AudioEffectProps["hpf"] = audioFx.hpf ?? 0
-
-  const derivedLpf: AE.AudioEffectProps["lpf"] = audioFx.lpf ?? 24000
-
-  const derivedSeek: State["seek"] = state.pause
-    ? state.seek
-    : audioContext.currentTime - state.timecode
-
-  const derivedSafeSeek: State["seek"] = derivedLoop
-    ? clampLoop(derivedSeek, derivedLoop[0], derivedLoop[1])
-    : derivedSeek
-
-  const derivedTimecode: State["timecode"] =
-    audioContext.currentTime - derivedSafeSeek
+  const fx = FxContext.useContext()
+  const [state, setState] = R.useState(() => defaultContext.state)
   
-  const play: Context["play"] = () => {
+  const play: Context["play"] = seek => {
     setState(prev => {
-      if (!prev.pause) return prev
-      const timecode = audioContext.currentTime - prev.seek
-      return { ...prev, pause: false, timecode }
+      const nextSeek = seek ?? getSeek(prev)
+      return {
+        pause: false,
+        seek: nextSeek,
+        timecode: audioContext.currentTime - nextSeek,
+      }
     })
   }
 
@@ -110,19 +79,26 @@ export function Provider(props: ProviderProps) {
     })
   }
 
-  const stop: Context["stop"] = () => {
+  const stop: Context["stop"] = seek => {
     setState(prev => {
-      if (prev.pause) return prev
-      const timecode = audioContext.currentTime
-      const seek = timecode - derivedTimecode
+      const nextSeek = seek ?? getSeek(prev)
       return {
-        ...prev,
         pause: true,
-        seek,
-        timecode,
+        seek: nextSeek,
+        timecode: audioContext.currentTime - nextSeek,
       }
     })
   }
+
+  const getSeek: Context["getSeek"] = state => {
+    return state.pause
+      ? state.seek
+      : fx.loop
+        ? clampLoop(audioContext.currentTime - state.timecode, fx.loop)
+        : audioContext.currentTime - state.timecode
+  }
+
+  const derivedSeek = getSeek(state)
 
   return (
     <Context.Provider
@@ -130,21 +106,16 @@ export function Provider(props: ProviderProps) {
         play,
         seek,
         state: {
-          pause: state.pause,
-          seek: derivedSafeSeek,
-          timecode: derivedTimecode,
-        },
+          ...state,
+          seek: derivedSeek,
+          timecode: audioContext.currentTime - derivedSeek,
+        },  
         stop,
+        getSeek,
       }}
     >
       {!state.pause && (
-        <AudioEffect
-          seek={derivedSafeSeek}
-          hpf={derivedHpf}
-          lpf={derivedLpf}
-          loop={derivedLoop}
-          onEnd={onEnd}
-        />
+        <AudioEffect />
       )}
       {props.children}
     </Context.Provider>

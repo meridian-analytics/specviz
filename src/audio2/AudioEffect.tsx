@@ -1,20 +1,14 @@
 import * as R from "react" 
 import * as AudioContext from "./AudioContext"
 import * as BufferContext from "./BufferContext.js"
+import * as FxContext from "./FxContext.js"
+import * as TransportContext from "./TransportContext.js"
 
-export type AudioLoop = [number, number, () => void]
-
-export type AudioEffectProps = {
-  seek?: number
-  hpf?: number
-  lpf?: number
-  loop?: AudioLoop
-  onEnd?: () => void
-}
-
-export default function AudioEffect(props: AudioEffectProps) {
+export default function AudioEffect() {
   const audioContext = AudioContext.useContext()
   const buffer = BufferContext.useContext()
+  const fx = FxContext.useContext()
+  const transport = TransportContext.useContext()
   R.useEffect(() => {
     // mutable refs
     let source: null | AudioBufferSourceNode = null
@@ -22,11 +16,11 @@ export default function AudioEffect(props: AudioEffectProps) {
     let lpf: null | BiquadFilterNode = null
     // handlers
     const onEnd = () => {
-      if (props.loop) {
-        props.loop[2]()
+      if (fx.loop) {
+        transport.play(fx.loop[0])
       }
-      else if (props.onEnd) {
-        props.onEnd()
+      else {
+        transport.stop(0)
       }
     }
     const cleanup = () => {
@@ -47,12 +41,12 @@ export default function AudioEffect(props: AudioEffectProps) {
     // hpf
     hpf = audioContext.createBiquadFilter()
     hpf.type = "highpass"
-    hpf.frequency.value = props.hpf ?? 0
+    hpf.frequency.value = fx.hpf ?? 0
     hpf.Q.value = 20
     // lpf
     lpf = audioContext.createBiquadFilter()
     lpf.type = "lowpass"
-    lpf.frequency.value = props.lpf ?? 200000
+    lpf.frequency.value = fx.lpf ?? 200000
     lpf.Q.value = 20
     // source
     source = audioContext.createBufferSource()
@@ -64,14 +58,13 @@ export default function AudioEffect(props: AudioEffectProps) {
     lpf.connect(hpf)
     hpf.connect(audioContext.destination)
     // loop
-    if (props.loop) {
-      const seek = props.seek ?? 0
-      const duration = Math.max(0, props.loop[1] - seek)
-      source.start(0, seek, duration)
+    if (fx.loop) {
+      const duration = Math.max(0, fx.loop[1] - transport.state.seek)
+      source.start(0, transport.state.seek, duration)
     }
     // play
     else {
-      source.start(0, props.seek ?? 0)
+      source.start(0, transport.state.seek)
     }
     // cleanup
     return () => {
@@ -84,10 +77,11 @@ export default function AudioEffect(props: AudioEffectProps) {
     }
   }, [
     audioContext,
-    props.seek,
-    props.loop?.[0],
-    props.loop?.[1],
-    props.loop?.[2],
+    transport.play,
+    transport.stop,
+    transport.state.seek,
+    fx.loop?.[0],
+    fx.loop?.[1],
   ])
   // render empty node
   return <R.Fragment />
