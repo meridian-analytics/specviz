@@ -1,11 +1,13 @@
-import { StrictMode, useEffect, useState } from "react"
+import { StrictMode, useState } from "react"
 import { createRoot } from "react-dom/client"
 import { tregion } from "./src/types.jsx"
 import { linear, nonlinear } from "./src/axis.jsx"
-import { Specviz, Audio, Encoder, Navigator, Visualization, useSpecviz } from "./src/index.jsx"
+import { Specviz, Encoder, Navigator, Visualization, useSpecviz } from "./src/index.jsx"
 import { Bindings, Keypress } from "./src/keybinds.jsx"
 import { formatHz, formatPercent, formatTimestamp } from "./src/stringx.jsx"
 import { useAxes, useRegionState } from "./src/hooks.js"
+import * as Audio2 from "./src/audio2"
+import * as AudioFx from "./src/audiofx"
 
 type tsegment = {
   audio: string
@@ -63,6 +65,11 @@ const initRegions = new Map([
   }]
 ])
 
+function Duration() {
+  const audio = Audio2.useAudio()
+  return <>({audio.buffer.duration})</>
+}
+
 function MyComponent() {
   const [data, setData] = useState(segment1)
 
@@ -79,53 +86,61 @@ function MyComponent() {
     regions={regions}
     setRegions={setRegions}
   >
-    <Audio src={data.audio} duration={data.duration} />
-    <MyKeybinds />
-    <h3>specviz-react</h3>
-    <div className="segments">
-      <button
-        type="button"
-        onClick={_ => setData(segment1)}
-        children={segment1.audio}
-      />
-      <button
-        type="button"
-        onClick={_ => setData(segment2)}
-        children={segment2.audio}
-      />
-      <p>{data.audio} ({data.duration} seconds)</p>
-    </div>
-    <div id="app">
-      <main>
-        <Navigator
-          src={data.spectrogram}
-          xaxis={axes.seconds}
-          yaxis={axes.hertz}
-        />
-        <Visualization
-          src={data.spectrogram}
-          xaxis={axes.seconds}
-          yaxis={axes.hertz}
-        />
-        <Visualization
-          src={data.waveform}
-          xaxis={axes.seconds}
-          yaxis={axes.percent}
-        />
-        <Navigator
-          src={data.waveform}
-          xaxis={axes.seconds}
-          yaxis={axes.percent}
-        />
-        <MyAudioControls />
-      </main>
-      <MyAnnotations />
-    </div>
+    <AudioFx.Provider>
+      <Audio2.Audio
+        fx={AudioFx.default as any}
+        url={data.audio}
+      >
+        <MyKeybinds />
+        <h3>specviz-react</h3>
+        <div className="segments">
+          <button
+            type="button"
+            onClick={_ => setData(segment1)}
+            children={segment1.audio}
+          />
+          <button
+            type="button"
+            onClick={_ => setData(segment2)}
+            children={segment2.audio}
+          />
+          <p>{data.audio} <Duration /></p>
+        </div>
+        <div id="app">
+          <main>
+            <Navigator
+              src={data.spectrogram}
+              xaxis={axes.seconds}
+              yaxis={axes.hertz}
+            />
+            <Visualization
+              src={data.spectrogram}
+              xaxis={axes.seconds}
+              yaxis={axes.hertz}
+            />
+            <Visualization
+              src={data.waveform}
+              xaxis={axes.seconds}
+              yaxis={axes.percent}
+            />
+            <Navigator
+              src={data.waveform}
+              xaxis={axes.seconds}
+              yaxis={axes.percent}
+            />
+            <MyAudioControls />
+          </main>
+          <MyAnnotations />
+        </div>
+      </Audio2.Audio>
+    </AudioFx.Provider>
   </Specviz>
 }
 
 function MyAudioControls() {
-  const { command, toolState, transport, transportState } = useSpecviz()
+  const { command, toolState } = useSpecviz()
+  const audio = Audio2.useAudio()
+  const audioFx = AudioFx.useContext()
   return <p>
     <button
       title="A"
@@ -159,22 +174,23 @@ function MyAudioControls() {
     <button
       title="Z"
       type="button"
-      onClick={_ => transport.play()}
-      className={transportState.type === "play" ? "active" : ""}
+      onClick={_ => audio.transport.play()}
+      className={!audio.transport.state.pause ? "active" : ""}
       children="Play"
     />
     <button
       title="X"
       type="button"
-      onClick={_ => transport.stop()}
-      className={transportState.type === "stop" ? "active" : ""}
+      onClick={_ => audio.transport.stop()}
+      className={audio.transport.state.pause ? "active" : ""}
       children="Stop"
     />
   </p>
 }
 
 function MyKeybinds() {
-  const { command, transport } = useSpecviz()
+  const { command } = useSpecviz()
+  const audio = Audio2.useAudio()
   return <Bindings>
     <Keypress bind="Backspace" onKeyDown={command.delete} />
     <Keypress bind="Escape" onKeyDown={command.deselect} />
@@ -186,8 +202,8 @@ function MyKeybinds() {
     <Keypress bind="s" onKeyDown={() => command.tool("select")} />
     <Keypress bind="d" onKeyDown={() => command.tool("zoom")} />
     <Keypress bind="f" onKeyDown={() => command.tool("pan")} />
-    <Keypress bind="z" onKeyDown={transport.play} />
-    <Keypress bind="x" onKeyDown={transport.stop} />
+    <Keypress bind="z" onKeyDown={audio.transport.play} />
+    <Keypress bind="x" onKeyDown={audio.transport.stop} />
   </Bindings>
 }
 
@@ -203,15 +219,14 @@ function MyAnnotations() {
 }
 
 function MyForm(region: tregion ) {
-  const { transport } = useSpecviz()
+  const audioFx = AudioFx.useContext()
   return <div className="annotation-form">
     <div className="title">
       <div>{region.id}</div>
       <button
         type="button"
-        onClick={event => {
-          event.preventDefault()
-          transport.loop(region.id)
+        onClick={() => {
+          audioFx.setFocusRegion(region.id)
         }}
         children="loop"
       />

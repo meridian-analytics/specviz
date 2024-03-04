@@ -5,6 +5,7 @@ import { fromPoints, logical } from "./rect.jsx"
 import { hide, show, setRect, setTransform } from "./svg.jsx"
 import { magnitude } from "./vector2.jsx"
 import Annotation from "./annotation.jsx"
+import * as Audio2 from "./audio2"
 import Cursor from "./cursor.jsx"
 import Playhead from "./playhead.jsx"
 
@@ -17,7 +18,8 @@ function Visualization(props: {
 }) {
   const { src, xaxis, yaxis } = props
   const { command, input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } = useSpecviz()
-  const { toolState, transportState, transport } = useSpecviz()
+  const { toolState } = useSpecviz()
+  const audio = Audio2.useAudio()
   const { regions } = useSpecviz()
   const { selection } = useSpecviz()
   const svgRoot = useRef<SVGSVGElement>(null)
@@ -114,17 +116,24 @@ function Visualization(props: {
           }
         }
         if (input.buttons & 2) { // todo: command.seek
-          transport.seek(mouseup.abs.x)
+          audio.transport.seek(mouseup.abs.x * audio.buffer.duration)
         }
       },
-      [command, toolState, transport, xaxis, yaxis]
+      [
+        audio.buffer.duration,
+        audio.transport.seek,
+        command,
+        toolState,
+        xaxis,
+        yaxis,
+      ],
     ),
   })
 
   useWheel(svgRoot, -1)
 
   return <div
-    className={`visualization ${toolState} ${transportState.type}`}
+    className={`visualization ${toolState}`}
   >
     <svg
       ref={svgRoot}

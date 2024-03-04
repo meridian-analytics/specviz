@@ -1,47 +1,36 @@
 import { useCallback, useRef } from "react"
-import { useAnimationFrame, useSpecviz } from "./hooks.jsx"
-import { tregion } from "./types.jsx"
+import * as Audio2 from "./audio2"
+import { useAnimationFrame } from "./hooks.jsx"
 import { taxis } from "./axis.jsx"
 import { setX, setY } from "./svg.jsx"
-import { logical, trect } from "./rect.jsx"
 
 function Playhead(props: {
   xaxis: taxis,
   yaxis: taxis,
 }) {
-  const { xaxis, yaxis } = props
-  const { regions, regionCache, playhead, transportState } = useSpecviz()
-  const svgLine = useRef<SVGLineElement>(null)
-
+  const line = useRef<SVGLineElement>(null)
+  const { audioContext, buffer, transport } = Audio2.useAudio()
   useAnimationFrame(useCallback(
     () => {
-      const line = svgLine.current!
-      let focus: tregion | undefined
-      let rect: trect
-      switch (transportState.type) {
-        case "stop":
-        case "play":
-          setX(line, playhead.x)
-          setY(line, 0, 1)
-          break
-        case "loop":
-          focus = regions.get(transportState.id) // todo: antipattern?
-          if (focus == null) return
-          rect = logical(
-            regionCache.get(transportState.id)!,
-            xaxis.unit === focus.xunit,
-            yaxis.unit === focus.yunit
-          )
-          setX(line, playhead.x)
-          setY(line, rect.y, rect.y + rect.height)
-          break
+      if (line.current) {
+        const seek = transport.state.pause
+          ? transport.state.seek
+          : audioContext.currentTime - transport.state.timecode
+        setX(line.current, seek / buffer.duration)
+        setY(line.current, 0, 1) // todo: y-axis on spectrograms
       }
     },
-    [regions, regionCache, transportState]
+    [
+      buffer.duration,
+      transport.state.pause,
+      transport.state.seek,
+      transport.state.timecode,  
+    ]
   ))
+  
 
   return <line
-    ref={svgLine}
+    ref={line}
     className="playhead"
     x1="0"
     y1="0"

@@ -6,13 +6,14 @@ import * as TransportContext from "./TransportContext.js"
 export type AudioProps = {
   children: R.ReactNode
   url: string
+  fx: R.Context<TransportContext.FxContext>
 }
 
 export function Audio(props: AudioProps) {
   return (
     <AudioContext.Provider>
       <BufferContext.Provider url={props.url}>
-        <TransportContext.Provider>
+        <TransportContext.Provider fx={props.fx}>
           {props.children}
         </TransportContext.Provider>
       </BufferContext.Provider>
