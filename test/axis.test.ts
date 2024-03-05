@@ -1,5 +1,5 @@
 import { test, expect } from "vitest"
-import * as axis from "../src/axis.jsx"
+import * as axis from "../src/axis"
 
 test("axis.linear zero to positive", () => {
   const t = axis.linear(0, 100, "percent", String)

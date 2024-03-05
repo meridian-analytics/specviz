@@ -1,5 +1,5 @@
-import { tnullable } from "./types.jsx"
-import type { tvector2 } from "./vector2.jsx"
+import { tnullable } from "./types"
+import type { tvector2 } from "./vector2"
 
 type trect = {
   x: number,

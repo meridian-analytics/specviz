@@ -1,6 +1,6 @@
 import * as R from "react"
 import * as Audio2 from "./audio2"
-import { useSpecviz } from "./hooks.js"
+import { useSpecviz } from "./hooks"
 import * as T from "./types"
 
 type State = {

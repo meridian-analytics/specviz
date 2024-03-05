@@ -1,8 +1,8 @@
 import { useCallback, useRef } from "react"
 import * as Audio2 from "./audio2"
-import { useAnimationFrame } from "./hooks.jsx"
-import { taxis } from "./axis.jsx"
-import { setX, setY } from "./svg.jsx"
+import { useAnimationFrame } from "./hooks"
+import { taxis } from "./axis"
+import { setX, setY } from "./svg"
 
 function Playhead(props: {
   xaxis: taxis,

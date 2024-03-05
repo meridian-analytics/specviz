@@ -1,5 +1,5 @@
 import { createContext } from "react"
-import { tcontext } from "./types.jsx"
+import { tcontext } from "./types"
 
 const SpecvizContext = createContext<tcontext>({
   input: { buttons: 0, alt: false, ctrl: false, focus: null, xaxis: null, yaxis: null },

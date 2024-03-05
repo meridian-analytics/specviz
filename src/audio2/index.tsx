@@ -2,9 +2,9 @@ export {
   type AudioProps,
   Audio,
   useAudio,
-} from "./Audio.jsx"
+} from "./Audio"
 
-export * as AudioContext from "./AudioContext.jsx"
-export * as BufferContext from "./BufferContext.jsx"
-export * as FxContext from "./FxContext.jsx"
-export * as TransportContext from "./TransportContext.jsx"
+export * as AudioContext from "./AudioContext"
+export * as BufferContext from "./BufferContext"
+export * as FxContext from "./FxContext"
+export * as TransportContext from "./TransportContext"

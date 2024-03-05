@@ -1,12 +1,12 @@
 import { Dispatch, SetStateAction, ReactNode, useEffect, useMemo, useState, useCallback } from "react"
-import { tregion, tnullable, tcommand, tinput, tselection, ttoolstate } from "./types.jsx"
-import { taxis, computeRect, computeRectInverse } from "./axis.jsx"
-import { useMutableCoord, useMutableRect, useMutableVector2 } from "./hooks.jsx"
-import { clamp } from "./mathx.jsx"
-import { trect, intersectPoint, intersectRect, logical } from "./rect.jsx"
-import { randomBytes } from "./stringx.jsx"
-import { tvector2 } from "./vector2.jsx"
-import SpecvizContext from "./context.jsx"
+import { tregion, tnullable, tcommand, tinput, tselection, ttoolstate } from "./types"
+import { taxis, computeRect, computeRectInverse } from "./axis"
+import { useMutableCoord, useMutableRect, useMutableVector2 } from "./hooks"
+import { clamp } from "./mathx"
+import { trect, intersectPoint, intersectRect, logical } from "./rect"
+import { randomBytes } from "./stringx"
+import { tvector2 } from "./vector2"
+import SpecvizContext from "./context"
 
 const ZOOM_MAX: number = 5
 

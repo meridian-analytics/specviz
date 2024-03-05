@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from "react"
-import type { taxis } from "./axis.jsx"
-import type { trect } from "./rect.jsx"
-import type { tvector2 } from "./vector2.jsx"
+import type { taxis } from "./axis"
+import type { trect } from "./rect"
+import type { tvector2 } from "./vector2"
 
 type tserialannotation = {
   id: string,

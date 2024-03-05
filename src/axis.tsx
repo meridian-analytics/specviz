@@ -1,4 +1,4 @@
-import { trect, normalize } from "./rect.jsx"
+import { trect, normalize } from "./rect"
 
 type taxisunit = "hertz" | "seconds" | "percent"
 

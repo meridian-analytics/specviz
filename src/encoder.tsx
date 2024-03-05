@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react"
-import { useSpecviz } from "./hooks.jsx"
-import { tregion } from "./types.js"
+import { useSpecviz } from "./hooks"
+import { tregion } from "./types"
 
 function Encoder(props: {
   state: number,

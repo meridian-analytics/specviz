@@ -1,7 +1,7 @@
 import * as R from "react"
-import Seek from "./Seek.jsx"
-import Scrubber from "./Scrubber.jsx"
-import * as Audio from "./Audio.jsx"
+import Seek from "./Seek"
+import Scrubber from "./Scrubber"
+import * as Audio from "./Audio"
 
 export default function Player() {
   const audio = Audio.useAudio()

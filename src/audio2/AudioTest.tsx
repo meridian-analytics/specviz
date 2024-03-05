@@ -1,7 +1,7 @@
-import * as AudioContext from "./AudioContext.jsx"
-import * as BufferContext from "./BufferContext.jsx"
-import * as TransportContext from "./TransportContext.jsx"
-import Player from "./Player.jsx"
+import * as AudioContext from "./AudioContext"
+import * as BufferContext from "./BufferContext"
+import * as TransportContext from "./TransportContext"
+import Player from "./Player"
 
 export default function AudioTest() {
   return (

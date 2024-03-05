@@ -1,5 +1,5 @@
 import * as R from "react"
-import * as Audio from "./Audio.jsx"
+import * as Audio from "./Audio"
 
 export default function Seek() {
   const audio = Audio.useAudio()

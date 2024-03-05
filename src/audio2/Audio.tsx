@@ -1,8 +1,8 @@
 import * as R from "react" 
-import * as AudioContext from "./AudioContext.js"
-import * as BufferContext from "./BufferContext.js"
-import * as FxContext from "./FxContext.js"
-import * as TransportContext from "./TransportContext.js"
+import * as AudioContext from "./AudioContext"
+import * as BufferContext from "./BufferContext"
+import * as FxContext from "./FxContext"
+import * as TransportContext from "./TransportContext"
 
 export type AudioProps = {
   children: R.ReactNode

@@ -1,10 +1,10 @@
 import { DependencyList, MouseEvent, RefObject, useContext, useEffect, useMemo, useState } from "react"
-import { tcoord, tregion } from "./types.jsx"
-import { taxis, computeUnit } from "./axis.jsx"
-import { clamp } from "./mathx.jsx"
-import { trect, fromPoints } from "./rect.jsx"
-import { tvector2 } from "./vector2.jsx"
-import SpecvizContext from "./context.jsx"
+import { tcoord, tregion } from "./types"
+import { taxis, computeUnit } from "./axis"
+import { clamp } from "./mathx"
+import { trect, fromPoints } from "./rect"
+import { tvector2 } from "./vector2"
+import SpecvizContext from "./context"
 
 function useAnimationFrame(callback: (frameId: number) => void) {
   useEffect(

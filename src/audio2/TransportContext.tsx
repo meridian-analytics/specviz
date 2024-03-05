@@ -1,7 +1,7 @@
 import * as R from "react"
-import * as AudioContext from "./AudioContext.js"
-import * as FxContext from "./FxContext.js"
-import AudioEffect from "./AudioEffect.js"
+import * as AudioContext from "./AudioContext"
+import * as FxContext from "./FxContext"
+import AudioEffect from "./AudioEffect"
 
 export type State = {
   pause: boolean

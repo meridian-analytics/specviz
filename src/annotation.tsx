@@ -1,8 +1,8 @@
 import { useMemo } from "react"
-import { taxis } from "./axis.jsx"
-import { useSpecviz } from "./hooks.jsx"
-import { logical } from "./rect.jsx"
-import { tregion } from "./types.jsx"
+import { taxis } from "./axis"
+import { useSpecviz } from "./hooks"
+import { logical } from "./rect"
+import { tregion } from "./types"
 
 function Annotation(props: {
   region: tregion
