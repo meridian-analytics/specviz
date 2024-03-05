@@ -14,7 +14,7 @@ function Navigator(props: {
   yaxis: taxis,
 }) {
   const { src, xaxis, yaxis } = props
-  const { regions, command, input, mouseup, mouseRect, scroll, zoom, toolState, transportState } = useSpecviz()
+  const { regions, command, input, mouseup, mouseRect, scroll, zoom, toolState } = useSpecviz()
   const containerRef = useRef<SVGSVGElement>(null)
   const maskRef = useRef<SVGPathElement>(null)
 
@@ -79,7 +79,7 @@ function Navigator(props: {
   useWheel(containerRef, 1)
 
   return <div
-    className={`navigator ${toolState} ${transportState.type}`}
+    className={`navigator ${toolState}`}
   >
     <svg
       ref={containerRef}

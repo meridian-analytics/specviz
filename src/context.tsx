@@ -1,6 +1,5 @@
 import { createContext } from "react"
 import { tcontext } from "./types.jsx"
-import { stop } from "./transport.jsx"
 
 const SpecvizContext = createContext<tcontext>({
   input: { buttons: 0, alt: false, ctrl: false, focus: null, xaxis: null, yaxis: null },
@@ -37,17 +36,8 @@ const SpecvizContext = createContext<tcontext>({
     zoomArea: () => { console.error("command.zoomArea called outside of Specviz context") },
   },
   toolState: "annotate",
-  transport: {
-    play: () => { console.error("transport.play called outside of Specviz context") },
-    loop: () => { console.error("transport.loop called outside of Specviz context") },
-    stop: () => { console.error("transport.stop called outside of Specviz context") },
-    seek: () => { console.error("transport.seek called outside of Specviz context") },
-  },
-  transportState: stop(0),
   setRegions: _ => { console.error("setRegions called outside of Specviz context") },
   setSelection: _ => { console.error("setSelection called outside of Specviz context") },
-  setTransport: _ => { console.error("setTransport called outside of Specviz context") },
-  setTransportState: _ => { console.error("setTransportState called outside of Specviz context") },
 })
 
 export default SpecvizContext

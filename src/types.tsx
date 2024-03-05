@@ -52,12 +52,8 @@ type tcontext = {
   selection: tselection,
   command: tcommand,
   toolState: ttoolstate,
-  transport: ttransport,
-  transportState: ttransportstate,
   setSelection: Dispatch<SetStateAction<tselection>>,
-  setTransport: Dispatch<SetStateAction<ttransport>>,
   setRegions: Dispatch<SetStateAction<Map<string, tregion>>>,
-  setTransportState: Dispatch<SetStateAction<ttransportstate>>,
 }
 
 type tselection = Set<string>
@@ -86,18 +82,6 @@ type tcommand = {
 
 type ttoolstate = "annotate" | "select" | "zoom" | "pan"
 
-type ttransportstate =
-  | { type: "play", progress: number, timeRef: number }
-  | { type: "loop", progress: number, timeRef: number, id: string }
-  | { type: "stop", progress: number }
-
-type ttransport = {
-  play: () => void,
-  loop: (id: string) => void,
-  stop: () => void,
-  seek: (progress: number) => void,
-}
-
 export type {
   taxis,
   tcoord,
@@ -108,7 +92,5 @@ export type {
   tserialannotation,
   tcommand,
   ttoolstate,
-  ttransportstate,
-  ttransport,
   tregion,
 }

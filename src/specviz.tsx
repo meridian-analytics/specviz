@@ -1,17 +1,14 @@
 import { Dispatch, SetStateAction, ReactNode, useEffect, useMemo, useState, useCallback } from "react"
-import { tregion, tnullable, tcommand, tinput, tselection, ttoolstate, ttransport, ttransportstate } from "./types.jsx"
+import { tregion, tnullable, tcommand, tinput, tselection, ttoolstate } from "./types.jsx"
 import { taxis, computeRect, computeRectInverse } from "./axis.jsx"
 import { useMutableCoord, useMutableRect, useMutableVector2 } from "./hooks.jsx"
 import { clamp } from "./mathx.jsx"
 import { trect, intersectPoint, intersectRect, logical } from "./rect.jsx"
 import { randomBytes } from "./stringx.jsx"
-import { stop } from "./transport.jsx"
 import { tvector2 } from "./vector2.jsx"
 import SpecvizContext from "./context.jsx"
 
 const ZOOM_MAX: number = 5
-const NOOP = () => {}
-
 
 function Specviz(props: {
   axes: Record<string, taxis>
@@ -298,15 +295,6 @@ function Specviz(props: {
 
   const [toolState, setToolState] = useState<ttoolstate>("annotate")
 
-  const [transport, setTransport] = useState<ttransport>({
-    play: NOOP,
-    loop: NOOP,
-    stop: NOOP,
-    seek: NOOP,
-  })
-
-  const [transportState, setTransportState] = useState<ttransportstate>(stop(0))
-
   // todo: expose via command and keybind
   useEffect(
     () => {
@@ -351,12 +339,8 @@ function Specviz(props: {
     selection,
     command,
     toolState,
-    transport,
-    transportState,
     setRegions: props.setRegions,
     setSelection,
-    setTransport,
-    setTransportState,
   }}>
     {props.children}
   </SpecvizContext.Provider>
