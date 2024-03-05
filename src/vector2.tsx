@@ -1,4 +1,4 @@
-type tvector2 = { x: number, y: number }
+type tvector2 = { x: number; y: number }
 
 function magnitude(a: tvector2): number {
   return Math.sqrt(a.x * a.x + a.y * a.y)

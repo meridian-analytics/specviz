@@ -1,7 +1,7 @@
 import * as R from "react"
 import * as AudioContext from "./AudioContext"
-import * as FxContext from "./FxContext"
 import AudioEffect from "./AudioEffect"
+import * as FxContext from "./FxContext"
 
 export type State = {
   pause: boolean
@@ -60,7 +60,7 @@ export function Provider(props: ProviderProps) {
   const audioContext = AudioContext.useContext()
   const fx = FxContext.useContext()
   const [state, setState] = R.useState(() => defaultContext.state)
-  
+
   const play: Context["play"] = seek => {
     setState(prev => {
       const nextSeek = seek ?? getSeek(prev)
@@ -91,32 +91,22 @@ export function Provider(props: ProviderProps) {
   }
 
   const getSeek: Context["getSeek"] = state => {
-    return state.pause
-      ? state.seek
-      : audioContext.currentTime - state.timecode
+    return state.pause ? state.seek : audioContext.currentTime - state.timecode
   }
 
-  R.useEffect(
-    () => {
-      setState(prev => {
-        const seek = getSeek(prev)
-        if (fx.loop && (seek < fx.loop[0] || seek > fx.loop[1])) {
-          return {
-            pause: prev.pause,
-            seek: fx.loop[0],
-            timecode: audioContext.currentTime - fx.loop[0],
-          }
+  R.useEffect(() => {
+    setState(prev => {
+      const seek = getSeek(prev)
+      if (fx.loop && (seek < fx.loop[0] || seek > fx.loop[1])) {
+        return {
+          pause: prev.pause,
+          seek: fx.loop[0],
+          timecode: audioContext.currentTime - fx.loop[0],
         }
-        return prev
-      })
-    },
-    [
-      audioContext,
-      state,
-      fx,
-      getSeek,
-    ],
-  )
+      }
+      return prev
+    })
+  }, [audioContext, getSeek, fx.loop, fx.loop?.[0], fx.loop?.[1]])
 
   return (
     <Context.Provider
@@ -128,9 +118,7 @@ export function Provider(props: ProviderProps) {
         getSeek,
       }}
     >
-      {!state.pause && (
-        <AudioEffect />
-      )}
+      {!state.pause && <AudioEffect />}
       {props.children}
     </Context.Provider>
   )

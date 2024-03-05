@@ -1,4 +1,4 @@
-import * as R from "react" 
+import * as R from "react"
 import * as AudioContext from "./AudioContext"
 import * as BufferContext from "./BufferContext"
 import * as FxContext from "./FxContext"
@@ -18,8 +18,7 @@ export default function AudioEffect() {
     const onEnd = () => {
       if (fx.loop) {
         transport.play(fx.loop[0])
-      }
-      else {
+      } else {
         transport.stop(0)
       }
     }

@@ -2,10 +2,10 @@ import { tnullable } from "./types"
 import type { tvector2 } from "./vector2"
 
 type trect = {
-  x: number,
-  y: number,
-  width: number,
-  height: number,
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 function fromPoints(pt1: tvector2, pt2: tvector2): trect {
@@ -18,10 +18,12 @@ function fromPoints(pt1: tvector2, pt2: tvector2): trect {
 }
 
 function intersectPoint(t: trect, pt: tvector2): boolean {
-  return pt.x >= t.x
-    && pt.x <= t.x + t.width
-    && pt.y >= t.y
-    && pt.y <= t.y + t.height
+  return (
+    pt.x >= t.x &&
+    pt.x <= t.x + t.width &&
+    pt.y >= t.y &&
+    pt.y <= t.y + t.height
+  )
 }
 
 function intersectRect(a: trect, b: trect): tnullable<trect> {

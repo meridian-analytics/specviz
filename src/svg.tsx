@@ -1,10 +1,7 @@
 import { trect } from "./rect"
 import { tvector2 } from "./vector2"
 
-type tpositional =
-  | SVGLineElement
-  | SVGRectElement
-  | SVGTextElement
+type tpositional = SVGLineElement | SVGRectElement | SVGTextElement
 
 type tformat = (q: number) => string
 
@@ -16,34 +13,36 @@ function show(svg: SVGElement) {
   svg.setAttribute("display", "inline")
 }
 
-function setAnchor(svg: SVGTextElement, anchor: tvector2, format: tformat = String) {
-  if (anchor.x < .5) {
+function setAnchor(
+  svg: SVGTextElement,
+  anchor: tvector2,
+  format: tformat = String,
+) {
+  if (anchor.x < 0.5) {
     setX(svg, anchor.x, undefined, format)
     svg.setAttribute("text-anchor", "start")
-  }
-  else {
+  } else {
     setX(svg, anchor.x, undefined, format)
     svg.setAttribute("text-anchor", "end")
   }
-  if (anchor.y < .5) {
+  if (anchor.y < 0.5) {
     setY(svg, anchor.y + 0.01, undefined, format)
     svg.setAttribute("dominant-baseline", "hanging")
-  }
-  else {
+  } else {
     setY(svg, anchor.y - 0.01, undefined, format)
     svg.setAttribute("dominant-baseline", "text-top")
   }
 }
 
 function setPath(svg: SVGPathElement, path: string) {
-  svg.setAttribute('d', path)
+  svg.setAttribute("d", path)
 }
 
 function setRect(svg: SVGRectElement, rect: trect, format: tformat = String) {
-  svg.setAttribute('x', format(rect.x))
-  svg.setAttribute('y', format(rect.y))
-  svg.setAttribute('width', format(rect.width))
-  svg.setAttribute('height', format(rect.height))
+  svg.setAttribute("x", format(rect.x))
+  svg.setAttribute("y", format(rect.y))
+  svg.setAttribute("width", format(rect.width))
+  svg.setAttribute("height", format(rect.height))
 }
 
 function setText(svg: SVGTextElement, text: string) {
@@ -52,38 +51,61 @@ function setText(svg: SVGTextElement, text: string) {
 
 function setTransform(svg: SVGElement, translate: tvector2, scale: tvector2) {
   svg.setAttribute(
-    'transform',
-    `translate(${-translate.x}, ${-translate.y}) scale(${scale.x}, ${scale.y})`
+    "transform",
+    `translate(${-translate.x}, ${-translate.y}) scale(${scale.x}, ${scale.y})`,
   )
 }
 
-function setX(svg: tpositional, x1: number, x2: number = x1, format: tformat = String) {
+function setX(
+  svg: tpositional,
+  x1: number,
+  x2: number = x1,
+  format: tformat = String,
+) {
   switch (svg.constructor) {
     case SVGTextElement:
-      svg.setAttribute('x', format(x1))
+      svg.setAttribute("x", format(x1))
+      break
     case SVGLineElement:
-      svg.setAttribute('x1', format(x1))
-      svg.setAttribute('x2', format(x2))
-      break;
+      svg.setAttribute("x1", format(x1))
+      svg.setAttribute("x2", format(x2))
+      break
     case SVGRectElement:
-      svg.setAttribute('x', format(x1))
-      svg.setAttribute('width', format(x2))
+      svg.setAttribute("x", format(x1))
+      svg.setAttribute("width", format(x2))
+      break
   }
 }
 
-function setY(svg: tpositional, y1: number, y2: number = y1, format: tformat = String) {
+function setY(
+  svg: tpositional,
+  y1: number,
+  y2: number = y1,
+  format: tformat = String,
+) {
   switch (svg.constructor) {
     case SVGTextElement:
-      svg.setAttribute('y', format(y1))
+      svg.setAttribute("y", format(y1))
+      break
     case SVGLineElement:
-      svg.setAttribute('y1', format(y1))
-      svg.setAttribute('y2', format(y2))
-      break;
+      svg.setAttribute("y1", format(y1))
+      svg.setAttribute("y2", format(y2))
+      break
     case SVGRectElement:
-      svg.setAttribute('y', format(y1))
-      svg.setAttribute('height', format(y2))
-
+      svg.setAttribute("y", format(y1))
+      svg.setAttribute("height", format(y2))
+      break
   }
 }
 
-export { hide, show, setAnchor, setPath, setRect, setText, setTransform, setX, setY }
+export {
+  hide,
+  show,
+  setAnchor,
+  setPath,
+  setRect,
+  setText,
+  setTransform,
+  setX,
+  setY,
+}

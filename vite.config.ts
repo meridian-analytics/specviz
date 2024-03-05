@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -11,22 +11,18 @@ export default defineConfig({
     emptyOutDir: true,
     copyPublicDir: false,
     rollupOptions: {
-      external: [
-        "react",
-        "react/jsx-runtime",
-        "react-dom",
-      ],
+      external: ["react", "react/jsx-runtime", "react-dom"],
       input: {
         "specviz-react": "src/index.tsx",
-        "axis": "src/axis.tsx",
-        "format": "src/stringx.tsx",
-        "hooks": "src/hooks.tsx",
-        "rect": "src/rect.tsx",
-        "keybinds": "src/keybinds.tsx",
+        axis: "src/axis.tsx",
+        format: "src/stringx.tsx",
+        hooks: "src/hooks.tsx",
+        rect: "src/rect.tsx",
+        keybinds: "src/keybinds.tsx",
       },
       output: {
         globals: {
-          "react": "React",
+          react: "React",
           "react-dom": "ReactDOM",
         },
         entryFileNames: "[name].js",
