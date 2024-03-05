@@ -93,23 +93,37 @@ export function Provider(props: ProviderProps) {
   const getSeek: Context["getSeek"] = state => {
     return state.pause
       ? state.seek
-      : fx.loop
-        ? clampLoop(audioContext.currentTime - state.timecode, fx.loop)
-        : audioContext.currentTime - state.timecode
+      : audioContext.currentTime - state.timecode
   }
 
-  const derivedSeek = getSeek(state)
+  R.useEffect(
+    () => {
+      setState(prev => {
+        const seek = getSeek(prev)
+        if (fx.loop && (seek < fx.loop[0] || seek > fx.loop[1])) {
+          return {
+            pause: prev.pause,
+            seek: fx.loop[0],
+            timecode: audioContext.currentTime - fx.loop[0],
+          }
+        }
+        return prev
+      })
+    },
+    [
+      audioContext,
+      state,
+      fx,
+      getSeek,
+    ],
+  )
 
   return (
     <Context.Provider
       value={{
         play,
         seek,
-        state: {
-          ...state,
-          seek: derivedSeek,
-          timecode: audioContext.currentTime - derivedSeek,
-        },  
+        state,
         stop,
         getSeek,
       }}
