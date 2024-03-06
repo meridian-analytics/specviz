@@ -1,17 +1,17 @@
-import { useCallback, useRef } from "react"
+import * as R from "react"
 import Annotation from "./annotation"
-import { taxis } from "./axis"
-import { useAnimationFrame, useMouse, useSpecviz, useWheel } from "./hooks"
+import * as Axis from "./axis"
+import * as Hooks from "./hooks"
 import Playhead from "./playhead"
-import { setPath } from "./svg"
-import { magnitude } from "./vector2"
+import * as Svg from "./svg"
+import * as Vector2 from "./vector2"
 
 const NOOP = () => {}
 
 function Navigator(props: {
   src: string
-  xaxis: taxis
-  yaxis: taxis
+  xaxis: Axis.taxis
+  yaxis: Axis.taxis
 }) {
   const { src, xaxis, yaxis } = props
   const {
@@ -23,14 +23,14 @@ function Navigator(props: {
     scroll,
     zoom,
     toolState,
-  } = useSpecviz()
-  const containerRef = useRef<SVGSVGElement>(null)
-  const maskRef = useRef<SVGPathElement>(null)
+  } = Hooks.useSpecviz()
+  const containerRef = R.useRef<SVGSVGElement>(null)
+  const maskRef = R.useRef<SVGPathElement>(null)
 
-  useAnimationFrame(
-    useCallback(() => {
+  Hooks.useAnimationFrame(
+    R.useCallback(() => {
       if (maskRef.current) {
-        setPath(
+        Svg.setPath(
           maskRef.current,
           `
           M 0 0
@@ -49,12 +49,12 @@ function Navigator(props: {
     }, [scroll, zoom]),
   )
 
-  const onMouse = useMouse({
+  const onMouse = Hooks.useMouse({
     onContextMenu: NOOP,
     onMouseDown: NOOP,
     onMouseEnter: NOOP,
     onMouseLeave: NOOP,
-    onMouseMove: useCallback(
+    onMouseMove: R.useCallback(
       e => {
         if (input.buttons & 1) {
           command.scroll(
@@ -65,10 +65,13 @@ function Navigator(props: {
       },
       [command, input, zoom],
     ),
-    onMouseUp: useCallback(
+    onMouseUp: R.useCallback(
       e => {
         if (input.buttons & 1) {
-          if (magnitude({ x: mouseRect.width, y: mouseRect.height }) < 0.01) {
+          if (
+            Vector2.magnitude({ x: mouseRect.width, y: mouseRect.height }) <
+            0.01
+          ) {
             // click
             switch (toolState) {
               case "annotate":
@@ -90,7 +93,7 @@ function Navigator(props: {
     ),
   })
 
-  useWheel(containerRef, 1)
+  Hooks.useWheel(containerRef, 1)
 
   return (
     <div className={`navigator ${toolState}`}>

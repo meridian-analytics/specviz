@@ -1,6 +1,6 @@
 import * as R from "react"
 import * as Audio2 from "./audio2"
-import { useSpecviz } from "./hooks"
+import * as Hooks from "./hooks"
 import * as T from "./types"
 
 type State = {
@@ -26,7 +26,7 @@ export type ProviderProps = {
 }
 
 export function Provider(props: ProviderProps) {
-  const specviz = useSpecviz()
+  const specviz = Hooks.useSpecviz()
   const [state, setState] = R.useState<State>({
     focusRegion: null,
   })

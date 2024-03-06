@@ -1,5 +1,5 @@
-import { trect } from "./rect"
-import { tvector2 } from "./vector2"
+import * as Rect from "./rect"
+import * as Vector2 from "./vector2"
 
 type tpositional = SVGLineElement | SVGRectElement | SVGTextElement
 
@@ -15,7 +15,7 @@ function show(svg: SVGElement) {
 
 function setAnchor(
   svg: SVGTextElement,
-  anchor: tvector2,
+  anchor: Vector2.tvector2,
   format: tformat = String,
 ) {
   if (anchor.x < 0.5) {
@@ -38,7 +38,11 @@ function setPath(svg: SVGPathElement, path: string) {
   svg.setAttribute("d", path)
 }
 
-function setRect(svg: SVGRectElement, rect: trect, format: tformat = String) {
+function setRect(
+  svg: SVGRectElement,
+  rect: Rect.trect,
+  format: tformat = String,
+) {
   svg.setAttribute("x", format(rect.x))
   svg.setAttribute("y", format(rect.y))
   svg.setAttribute("width", format(rect.width))
@@ -49,7 +53,11 @@ function setText(svg: SVGTextElement, text: string) {
   svg.textContent = text
 }
 
-function setTransform(svg: SVGElement, translate: tvector2, scale: tvector2) {
+function setTransform(
+  svg: SVGElement,
+  translate: Vector2.tvector2,
+  scale: Vector2.tvector2,
+) {
   svg.setAttribute(
     "transform",
     `translate(${-translate.x}, ${-translate.y}) scale(${scale.x}, ${scale.y})`,

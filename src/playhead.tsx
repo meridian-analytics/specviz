@@ -1,21 +1,21 @@
-import { useCallback, useRef } from "react"
+import * as R from "react"
 import * as Audio2 from "./audio2"
-import { taxis } from "./axis"
-import { useAnimationFrame } from "./hooks"
-import { setX, setY } from "./svg"
+import * as Axis from "./axis"
+import * as Hooks from "./hooks"
+import * as Svg from "./svg"
 
 function Playhead(props: {
-  xaxis: taxis
-  yaxis: taxis
+  xaxis: Axis.taxis
+  yaxis: Axis.taxis
 }) {
-  const line = useRef<SVGLineElement>(null)
+  const line = R.useRef<SVGLineElement>(null)
   const { buffer, transport } = Audio2.useAudio()
-  useAnimationFrame(
-    useCallback(() => {
+  Hooks.useAnimationFrame(
+    R.useCallback(() => {
       if (line.current) {
         const seek = transport.getSeek(transport.state)
-        setX(line.current, seek / buffer.duration)
-        setY(line.current, 0, 1) // todo: y-axis on spectrograms
+        Svg.setX(line.current, seek / buffer.duration)
+        Svg.setY(line.current, 0, 1) // todo: y-axis on spectrograms
       }
     }, [buffer.duration, transport.getSeek, transport.state]),
   )

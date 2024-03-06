@@ -1,22 +1,21 @@
-import type { ReactNode, RefObject } from "react"
-import { createContext, useContext, useEffect, useRef } from "react"
+import * as R from "react"
 
 type tcontext = {
-  onKeyUps: RefObject<Set<(e: KeyboardEvent) => void>>
-  onKeyDowns: RefObject<Set<(e: KeyboardEvent) => void>>
+  onKeyUps: R.RefObject<Set<(e: KeyboardEvent) => void>>
+  onKeyDowns: R.RefObject<Set<(e: KeyboardEvent) => void>>
 }
 
-const KeybindsContext = createContext<tcontext>({
+const KeybindsContext = R.createContext<tcontext>({
   onKeyUps: { current: new Set() },
   onKeyDowns: { current: new Set() },
 })
 
 function Bindings(props: {
-  children: ReactNode
+  children: R.ReactNode
 }) {
-  const onKeyUps = useRef<Set<(e: KeyboardEvent) => void>>(new Set())
-  const onKeyDowns = useRef<Set<(e: KeyboardEvent) => void>>(new Set())
-  useEffect(() => {
+  const onKeyUps = R.useRef<Set<(e: KeyboardEvent) => void>>(new Set())
+  const onKeyDowns = R.useRef<Set<(e: KeyboardEvent) => void>>(new Set())
+  R.useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       for (const listener of onKeyDowns.current) listener(e)
     }
@@ -46,8 +45,8 @@ function Keypress(props: {
   onKeyDown?: (e: KeyboardEvent) => void
   onKeyUp?: (e: KeyboardEvent) => void
 }) {
-  const { onKeyUps, onKeyDowns } = useContext(KeybindsContext)
-  useEffect(() => {
+  const { onKeyUps, onKeyDowns } = R.useContext(KeybindsContext)
+  R.useEffect(() => {
     function onDown(e: KeyboardEvent) {
       if (props.onKeyDown && e.key === props.bind) props.onKeyDown(e)
     }

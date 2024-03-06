@@ -1,69 +1,69 @@
-import { useCallback, useRef } from "react"
+import * as R from "react"
 import Annotation from "./annotation"
 import * as Audio2 from "./audio2"
-import { taxis } from "./axis"
+import * as Axis from "./axis"
 import Cursor from "./cursor"
-import { useAnimationFrame, useMouse, useSpecviz, useWheel } from "./hooks"
+import * as Hooks from "./hooks"
 import Playhead from "./playhead"
-import { fromPoints, logical } from "./rect"
-import { hide, setRect, setTransform, show } from "./svg"
-import { magnitude } from "./vector2"
+import * as Rect from "./rect"
+import * as Svg from "./svg"
+import * as Vector2 from "./vector2"
 
 const NOOP = () => {}
 
 function Visualization(props: {
   src: string
-  xaxis: taxis
-  yaxis: taxis
+  xaxis: Axis.taxis
+  yaxis: Axis.taxis
 }) {
   const { command, input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } =
-    useSpecviz()
-  const { toolState } = useSpecviz()
+    Hooks.useSpecviz()
+  const { toolState } = Hooks.useSpecviz()
   const audio = Audio2.useAudio()
-  const { regions } = useSpecviz()
-  const { selection } = useSpecviz()
-  const svgRoot = useRef<SVGSVGElement>(null)
-  const svgLayer = useRef<SVGSVGElement>(null)
-  const svgSelection = useRef<SVGRectElement>(null)
+  const { regions } = Hooks.useSpecviz()
+  const { selection } = Hooks.useSpecviz()
+  const svgRoot = R.useRef<SVGSVGElement>(null)
+  const svgLayer = R.useRef<SVGSVGElement>(null)
+  const svgSelection = R.useRef<SVGRectElement>(null)
 
-  useAnimationFrame(
-    useCallback(() => {
+  Hooks.useAnimationFrame(
+    R.useCallback(() => {
       if (svgLayer.current && svgSelection.current) {
-        setTransform(svgLayer.current, scroll, zoom)
+        Svg.setTransform(svgLayer.current, scroll, zoom)
         switch (toolState) {
           case "annotate":
           case "select":
           case "zoom":
             if (input.buttons & 1) {
-              show(svgSelection.current)
-              setRect(
+              Svg.show(svgSelection.current)
+              Svg.setRect(
                 svgSelection.current,
-                logical(
+                Rect.logical(
                   mouseRect,
                   props.xaxis === input.xaxis,
                   props.yaxis === input.yaxis,
                 ),
               )
             } else {
-              hide(svgSelection.current)
+              Svg.hide(svgSelection.current)
             }
             break
           case "pan":
-            hide(svgSelection.current)
+            Svg.hide(svgSelection.current)
             break
         }
       }
     }, [toolState, props.xaxis, props.yaxis, input, mouseRect, scroll, zoom]),
   )
 
-  const onMouse = useMouse({
+  const onMouse = Hooks.useMouse({
     xaxis: props.xaxis,
     yaxis: props.yaxis,
     onContextMenu: NOOP,
     onMouseDown: NOOP,
     onMouseEnter: NOOP,
     onMouseLeave: NOOP,
-    onMouseMove: useCallback(
+    onMouseMove: R.useCallback(
       e => {
         if (input.buttons & 1) {
           const dx = e.movementX / e.currentTarget.clientWidth
@@ -85,10 +85,13 @@ function Visualization(props: {
       },
       [command, toolState, input, selection],
     ),
-    onMouseUp: useCallback(
+    onMouseUp: R.useCallback(
       e => {
         if (input.buttons & 1) {
-          if (magnitude({ x: mouseRect.width, y: mouseRect.height }) < 0.01) {
+          if (
+            Vector2.magnitude({ x: mouseRect.width, y: mouseRect.height }) <
+            0.01
+          ) {
             // click
             switch (toolState) {
               case "annotate":
@@ -109,7 +112,7 @@ function Visualization(props: {
               case "annotate":
                 command.annotate(
                   { ...mouseRect },
-                  fromPoints(unitDown, unitUp),
+                  Rect.fromPoints(unitDown, unitUp),
                   props.xaxis,
                   props.yaxis,
                 )
@@ -146,7 +149,7 @@ function Visualization(props: {
     ),
   })
 
-  useWheel(svgRoot, -1)
+  Hooks.useWheel(svgRoot, -1)
 
   return (
     <div className={`visualization ${toolState}`}>

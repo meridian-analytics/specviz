@@ -1,21 +1,13 @@
-import {
-  DependencyList,
-  MouseEvent,
-  RefObject,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
-import { computeUnit, taxis } from "./axis"
+import * as R from "react"
+import * as Axis from "./axis"
 import SpecvizContext from "./context"
-import { clamp } from "./mathx"
-import { fromPoints, trect } from "./rect"
-import { tcoord, tregion } from "./types"
-import { tvector2 } from "./vector2"
+import * as Mathx from "./mathx"
+import * as Rect from "./rect"
+import * as T from "./types"
+import * as Vector2 from "./vector2"
 
 function useAnimationFrame(callback: (frameId: number) => void) {
-  useEffect(() => {
+  R.useEffect(() => {
     let frame: number
     function onFrame(frameId: number) {
       callback(frameId)
@@ -29,26 +21,29 @@ function useAnimationFrame(callback: (frameId: number) => void) {
 }
 
 /** useAxes: returns a memoized object for use with Specviz axes property */
-function useAxes(props: () => Record<string, taxis>, deps?: DependencyList) {
-  return useMemo(props, deps ?? [])
+function useAxes(
+  props: () => Record<string, Axis.taxis>,
+  deps?: R.DependencyList,
+) {
+  return R.useMemo(props, deps ?? [])
 }
 
 /** useRegionState: provides state control for Specviz component */
 function useRegionState(
-  init?: Map<string, tregion> | (() => Map<string, tregion>),
+  init?: Map<string, T.tregion> | (() => Map<string, T.tregion>),
 ) {
-  return useState(init ?? new Map<string, tregion>())
+  return R.useState(init ?? new Map<string, T.tregion>())
 }
 
 function useMouse(props: {
-  xaxis?: taxis
-  yaxis?: taxis
-  onMouseDown: (e: MouseEvent<SVGSVGElement>) => void
-  onMouseMove: (e: MouseEvent<SVGSVGElement>) => void
-  onMouseUp: (e: MouseEvent<SVGSVGElement>) => void
-  onMouseEnter: (e: MouseEvent<SVGSVGElement>) => void
-  onMouseLeave: (e: MouseEvent<SVGSVGElement>) => void
-  onContextMenu: (e: MouseEvent<SVGSVGElement>) => void
+  xaxis?: Axis.taxis
+  yaxis?: Axis.taxis
+  onMouseDown: (e: R.MouseEvent<SVGSVGElement>) => void
+  onMouseMove: (e: R.MouseEvent<SVGSVGElement>) => void
+  onMouseUp: (e: R.MouseEvent<SVGSVGElement>) => void
+  onMouseEnter: (e: R.MouseEvent<SVGSVGElement>) => void
+  onMouseLeave: (e: R.MouseEvent<SVGSVGElement>) => void
+  onContextMenu: (e: R.MouseEvent<SVGSVGElement>) => void
 }) {
   const {
     input,
@@ -60,18 +55,18 @@ function useMouse(props: {
     scroll,
     zoom,
   } = useSpecviz()
-  return useMemo(() => {
+  return R.useMemo(() => {
     return {
-      onContextMenu(e: MouseEvent<SVGSVGElement>) {
+      onContextMenu(e: R.MouseEvent<SVGSVGElement>) {
         e.preventDefault() // disable context menu
         props.onContextMenu(e)
       },
-      onMouseDown(e: MouseEvent<SVGSVGElement>) {
+      onMouseDown(e: R.MouseEvent<SVGSVGElement>) {
         e.preventDefault() // disable native drag
         input.buttons = e.buttons
         props.onMouseDown(e)
       },
-      onMouseMove(e: MouseEvent<SVGSVGElement>) {
+      onMouseMove(e: R.MouseEvent<SVGSVGElement>) {
         const elem = e.currentTarget
         const viewport = elem.getBoundingClientRect()
         const x = (e.clientX - viewport.x) / viewport.width
@@ -82,43 +77,49 @@ function useMouse(props: {
           mouseup.abs.x = (x + scroll.x) / zoom.x
           mouseup.abs.y = (y + scroll.y) / zoom.y
           if (props.xaxis != null)
-            unitUp.x = computeUnit(props.xaxis, clamp(mouseup.abs.x, 0, 1))
+            unitUp.x = Axis.computeUnit(
+              props.xaxis,
+              Mathx.clamp(mouseup.abs.x, 0, 1),
+            )
           if (props.yaxis != null)
-            unitUp.y = computeUnit(props.yaxis, clamp(mouseup.abs.y, 0, 1))
+            unitUp.y = Axis.computeUnit(
+              props.yaxis,
+              Mathx.clamp(mouseup.abs.y, 0, 1),
+            )
         } else {
           mousedown.rel.x = mouseup.rel.x = x
           mousedown.rel.y = mouseup.rel.y = y
           mousedown.abs.x = mouseup.abs.x = (x + scroll.x) / zoom.x
           mousedown.abs.y = mouseup.abs.y = (y + scroll.y) / zoom.y
           if (props.xaxis != null)
-            unitDown.x = unitUp.x = computeUnit(
+            unitDown.x = unitUp.x = Axis.computeUnit(
               props.xaxis,
-              clamp(mousedown.abs.x, 0, 1),
+              Mathx.clamp(mousedown.abs.x, 0, 1),
             )
           if (props.yaxis != null)
-            unitDown.y = unitUp.y = computeUnit(
+            unitDown.y = unitUp.y = Axis.computeUnit(
               props.yaxis,
-              clamp(mousedown.abs.y, 0, 1),
+              Mathx.clamp(mousedown.abs.y, 0, 1),
             )
         }
-        const rect = fromPoints(mousedown.abs, mouseup.abs)
+        const rect = Rect.fromPoints(mousedown.abs, mouseup.abs)
         mouseRect.x = rect.x
         mouseRect.y = rect.y
         mouseRect.width = rect.width
         mouseRect.height = rect.height
         props.onMouseMove(e)
       },
-      onMouseUp(e: MouseEvent<SVGSVGElement>) {
+      onMouseUp(e: R.MouseEvent<SVGSVGElement>) {
         props.onMouseUp(e)
         input.buttons = 0
       },
-      onMouseEnter(e: MouseEvent<SVGSVGElement>) {
+      onMouseEnter(e: R.MouseEvent<SVGSVGElement>) {
         input.focus = e.currentTarget
         if (props.xaxis != null) input.xaxis = props.xaxis
         if (props.yaxis != null) input.yaxis = props.yaxis
         props.onMouseEnter(e)
       },
-      onMouseLeave(e: MouseEvent<SVGSVGElement>) {
+      onMouseLeave(e: R.MouseEvent<SVGSVGElement>) {
         props.onMouseLeave(e)
         input.buttons = 0
         input.focus = null
@@ -147,7 +148,7 @@ function useMouse(props: {
 }
 
 function useMutableVector2() {
-  return useMemo<tvector2>(() => {
+  return R.useMemo<Vector2.tvector2>(() => {
     let x = 0
     let y = 0
     return {
@@ -168,7 +169,7 @@ function useMutableVector2() {
 }
 
 function useMutableCoord() {
-  return useMemo<tcoord>(() => {
+  return R.useMemo<T.tcoord>(() => {
     let absx = 0
     let absy = 0
     let relx = 0
@@ -207,7 +208,7 @@ function useMutableCoord() {
 }
 
 function useMutableRect() {
-  return useMemo<trect>(() => {
+  return R.useMemo<Rect.trect>(() => {
     let x = 0
     let y = 0
     let width = 0
@@ -244,9 +245,9 @@ function useMutableRect() {
 // react uses passive event listeners by default
 // to stop propagation, use a non-passive listener
 // https://stackoverflow.com/a/67258046
-function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
+function useWheel(ref: R.RefObject<SVGSVGElement>, direction: 1 | -1) {
   const { command, mousedown, zoom } = useSpecviz()
-  useEffect(() => {
+  R.useEffect(() => {
     function onWheel(e: WheelEvent) {
       if (ref.current) {
         e.preventDefault()
@@ -275,7 +276,7 @@ function useWheel(ref: RefObject<SVGSVGElement>, direction: 1 | -1) {
 }
 
 function useSpecviz() {
-  return useContext(SpecvizContext)
+  return R.useContext(SpecvizContext)
 }
 
 export {

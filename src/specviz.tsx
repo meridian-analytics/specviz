@@ -1,43 +1,28 @@
-import {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
-import { computeRect, computeRectInverse, taxis } from "./axis"
+import * as R from "react"
+import * as Axis from "./axis"
 import SpecvizContext from "./context"
-import { useMutableCoord, useMutableRect, useMutableVector2 } from "./hooks"
-import { clamp } from "./mathx"
-import { intersectPoint, intersectRect, logical, trect } from "./rect"
-import { randomBytes } from "./stringx"
-import {
-  tcommand,
-  tinput,
-  tnullable,
-  tregion,
-  tselection,
-  ttoolstate,
-} from "./types"
-import { tvector2 } from "./vector2"
+import * as Hooks from "./hooks"
+import * as Mathx from "./mathx"
+import * as Rect from "./rect"
+import * as Stringx from "./stringx"
+import * as T from "./types"
+import * as Vector2 from "./vector2"
 
 const ZOOM_MAX: number = 5
 
 function Specviz(props: {
-  axes: Record<string, taxis>
-  regions: Map<string, tregion>
-  setRegions: Dispatch<SetStateAction<Map<string, tregion>>>
-  children: ReactNode
+  axes: Record<string, Axis.taxis>
+  regions: Map<string, T.tregion>
+  setRegions: R.Dispatch<R.SetStateAction<Map<string, T.tregion>>>
+  children: R.ReactNode
 }) {
-  const input = useMemo<tinput>(() => {
+  const input = R.useMemo<T.tinput>(() => {
     let buttons = 0
     let alt = false
     let ctrl = false
-    let focus: tnullable<SVGSVGElement> = null
-    let xaxis: tnullable<taxis> = null
-    let yaxis: tnullable<taxis> = null
+    let focus: T.tnullable<SVGSVGElement> = null
+    let xaxis: T.tnullable<Axis.taxis> = null
+    let yaxis: T.tnullable<Axis.taxis> = null
     return {
       get buttons() {
         return buttons
@@ -78,7 +63,7 @@ function Specviz(props: {
     }
   }, [])
 
-  const zoom = useMemo<tvector2>(() => {
+  const zoom = R.useMemo<Vector2.tvector2>(() => {
     let x = 1
     let y = 1
     return {
@@ -89,15 +74,15 @@ function Specviz(props: {
         return y
       },
       set x(v) {
-        x = clamp(v, 1, ZOOM_MAX)
+        x = Mathx.clamp(v, 1, ZOOM_MAX)
       },
       set y(v) {
-        y = clamp(v, 1, ZOOM_MAX)
+        y = Mathx.clamp(v, 1, ZOOM_MAX)
       },
     }
   }, [])
 
-  const scroll = useMemo<tvector2>(() => {
+  const scroll = R.useMemo<Vector2.tvector2>(() => {
     let x = 0
     let y = 0
     return {
@@ -108,18 +93,18 @@ function Specviz(props: {
         return y
       },
       set x(v) {
-        x = clamp(v, 0, zoom.x - 1)
+        x = Mathx.clamp(v, 0, zoom.x - 1)
       },
       set y(v) {
-        y = clamp(v, 0, zoom.y - 1)
+        y = Mathx.clamp(v, 0, zoom.y - 1)
       },
     }
   }, [zoom])
 
-  const [selection, setSelection] = useState<tselection>(() => new Set())
+  const [selection, setSelection] = R.useState<T.tselection>(() => new Set())
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: props.regions and props.axes specified
-  const regionCache = useMemo(
+  const regionCache = R.useMemo(
     () =>
       new Map(
         Array.from(props.regions.values(), r => {
@@ -137,29 +122,29 @@ function Specviz(props: {
               props.axes,
             )
           }
-          return [r.id, computeRectInverse(x, y, r)] // bug: r.xunit and r.yunit needs to be compute on *all* axes with the same unit
+          return [r.id, Axis.computeRectInverse(x, y, r)] // bug: r.xunit and r.yunit needs to be compute on *all* axes with the same unit
         }),
       ),
     [props.regions, props.axes],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: regionCache and props.axes specified
-  const updateRegion = useCallback(
-    (p: tregion, func: (prev: trect) => trect) => {
+  const updateRegion = R.useCallback(
+    (p: T.tregion, func: (prev: Rect.trect) => Rect.trect) => {
       const q = regionCache.get(p.id)
       if (q == null) return p
       return {
         ...p,
-        ...computeRect(props.axes[p.xunit], props.axes[p.yunit], func(q)),
+        ...Axis.computeRect(props.axes[p.xunit], props.axes[p.yunit], func(q)),
       }
     },
     [regionCache, props.axes],
   )
 
-  const command = useMemo<tcommand>(
+  const command = R.useMemo<T.tcommand>(
     () => ({
       annotate(rect, unit, xaxis, yaxis) {
-        const id = randomBytes(10)
+        const id = Stringx.randomBytes(10)
         props.setRegions(prev =>
           new Map(prev).set(id, {
             id,
@@ -194,12 +179,12 @@ function Specviz(props: {
                 return [
                   id,
                   updateRegion(region, rect => ({
-                    x: clamp(
+                    x: Mathx.clamp(
                       rect.x + (input.xaxis?.unit == region.xunit ? dx : 0),
                       0,
                       1 - rect.width,
                     ),
-                    y: clamp(
+                    y: Mathx.clamp(
                       rect.y + (input.yaxis?.unit == region.yunit ? dy : 0),
                       0,
                       1 - rect.height,
@@ -229,13 +214,13 @@ function Specviz(props: {
       selectArea(area) {
         setSelection(prev => {
           if (input.ctrl) {
-            const nextState: tselection = new Set(prev)
+            const nextState: T.tselection = new Set(prev)
             for (const r of props.regions.values()) {
               const u = regionCache.get(r.id)
               if (
                 u &&
-                intersectRect(
-                  logical(
+                Rect.intersectRect(
+                  Rect.logical(
                     u,
                     input.xaxis?.unit == r.xunit,
                     input.yaxis?.unit == r.yunit,
@@ -249,13 +234,13 @@ function Specviz(props: {
             }
             return nextState
           }
-          const nextState: tselection = new Set()
+          const nextState: T.tselection = new Set()
           for (const r of props.regions.values()) {
             const u = regionCache.get(r.id)
             if (
               u &&
-              intersectRect(
-                logical(
+              Rect.intersectRect(
+                Rect.logical(
                   u,
                   input.xaxis?.unit == r.xunit,
                   input.yaxis?.unit == r.yunit,
@@ -272,13 +257,13 @@ function Specviz(props: {
       selectPoint(pt) {
         setSelection(prevState => {
           if (input.ctrl) {
-            const nextState: tselection = new Set(prevState)
+            const nextState: T.tselection = new Set(prevState)
             for (const r of props.regions.values()) {
               const u = regionCache.get(r.id)
               if (
                 u &&
-                intersectPoint(
-                  logical(
+                Rect.intersectPoint(
+                  Rect.logical(
                     u,
                     input.xaxis?.unit == r.xunit,
                     input.yaxis?.unit == r.yunit,
@@ -292,13 +277,13 @@ function Specviz(props: {
             }
             return nextState
           }
-          const nextState: tselection = new Set()
+          const nextState: T.tselection = new Set()
           for (const r of props.regions.values()) {
             const u = regionCache.get(r.id)
             if (
               u &&
-              intersectPoint(
-                logical(
+              Rect.intersectPoint(
+                Rect.logical(
                   u,
                   input.xaxis?.unit == r.xunit,
                   input.yaxis?.unit == r.yunit,
@@ -317,7 +302,7 @@ function Specviz(props: {
           new Map(prev).set(
             region.id,
             updateRegion(region, rect => ({
-              x: clamp(rect.x + dx, 0, 1 - rect.width),
+              x: Mathx.clamp(rect.x + dx, 0, 1 - rect.width),
               y: rect.y,
               width: rect.width,
               height: rect.height,
@@ -335,7 +320,7 @@ function Specviz(props: {
             updateRegion(region, rect => ({
               x: rect.x,
               y: rect.y,
-              width: clamp(rect.width + dx, 0.01, 1 - rect.x),
+              width: Mathx.clamp(rect.width + dx, 0.01, 1 - rect.x),
               height: rect.height,
             })),
           ),
@@ -347,7 +332,7 @@ function Specviz(props: {
             region.id,
             updateRegion(region, rect => ({
               x: rect.x,
-              y: clamp(rect.y + dy, 0, 1 - rect.height),
+              y: Mathx.clamp(rect.y + dy, 0, 1 - rect.height),
               width: rect.width,
               height: rect.height,
             })),
@@ -360,9 +345,9 @@ function Specviz(props: {
             region.id,
             updateRegion(region, rect => ({
               x: rect.x,
-              y: clamp(rect.y + dy, 0, rect.y + rect.height - 0.01),
+              y: Mathx.clamp(rect.y + dy, 0, rect.y + rect.height - 0.01),
               width: rect.width,
-              height: clamp(
+              height: Mathx.clamp(
                 rect.height - Math.max(dy, -rect.y),
                 0.01,
                 1 - rect.y,
@@ -379,7 +364,7 @@ function Specviz(props: {
               x: rect.x,
               y: rect.y,
               width: rect.width,
-              height: clamp(rect.height + dy, 0.01, 1 - rect.y),
+              height: Mathx.clamp(rect.height + dy, 0.01, 1 - rect.y),
             })),
           ),
         )
@@ -418,10 +403,10 @@ function Specviz(props: {
     ],
   )
 
-  const [toolState, setToolState] = useState<ttoolstate>("annotate")
+  const [toolState, setToolState] = R.useState<T.ttoolstate>("annotate")
 
   // todo: expose via command and keybind
-  useEffect(() => {
+  R.useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key == "Alt") {
         input.alt = true
@@ -448,14 +433,14 @@ function Specviz(props: {
     <SpecvizContext.Provider
       value={{
         input,
-        mousedown: useMutableCoord(),
-        mouseup: useMutableCoord(),
-        mouseRect: useMutableRect(),
-        unitDown: useMutableVector2(),
-        unitUp: useMutableVector2(),
+        mousedown: Hooks.useMutableCoord(),
+        mouseup: Hooks.useMutableCoord(),
+        mouseRect: Hooks.useMutableRect(),
+        unitDown: Hooks.useMutableVector2(),
+        unitUp: Hooks.useMutableVector2(),
         scroll,
         zoom,
-        playhead: useMutableVector2(),
+        playhead: Hooks.useMutableVector2(),
         regions: props.regions,
         regionCache,
         selection,

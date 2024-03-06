@@ -1,19 +1,19 @@
-import { useMemo } from "react"
-import { taxis } from "./axis"
-import { useSpecviz } from "./hooks"
-import { logical } from "./rect"
-import { tregion } from "./types"
+import * as R from "react"
+import * as Axis from "./axis"
+import * as Hooks from "./hooks"
+import * as Rect from "./rect"
+import * as T from "./types"
 
 function Annotation(props: {
-  region: tregion
-  xaxis: taxis
-  yaxis: taxis
+  region: T.tregion
+  xaxis: Axis.taxis
+  yaxis: Axis.taxis
 }) {
-  const { selection, regionCache } = useSpecviz()
-  const lrect = useMemo(() => {
+  const { selection, regionCache } = Hooks.useSpecviz()
+  const lrect = R.useMemo(() => {
     const rect = regionCache.get(props.region.id)
     if (rect == null) return null
-    return logical(
+    return Rect.logical(
       rect,
       props.xaxis.unit == props.region.xunit,
       props.yaxis.unit == props.region.yunit,

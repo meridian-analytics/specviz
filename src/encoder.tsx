@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from "react"
-import { useSpecviz } from "./hooks"
-import { tregion } from "./types"
+import * as R from "react"
+import * as Hooks from "./hooks"
+import * as T from "./types"
 
 function Encoder(props: {
   state: number
@@ -9,17 +9,17 @@ function Encoder(props: {
   unit: string
 }) {
   const { state, setState, value, unit } = props
-  const { input } = useSpecviz()
-  const svgRef = useRef<SVGSVGElement>(null)
+  const { input } = Hooks.useSpecviz()
+  const svgRef = R.useRef<SVGSVGElement>(null)
   const min = (5 * Math.PI) / 4
   const max = -Math.PI / 4
 
-  const { x, y } = useMemo(() => {
+  const { x, y } = R.useMemo(() => {
     const rad = min - state * (min - max)
     return { x: (Math.cos(rad) * 4) / 5, y: (-Math.sin(rad) * 4) / 5 }
   }, [state, min, max])
 
-  useEffect(() => {
+  R.useEffect(() => {
     function onWheel(e: WheelEvent) {
       e.preventDefault()
       const dy = e.deltaY / (input.ctrl ? 10000 : 1000)
@@ -63,8 +63,8 @@ function Encoder(props: {
   )
 }
 
-Encoder.X = function EncoderX(region: tregion) {
-  const { command, regionCache } = useSpecviz()
+Encoder.X = function EncoderX(region: T.tregion) {
+  const { command, regionCache } = Hooks.useSpecviz()
   const rect = regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
@@ -79,8 +79,8 @@ Encoder.X = function EncoderX(region: tregion) {
   )
 }
 
-Encoder.X2 = function EncoderX2(region: tregion) {
-  const { command, regionCache } = useSpecviz()
+Encoder.X2 = function EncoderX2(region: T.tregion) {
+  const { command, regionCache } = Hooks.useSpecviz()
   const rect = regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
@@ -95,8 +95,8 @@ Encoder.X2 = function EncoderX2(region: tregion) {
   )
 }
 
-Encoder.Y1 = function EncoderY1(region: tregion) {
-  const { command, regionCache } = useSpecviz()
+Encoder.Y1 = function EncoderY1(region: T.tregion) {
+  const { command, regionCache } = Hooks.useSpecviz()
   const rect = regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
@@ -111,8 +111,8 @@ Encoder.Y1 = function EncoderY1(region: tregion) {
   )
 }
 
-Encoder.Y2 = function EncoderY2(region: tregion) {
-  const { command, regionCache } = useSpecviz()
+Encoder.Y2 = function EncoderY2(region: T.tregion) {
+  const { command, regionCache } = Hooks.useSpecviz()
   const rect = regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>

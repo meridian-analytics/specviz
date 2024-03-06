@@ -1,22 +1,21 @@
-import { RefObject, useCallback, useRef } from "react"
-import { taxis } from "./axis"
-import { formatUnit } from "./axis"
-import { useAnimationFrame, useSpecviz } from "./hooks"
-import { formatPercent } from "./stringx"
-import { hide, setAnchor, setText, setX, setY, show } from "./svg"
+import * as R from "react"
+import * as Axis from "./axis"
+import * as Hooks from "./hooks"
+import * as Stringx from "./stringx"
+import * as Svg from "./svg"
 
 function Cursor(props: {
-  parent: RefObject<SVGGElement>
-  xaxis: taxis
-  yaxis: taxis
+  parent: R.RefObject<SVGGElement>
+  xaxis: Axis.taxis
+  yaxis: Axis.taxis
 }) {
-  const { input, mouseup, unitUp } = useSpecviz()
-  const svgLayer = useRef<SVGGElement>(null)
-  const svgXline = useRef<SVGLineElement>(null)
-  const svgYline = useRef<SVGLineElement>(null)
-  const svgText = useRef<SVGTextElement>(null)
-  useAnimationFrame(
-    useCallback(() => {
+  const { input, mouseup, unitUp } = Hooks.useSpecviz()
+  const svgLayer = R.useRef<SVGGElement>(null)
+  const svgXline = R.useRef<SVGLineElement>(null)
+  const svgYline = R.useRef<SVGLineElement>(null)
+  const svgText = R.useRef<SVGTextElement>(null)
+  Hooks.useAnimationFrame(
+    R.useCallback(() => {
       if (
         svgLayer.current &&
         svgXline.current &&
@@ -31,36 +30,36 @@ function Cursor(props: {
           const text = svgText.current
           let x: string
           let y: string
-          show(layer)
+          Svg.show(layer)
           // x line
           if (
             props.parent.current == input.focus ||
             props.xaxis == input.xaxis
           ) {
-            x = formatUnit(props.xaxis, unitUp.x)
-            setX(xline, mouseup.rel.x, undefined, formatPercent)
-            show(xline)
+            x = Axis.formatUnit(props.xaxis, unitUp.x)
+            Svg.setX(xline, mouseup.rel.x, undefined, Stringx.formatPercent)
+            Svg.show(xline)
           } else {
             x = ""
-            hide(xline)
+            Svg.hide(xline)
           }
           // y line
           if (
             props.parent.current == input.focus ||
             props.yaxis == input.yaxis
           ) {
-            y = formatUnit(props.yaxis, unitUp.y)
-            setY(yline, mouseup.rel.y, undefined, formatPercent)
-            show(yline)
+            y = Axis.formatUnit(props.yaxis, unitUp.y)
+            Svg.setY(yline, mouseup.rel.y, undefined, Stringx.formatPercent)
+            Svg.show(yline)
           } else {
             y = ""
-            hide(yline)
+            Svg.hide(yline)
           }
           // text
-          setText(text, x && y ? `(${x}, ${y})` : x || y)
-          setAnchor(text, mouseup.rel, formatPercent)
+          Svg.setText(text, x && y ? `(${x}, ${y})` : x || y)
+          Svg.setAnchor(text, mouseup.rel, Stringx.formatPercent)
         } else {
-          hide(layer)
+          Svg.hide(layer)
         }
       }
     }, [props, input, mouseup, unitUp]),

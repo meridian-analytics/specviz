@@ -1,4 +1,4 @@
-import { normalize, trect } from "./rect"
+import * as Rect from "./rect"
 
 type taxisunit = "hertz" | "seconds" | "percent"
 
@@ -47,10 +47,10 @@ function computeUnitInverse(t: taxis, q: number): number {
 }
 
 function computeRectAux(func: (t: taxis, q: number) => number) {
-  return (tx: taxis, ty: taxis, rect: trect) => {
+  return (tx: taxis, ty: taxis, rect: Rect.trect) => {
     const x = func(tx, rect.x)
     const y = func(ty, rect.y)
-    return normalize({
+    return Rect.normalize({
       x,
       y,
       width: func(tx, rect.x + rect.width) - x,

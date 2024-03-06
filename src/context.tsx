@@ -1,7 +1,7 @@
-import { createContext } from "react"
-import { tcontext } from "./types"
+import * as R from "react"
+import * as T from "./types"
 
-const SpecvizContext = createContext<tcontext>({
+const SpecvizContext = R.createContext<T.tcontext>({
   input: {
     buttons: 0,
     alt: false,

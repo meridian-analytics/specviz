@@ -1,12 +1,12 @@
 import * as R from "react"
 import * as ReactDOM from "react-dom/client"
 import * as Audio2 from "./audio2"
-import { linear, nonlinear } from "./axis"
+import * as Axis from "./axis"
 import * as Focus from "./focus"
-import { useAxes, useRegionState } from "./hooks"
+import * as Hooks from "./hooks"
 import { Encoder, Navigator, Specviz, Visualization, useSpecviz } from "./index"
 import { Bindings, Keypress } from "./keybinds"
-import { formatHz, formatPercent, formatTimestamp } from "./stringx"
+import * as Stringx from "./stringx"
 import { tregion } from "./types"
 
 type tsegment = {
@@ -82,21 +82,21 @@ function Duration() {
 export default function MyComponent() {
   const [data, setData] = R.useState(segment1)
 
-  const axes = useAxes(() => ({
-    seconds: linear(0, 44.416, "seconds", formatTimestamp),
-    hertz: linear(20000, 0, "hertz", formatHz),
-    percent: nonlinear(
+  const axes = Hooks.useAxes(() => ({
+    seconds: Axis.linear(0, 44.416, "seconds", Stringx.formatTimestamp),
+    hertz: Axis.linear(20000, 0, "hertz", Stringx.formatHz),
+    percent: Axis.nonlinear(
       [
         [0, 1],
         [0.5, 0],
         [1, -1],
       ],
       "percent",
-      formatPercent,
+      Stringx.formatPercent,
     ),
   }))
 
-  const [regions, setRegions] = useRegionState(initRegions)
+  const [regions, setRegions] = Hooks.useRegionState(initRegions)
 
   return (
     <Specviz axes={axes} regions={regions} setRegions={setRegions}>
