@@ -12,7 +12,7 @@ body {
   flex-grow: 1;
 }
 
-#app main div ~ div {
+#app main div~div {
   margin-top: 1rem;
 }
 
@@ -26,6 +26,7 @@ body {
   border-radius: 0.25rem;
   margin-bottom: 1rem;
 }
+
 .annotation-form .title {
   background-color: black;
   color: white;
@@ -85,7 +86,8 @@ body {
   mix-blend-mode: difference;
 }
 
-.cursor-x, .cursor-y {
+.cursor-x,
+.cursor-y {
   stroke: white;
   stroke-width: .2%;
   mix-blend-mode: difference;
