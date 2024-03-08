@@ -3,8 +3,6 @@
   "version": "0.6.0",
   "type": "module",
   "scripts": {
-    "dev": "bun run --bun vite",
-    "build": "bun build ./src/index.tsx --outdir ./dist --external react --external react-dom",
     "test": "bun run --bun vitest run",
     "check": "biome check --apply ."
   },
@@ -16,32 +14,16 @@
     "@biomejs/biome": "1.5.3",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
-    "@vitejs/plugin-react": "^3.1.0",
     "typescript": "^5.0.2",
-    "vite": "^4.2.0",
     "vitest": "^0.30.1"
   },
-  "files": ["dist"],
   "exports": {
-    ".": {
-      "types": "./types/src/index.d.ts",
-      "import": "./dist/specviz-react.js"
-    },
-    "./axis": {
-      "types": "./types/src/axis.d.ts",
-      "import": "./dist/axis.js"
-    },
-    "./format": {
-      "types": "./types/src/stringx.d.ts",
-      "import": "./dist/format.js"
-    },
-    "./hooks": {
-      "types": "./types/src/hooks.d.ts",
-      "import": "./dist/hooks.js"
-    },
-    "./keybinds": {
-      "types": "./types/src/keybinds.d.ts",
-      "import": "./dist/keybinds.js"
-    }
+    ".": "./src/index.tsx",
+    "./audio": "./src/audio2/index.tsx",
+    "./axis": "./src/axis.tsx",
+    "./format": "./src/stringx.tsx",
+    "./hooks": "./src/hooks.tsx",
+    "./keybinds": "./src/keybinds.tsx",
+    "./types": "./src/types.tsx"
   }
 }

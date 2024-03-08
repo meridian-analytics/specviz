@@ -1,13 +1,19 @@
 import * as R from "react"
 import * as ReactDOM from "react-dom/client"
-import * as Audio2 from "./audio2"
-import * as Axis from "./axis"
-import * as Focus from "./focus"
-import * as Hooks from "./hooks"
-import { Encoder, Navigator, Specviz, Visualization, useSpecviz } from "./index"
-import { Bindings, Keypress } from "./keybinds"
-import * as Stringx from "./stringx"
-import { tregion } from "./types"
+import * as Audio2 from "../src/audio2"
+import * as Axis from "../src/axis"
+import * as Focus from "../src/focus"
+import * as Hooks from "../src/hooks"
+import {
+  Encoder,
+  Navigator,
+  Specviz,
+  Visualization,
+  useSpecviz,
+} from "../src/index"
+import { Bindings, Keypress } from "../src/keybinds"
+import * as Stringx from "../src/stringx"
+import { tregion } from "../src/types"
 
 type tsegment = {
   audio: string
