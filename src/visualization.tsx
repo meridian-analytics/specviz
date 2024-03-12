@@ -6,6 +6,7 @@ import Cursor from "./cursor"
 import * as Hooks from "./hooks"
 import Playhead from "./playhead"
 import * as Rect from "./rect"
+import * as Specviz from "./specviz"
 import * as Svg from "./svg"
 import * as Vector2 from "./vector2"
 
@@ -16,12 +17,20 @@ function Visualization(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const { command, input, mouseup, mouseRect, unitDown, unitUp, scroll, zoom } =
-    Hooks.useSpecviz()
-  const { toolState } = Hooks.useSpecviz()
-  const audio = Audio2.useAudio()
-  const { regions } = Hooks.useSpecviz()
-  const { selection } = Hooks.useSpecviz()
+  const {
+    command,
+    input,
+    mouseup,
+    mouseRect,
+    regions,
+    selection,
+    toolState,
+    unitDown,
+    unitUp,
+    scroll,
+    zoom,
+  } = Specviz.useContext()
+  const audio = Audio2.useContext()
   const svgRoot = R.useRef<SVGSVGElement>(null)
   const svgLayer = R.useRef<SVGSVGElement>(null)
   const svgSelection = R.useRef<SVGRectElement>(null)

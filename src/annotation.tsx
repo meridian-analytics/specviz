@@ -1,7 +1,7 @@
 import * as R from "react"
 import * as Axis from "./axis"
-import * as Hooks from "./hooks"
 import * as Rect from "./rect"
+import * as Specviz from "./specviz"
 import * as T from "./types"
 
 function Annotation(props: {
@@ -9,7 +9,7 @@ function Annotation(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const { selection, regionCache } = Hooks.useSpecviz()
+  const { selection, regionCache } = Specviz.useContext()
   const lrect = R.useMemo(() => {
     const rect = regionCache.get(props.region.id)
     if (rect == null) return null

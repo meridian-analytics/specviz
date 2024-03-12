@@ -1,5 +1,5 @@
 import * as R from "react"
-import * as Hooks from "./hooks"
+import * as Specviz from "./specviz"
 import * as T from "./types"
 
 function Encoder(props: {
@@ -9,7 +9,7 @@ function Encoder(props: {
   unit: string
 }) {
   const { state, setState, value, unit } = props
-  const { input } = Hooks.useSpecviz()
+  const { input } = Specviz.useContext()
   const svgRef = R.useRef<SVGSVGElement>(null)
   const min = (5 * Math.PI) / 4
   const max = -Math.PI / 4
@@ -64,7 +64,7 @@ function Encoder(props: {
 }
 
 Encoder.X = function EncoderX(region: T.tregion) {
-  const { command, regionCache } = Hooks.useSpecviz()
+  const { command, regionCache } = Specviz.useContext()
   const rect = regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
@@ -80,7 +80,7 @@ Encoder.X = function EncoderX(region: T.tregion) {
 }
 
 Encoder.X2 = function EncoderX2(region: T.tregion) {
-  const { command, regionCache } = Hooks.useSpecviz()
+  const { command, regionCache } = Specviz.useContext()
   const rect = regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
@@ -96,7 +96,7 @@ Encoder.X2 = function EncoderX2(region: T.tregion) {
 }
 
 Encoder.Y1 = function EncoderY1(region: T.tregion) {
-  const { command, regionCache } = Hooks.useSpecviz()
+  const { command, regionCache } = Specviz.useContext()
   const rect = regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
@@ -112,7 +112,7 @@ Encoder.Y1 = function EncoderY1(region: T.tregion) {
 }
 
 Encoder.Y2 = function EncoderY2(region: T.tregion) {
-  const { command, regionCache } = Hooks.useSpecviz()
+  const { command, regionCache } = Specviz.useContext()
   const rect = regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>

@@ -1,4 +1,3 @@
-import * as T from "./types"
 import * as Vector2 from "./vector2"
 
 type trect = {
@@ -26,7 +25,7 @@ function intersectPoint(t: trect, pt: Vector2.tvector2): boolean {
   )
 }
 
-function intersectRect(a: trect, b: trect): T.tnullable<trect> {
+function intersectRect(a: trect, b: trect): null | trect {
   const x = Math.max(a.x, b.x)
   const y = Math.max(a.y, b.y)
   const width = Math.min(a.x + a.width, b.x + b.width) - x

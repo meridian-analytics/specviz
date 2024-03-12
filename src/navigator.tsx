@@ -3,6 +3,7 @@ import Annotation from "./annotation"
 import * as Axis from "./axis"
 import * as Hooks from "./hooks"
 import Playhead from "./playhead"
+import * as Specviz from "./specviz"
 import * as Svg from "./svg"
 import * as Vector2 from "./vector2"
 
@@ -23,7 +24,7 @@ function Navigator(props: {
     scroll,
     zoom,
     toolState,
-  } = Hooks.useSpecviz()
+  } = Specviz.useContext()
   const containerRef = R.useRef<SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
 

@@ -56,14 +56,16 @@ export default function AudioEffect() {
     source.connect(lpf)
     lpf.connect(hpf)
     hpf.connect(audioContext.destination)
+    // seek
+    const seek = audioContext.currentTime - transport.state.timecode
     // loop
     if (fx.loop) {
-      const duration = Math.max(0, fx.loop[1] - transport.state.seek)
-      source.start(0, transport.state.seek, duration)
+      const duration = Math.max(0, fx.loop[1] - seek)
+      source.start(0, seek, duration)
     }
     // play
     else {
-      source.start(0, transport.state.seek)
+      source.start(0, seek)
     }
     // cleanup
     return () => {
@@ -79,6 +81,8 @@ export default function AudioEffect() {
     transport.play,
     transport.stop,
     transport.state.seek,
+    fx.hpf,
+    fx.lpf,
     fx.loop?.[0],
     fx.loop?.[1],
   ])

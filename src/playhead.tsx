@@ -9,7 +9,7 @@ function Playhead(props: {
   yaxis: Axis.taxis
 }) {
   const line = R.useRef<SVGLineElement>(null)
-  const { buffer, transport } = Audio2.useAudio()
+  const { buffer, transport } = Audio2.useContext()
   Hooks.useAnimationFrame(
     R.useCallback(() => {
       if (line.current) {

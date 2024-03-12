@@ -1,14 +1,13 @@
 import * as R from "react"
-import * as Audio2 from "./audio2"
-import * as Hooks from "./hooks"
-import * as T from "./types"
+import * as Audio2 from "../src/audio2"
+import * as Specviz from "../src/index"
 
 type State = {
   focusRegion: null | string
 }
 
 type Context = {
-  region: null | T.tregion
+  region: null | Specviz.Region
   setFocusRegion: (regionId: State["focusRegion"]) => void
 }
 
@@ -26,7 +25,7 @@ export type ProviderProps = {
 }
 
 export function Provider(props: ProviderProps) {
-  const specviz = Hooks.useSpecviz()
+  const specviz = Specviz.useContext()
   const [state, setState] = R.useState<State>({
     focusRegion: null,
   })

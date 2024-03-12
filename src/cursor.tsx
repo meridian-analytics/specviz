@@ -1,7 +1,8 @@
 import * as R from "react"
 import * as Axis from "./axis"
+import * as Format from "./format"
 import * as Hooks from "./hooks"
-import * as Stringx from "./stringx"
+import * as Specviz from "./specviz"
 import * as Svg from "./svg"
 
 function Cursor(props: {
@@ -9,7 +10,7 @@ function Cursor(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const { input, mouseup, unitUp } = Hooks.useSpecviz()
+  const { input, mouseup, unitUp } = Specviz.useContext()
   const svgLayer = R.useRef<SVGGElement>(null)
   const svgXline = R.useRef<SVGLineElement>(null)
   const svgYline = R.useRef<SVGLineElement>(null)
@@ -37,7 +38,7 @@ function Cursor(props: {
             props.xaxis == input.xaxis
           ) {
             x = Axis.formatUnit(props.xaxis, unitUp.x)
-            Svg.setX(xline, mouseup.rel.x, undefined, Stringx.formatPercent)
+            Svg.setX(xline, mouseup.rel.x, undefined, Format.percent)
             Svg.show(xline)
           } else {
             x = ""
@@ -49,7 +50,7 @@ function Cursor(props: {
             props.yaxis == input.yaxis
           ) {
             y = Axis.formatUnit(props.yaxis, unitUp.y)
-            Svg.setY(yline, mouseup.rel.y, undefined, Stringx.formatPercent)
+            Svg.setY(yline, mouseup.rel.y, undefined, Format.percent)
             Svg.show(yline)
           } else {
             y = ""
@@ -57,7 +58,7 @@ function Cursor(props: {
           }
           // text
           Svg.setText(text, x && y ? `(${x}, ${y})` : x || y)
-          Svg.setAnchor(text, mouseup.rel, Stringx.formatPercent)
+          Svg.setAnchor(text, mouseup.rel, Format.percent)
         } else {
           Svg.hide(layer)
         }

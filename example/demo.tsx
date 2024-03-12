@@ -1,19 +1,11 @@
-import * as R from "react"
+import * as React from "react"
 import * as ReactDOM from "react-dom/client"
-import * as Audio2 from "../src/audio2"
+import * as Reb from "react-error-boundary"
+import * as Audio from "../src/audio2"
 import * as Axis from "../src/axis"
 import * as Focus from "../src/focus"
-import * as Hooks from "../src/hooks"
-import {
-  Encoder,
-  Navigator,
-  Specviz,
-  Visualization,
-  useSpecviz,
-} from "../src/index"
-import { Bindings, Keypress } from "../src/keybinds"
-import * as Stringx from "../src/stringx"
-import { tregion } from "../src/types"
+import * as Format from "../src/format"
+import * as Specviz from "../src/index"
 
 type tsegment = {
   audio: string
@@ -36,7 +28,7 @@ const segment2: tsegment = {
   waveform: "./waveform.png",
 }
 
-const initRegions = new Map([
+const initRegions: Map<string, Specviz.Region> = new Map([
   [
     "df10e63bc928a9850b6f",
     {
@@ -81,33 +73,36 @@ const initRegions = new Map([
 ])
 
 function Duration() {
-  const audio = Audio2.useAudio()
-  return <R.Fragment>({audio.buffer.duration})</R.Fragment>
+  const audio = Audio.useContext()
+  return <React.Fragment>({audio.buffer.duration})</React.Fragment>
 }
 
 export default function MyComponent() {
-  const [data, setData] = R.useState(segment1)
+  const [data, setData] = React.useState(segment1)
 
-  const axes = Hooks.useAxes(() => ({
-    seconds: Axis.linear(0, 44.416, "seconds", Stringx.formatTimestamp),
-    hertz: Axis.linear(20000, 0, "hertz", Stringx.formatHz),
-    percent: Axis.nonlinear(
-      [
-        [0, 1],
-        [0.5, 0],
-        [1, -1],
-      ],
-      "percent",
-      Stringx.formatPercent,
-    ),
-  }))
+  const axes = React.useMemo<Record<string, Specviz.Axis>>(
+    () => ({
+      seconds: Axis.linear(0, data.duration, "seconds", Format.timestamp),
+      hertz: Axis.linear(20000, 0, "hertz", Format.hz),
+      percent: Axis.nonlinear(
+        [
+          [0, 1],
+          [0.5, 0],
+          [1, -1],
+        ],
+        "percent",
+        Format.percent,
+      ),
+    }),
+    [data.duration],
+  )
 
-  const [regions, setRegions] = Hooks.useRegionState(initRegions)
+  const [regions, setRegions] = React.useState(initRegions)
 
   return (
-    <Specviz axes={axes} regions={regions} setRegions={setRegions}>
+    <Specviz.Provider axes={axes} regions={regions} setRegions={setRegions}>
       <Focus.Provider>
-        <Audio2.Audio url={data.audio}>
+        <Audio.Provider url={data.audio}>
           <MyKeybinds />
           <h3>specviz-react</h3>
           <div className="segments">
@@ -127,22 +122,22 @@ export default function MyComponent() {
           </div>
           <div id="app">
             <main>
-              <Navigator
+              <Specviz.Navigator
                 src={data.spectrogram}
                 xaxis={axes.seconds}
                 yaxis={axes.hertz}
               />
-              <Visualization
+              <Specviz.Visualization
                 src={data.spectrogram}
                 xaxis={axes.seconds}
                 yaxis={axes.hertz}
               />
-              <Visualization
+              <Specviz.Visualization
                 src={data.waveform}
                 xaxis={axes.seconds}
                 yaxis={axes.percent}
               />
-              <Navigator
+              <Specviz.Navigator
                 src={data.waveform}
                 xaxis={axes.seconds}
                 yaxis={axes.percent}
@@ -151,15 +146,15 @@ export default function MyComponent() {
             </main>
             <MyAnnotations />
           </div>
-        </Audio2.Audio>
+        </Audio.Provider>
       </Focus.Provider>
-    </Specviz>
+    </Specviz.Provider>
   )
 }
 
 function MyAudioControls() {
-  const { command, toolState } = useSpecviz()
-  const audio = Audio2.useAudio()
+  const { command, toolState } = Specviz.useContext()
+  const audio = Audio.useContext()
   const focus = Focus.useContext()
   return (
     <p>
@@ -209,69 +204,68 @@ function MyAudioControls() {
         className={audio.transport.state.pause ? "active" : ""}
         children="Stop"
       />
-      <pre>{JSON.stringify(audio, null, 2)}</pre>
     </p>
   )
 }
 
 function MyKeybinds() {
-  const { command } = useSpecviz()
+  const { command } = Specviz.useContext()
   const focus = Focus.useContext()
-  const audio = Audio2.useAudio()
+  const audio = Audio.useContext()
   return (
-    <Bindings>
-      <Keypress bind="Backspace" onKeyDown={command.delete} />
-      <Keypress bind="Escape" onKeyDown={command.deselect} />
-      <Keypress
+    <Specviz.Bindings>
+      <Specviz.Keypress bind="Backspace" onKeyDown={command.delete} />
+      <Specviz.Keypress bind="Escape" onKeyDown={command.deselect} />
+      <Specviz.Keypress
         bind="ArrowLeft"
         onKeyDown={e => {
           e.preventDefault()
           command.moveSelection(-0.01, 0)
         }}
       />
-      <Keypress
+      <Specviz.Keypress
         bind="ArrowRight"
         onKeyDown={e => {
           e.preventDefault()
           command.moveSelection(0.01, 0)
         }}
       />
-      <Keypress
+      <Specviz.Keypress
         bind="ArrowUp"
         onKeyDown={e => {
           e.preventDefault()
           command.moveSelection(0, -0.03)
         }}
       />
-      <Keypress
+      <Specviz.Keypress
         bind="ArrowDown"
         onKeyDown={e => {
           e.preventDefault()
           command.moveSelection(0, 0.03)
         }}
       />
-      <Keypress bind="a" onKeyDown={() => command.tool("annotate")} />
-      <Keypress bind="s" onKeyDown={() => command.tool("select")} />
-      <Keypress bind="d" onKeyDown={() => command.tool("zoom")} />
-      <Keypress bind="f" onKeyDown={() => command.tool("pan")} />
-      <Keypress bind="z" onKeyDown={() => audio.transport.play()} />
-      <Keypress
+      <Specviz.Keypress bind="a" onKeyDown={() => command.tool("annotate")} />
+      <Specviz.Keypress bind="s" onKeyDown={() => command.tool("select")} />
+      <Specviz.Keypress bind="d" onKeyDown={() => command.tool("zoom")} />
+      <Specviz.Keypress bind="f" onKeyDown={() => command.tool("pan")} />
+      <Specviz.Keypress bind="z" onKeyDown={() => audio.transport.play()} />
+      <Specviz.Keypress
         bind="x"
         onKeyDown={() => {
           audio.transport.stop()
           focus.setFocusRegion(null)
         }}
       />
-    </Bindings>
+    </Specviz.Bindings>
   )
 }
 
 function MyAnnotations() {
-  const { regions, selection } = useSpecviz()
+  const { regions, selection } = Specviz.useContext()
   return selection.size > 0 ? (
     <aside>
       {Array.from(selection).map(id => (
-        <MyForm key={id} {...(regions.get(id) as tregion)} />
+        <MyForm key={id} {...(regions.get(id) as Specviz.Region)} />
       ))}
     </aside>
   ) : (
@@ -279,14 +273,16 @@ function MyAnnotations() {
   )
 }
 
-function MyForm(region: tregion) {
-  const audio = Audio2.useAudio()
+function MyForm(region: Specviz.Region) {
+  const audio = Audio.useContext()
   const focus = Focus.useContext()
   return (
     <div className="annotation-form">
       <div className="title">
         <div>{region.id}</div>
-        {focus.region && audio.fx.loop && region.id == focus.region.id ? (
+        {focus.region &&
+        !audio.transport.state.pause &&
+        region.id == focus.region.id ? (
           <button
             type="button"
             onClick={() => {
@@ -308,19 +304,19 @@ function MyForm(region: tregion) {
       </div>
       <div className="encoders">
         <div>
-          <Encoder.X {...region} />
+          <Specviz.Encoder.X {...region} />
           Offset
         </div>
         <div>
-          <Encoder.X2 {...region} />
+          <Specviz.Encoder.X2 {...region} />
           Duration
         </div>
         <div>
-          <Encoder.Y1 {...region} />
+          <Specviz.Encoder.Y1 {...region} />
           LPF
         </div>
         <div>
-          <Encoder.Y2 {...region} />
+          <Specviz.Encoder.Y2 {...region} />
           HPF
         </div>
       </div>
@@ -329,10 +325,26 @@ function MyForm(region: tregion) {
   )
 }
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <R.StrictMode>
-    <div style={{ padding: 20, backgroundColor: "#E8FDF5" }}>
-      <MyComponent />
+function Fallback(props: Reb.FallbackProps) {
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre style={{ color: "red" }}>{props.error.message}</pre>
+      <button
+        type="button"
+        onClick={props.resetErrorBoundary}
+        children="Try again"
+      />
     </div>
-  </R.StrictMode>,
+  )
+}
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <React.StrictMode>
+    <Reb.ErrorBoundary FallbackComponent={Fallback}>
+      <div style={{ padding: 20, backgroundColor: "#E8FDF5" }}>
+        <MyComponent />
+      </div>
+    </Reb.ErrorBoundary>
+  </React.StrictMode>,
 )

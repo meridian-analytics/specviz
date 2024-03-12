@@ -1,8 +1,8 @@
 import * as R from "react"
 import * as Axis from "./axis"
-import SpecvizContext from "./context"
 import * as Mathx from "./mathx"
 import * as Rect from "./rect"
+import * as Specviz from "./specviz"
 import * as T from "./types"
 import * as Vector2 from "./vector2"
 
@@ -18,21 +18,6 @@ function useAnimationFrame(callback: (frameId: number) => void) {
       window.cancelAnimationFrame(frame)
     }
   }, [callback])
-}
-
-/** useAxes: returns a memoized object for use with Specviz axes property */
-function useAxes(
-  props: () => Record<string, Axis.taxis>,
-  deps?: R.DependencyList,
-) {
-  return R.useMemo(props, deps ?? [])
-}
-
-/** useRegionState: provides state control for Specviz component */
-function useRegionState(
-  init?: Map<string, T.tregion> | (() => Map<string, T.tregion>),
-) {
-  return R.useState(init ?? new Map<string, T.tregion>())
 }
 
 function useMouse(props: {
@@ -54,7 +39,7 @@ function useMouse(props: {
     unitUp,
     scroll,
     zoom,
-  } = useSpecviz()
+  } = Specviz.useContext()
   return R.useMemo(() => {
     return {
       onContextMenu(e: R.MouseEvent<SVGSVGElement>) {
@@ -169,7 +154,7 @@ function useMutableVector2() {
 }
 
 function useMutableCoord() {
-  return R.useMemo<T.tcoord>(() => {
+  return R.useMemo<Specviz.tcoord>(() => {
     let absx = 0
     let absy = 0
     let relx = 0
@@ -246,7 +231,7 @@ function useMutableRect() {
 // to stop propagation, use a non-passive listener
 // https://stackoverflow.com/a/67258046
 function useWheel(ref: R.RefObject<SVGSVGElement>, direction: 1 | -1) {
-  const { command, mousedown, zoom } = useSpecviz()
+  const { command, mousedown, zoom } = Specviz.useContext()
   R.useEffect(() => {
     function onWheel(e: WheelEvent) {
       if (ref.current) {
@@ -275,18 +260,11 @@ function useWheel(ref: R.RefObject<SVGSVGElement>, direction: 1 | -1) {
   }, [ref.current, command, direction, mousedown, zoom])
 }
 
-function useSpecviz() {
-  return R.useContext(SpecvizContext)
-}
-
 export {
   useAnimationFrame,
-  useAxes,
   useMouse,
   useMutableVector2,
   useMutableCoord,
   useMutableRect,
-  useRegionState,
-  useSpecviz,
   useWheel,
 }

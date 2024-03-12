@@ -1,7 +1,14 @@
-export { default as Specviz } from "./specviz"
+export { type taxis as Axis } from "./axis"
 export { default as Encoder } from "./encoder"
+export { useAnimationFrame } from "./hooks"
+export { Keypress, Bindings } from "./keybinds"
 export { default as Navigator } from "./navigator"
-export * as Audio from "./audio2"
+
+export {
+  type ProviderProps,
+  Provider,
+  useContext,
+} from "./specviz"
+
+export { type tregion as Region } from "./types"
 export { default as Visualization } from "./visualization"
-export { useAxes, useRegionState, useSpecviz } from "./hooks"
-export type { tregion as IRegion } from "./types"

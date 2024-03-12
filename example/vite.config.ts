@@ -1,8 +1,8 @@
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import * as Vite from "vite"
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default Vite.defineConfig({
   build: {
     lib: {
       entry: "src/index.tsx",
@@ -14,11 +14,9 @@ export default defineConfig({
       external: ["react", "react/jsx-runtime", "react-dom"],
       input: {
         "specviz-react": "src/index.tsx",
+        audio: "src/audio.tsx",
         axis: "src/axis.tsx",
-        format: "src/stringx.tsx",
-        hooks: "src/hooks.tsx",
-        rect: "src/rect.tsx",
-        keybinds: "src/keybinds.tsx",
+        format: "src/format.tsx",
       },
       output: {
         globals: {

@@ -1,12 +1,14 @@
 import * as R from "react"
 
-const defaultContext = new AudioContext()
-
-const Context = R.createContext(defaultContext)
+export type Context = AudioContext
 
 export type ProviderProps = {
   children: R.ReactNode
 }
+
+const defaultContext: Context = new AudioContext()
+
+const Context = R.createContext(defaultContext)
 
 export function Provider(props: ProviderProps) {
   return <Context.Provider children={props.children} value={defaultContext} />

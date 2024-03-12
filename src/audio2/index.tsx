@@ -1,8 +1,8 @@
 export {
-  type AudioProps,
-  Audio,
-  useAudio,
-} from "./Audio"
+  type ProviderProps,
+  Provider,
+  useContext,
+} from "./Provider"
 
 export * as AudioContext from "./AudioContext"
 export * as BufferContext from "./BufferContext"

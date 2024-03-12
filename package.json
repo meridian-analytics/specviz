@@ -21,9 +21,6 @@
     ".": "./src/index.tsx",
     "./audio": "./src/audio2/index.tsx",
     "./axis": "./src/axis.tsx",
-    "./format": "./src/stringx.tsx",
-    "./hooks": "./src/hooks.tsx",
-    "./keybinds": "./src/keybinds.tsx",
-    "./types": "./src/types.tsx"
+    "./format": "./src/format.tsx"
   }
 }
