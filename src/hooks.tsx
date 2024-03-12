@@ -3,7 +3,6 @@ import * as Axis from "./axis"
 import * as Mathx from "./mathx"
 import * as Rect from "./rect"
 import * as Specviz from "./specviz"
-import * as T from "./types"
 import * as Vector2 from "./vector2"
 
 function useAnimationFrame(callback: (frameId: number) => void) {
