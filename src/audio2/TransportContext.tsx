@@ -9,19 +9,6 @@ export type State = {
   timecode: number
 }
 
-function clampLoop(seek: number, loop: [number, number]) {
-  return (
-    // left bound
-    seek < loop[0]
-      ? loop[0]
-      : // right bound
-        seek > loop[1]
-        ? loop[0]
-        : // in bound
-          seek
-  )
-}
-
 export type Context = {
   state: State
   play: (seek?: number) => void
