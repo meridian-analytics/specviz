@@ -24,6 +24,7 @@ export function Provider(props: ProviderProps) {
   const [state, setState] = R.useState<State>({ kind: "loading" })
   R.useEffect(() => {
     let mounted = true
+    setState({ kind: "loading" })
     fetch(props.url)
       .then(response => {
         if (response.ok) return response.arrayBuffer()
