@@ -63,7 +63,6 @@ type tcontext = {
   unitUp: Vector2.tvector2
   scroll: Vector2.tvector2
   zoom: Vector2.tvector2
-  playhead: Vector2.tvector2
   regions: Map<string, T.tregion>
   regionCache: Map<string, Rect.trect>
   selection: tselection
@@ -89,7 +88,6 @@ const defaultContext: tcontext = {
   unitUp: { x: 0, y: 0 },
   scroll: { x: 0, y: 0 },
   zoom: { x: 0, y: 0 },
-  playhead: { x: 0, y: 0 },
   regions: new Map(),
   regionCache: new Map(),
   selection: new Set(),
@@ -595,7 +593,6 @@ export function Provider(props: ProviderProps) {
         unitUp: Hooks.useMutableVector2(),
         scroll,
         zoom,
-        playhead: Hooks.useMutableVector2(),
         regions: props.regions,
         regionCache,
         selection,
