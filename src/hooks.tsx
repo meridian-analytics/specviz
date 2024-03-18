@@ -4,6 +4,7 @@ import * as Mathx from "./mathx"
 import * as Rect from "./rect"
 import * as Specviz from "./specviz"
 import * as Vector2 from "./vector2"
+import * as Viewport from "./viewport"
 
 function useAnimationFrame(callback: (frameId: number) => void) {
   R.useEffect(() => {
@@ -29,16 +30,9 @@ function useMouse(props: {
   onMouseLeave: (e: R.MouseEvent<SVGSVGElement>) => void
   onContextMenu: (e: R.MouseEvent<SVGSVGElement>) => void
 }) {
-  const {
-    input,
-    mousedown,
-    mouseup,
-    mouseRect,
-    unitDown,
-    unitUp,
-    scroll,
-    zoom,
-  } = Specviz.useContext()
+  const { input, mousedown, mouseup, mouseRect, unitDown, unitUp } =
+    Specviz.useContext()
+  const viewport = Viewport.useContext()
   return R.useMemo(() => {
     return {
       onContextMenu(e: R.MouseEvent<SVGSVGElement>) {
@@ -52,14 +46,14 @@ function useMouse(props: {
       },
       onMouseMove(e: R.MouseEvent<SVGSVGElement>) {
         const elem = e.currentTarget
-        const viewport = elem.getBoundingClientRect()
-        const x = (e.clientX - viewport.x) / viewport.width
-        const y = (e.clientY - viewport.y) / viewport.height
+        const box = elem.getBoundingClientRect()
+        const x = (e.clientX - box.x) / box.width
+        const y = (e.clientY - box.y) / box.height
         if (input.buttons & 1) {
           mouseup.rel.x = x
           mouseup.rel.y = y
-          mouseup.abs.x = (x + scroll.x) / zoom.x
-          mouseup.abs.y = (y + scroll.y) / zoom.y
+          mouseup.abs.x = (x + viewport.state.scroll.x) / viewport.state.zoom.x
+          mouseup.abs.y = (y + viewport.state.scroll.y) / viewport.state.zoom.y
           if (props.xaxis != null)
             unitUp.x = Axis.computeUnit(
               props.xaxis,
@@ -73,8 +67,10 @@ function useMouse(props: {
         } else {
           mousedown.rel.x = mouseup.rel.x = x
           mousedown.rel.y = mouseup.rel.y = y
-          mousedown.abs.x = mouseup.abs.x = (x + scroll.x) / zoom.x
-          mousedown.abs.y = mouseup.abs.y = (y + scroll.y) / zoom.y
+          mousedown.abs.x = mouseup.abs.x =
+            (x + viewport.state.scroll.x) / viewport.state.zoom.x
+          mousedown.abs.y = mouseup.abs.y =
+            (y + viewport.state.scroll.y) / viewport.state.zoom.y
           if (props.xaxis != null)
             unitDown.x = unitUp.x = Axis.computeUnit(
               props.xaxis,
@@ -124,11 +120,42 @@ function useMouse(props: {
     mousedown,
     mouseup,
     mouseRect,
-    scroll,
     unitDown,
     unitUp,
-    zoom,
+    viewport.state.scroll,
+    viewport.state.zoom,
   ])
+}
+
+function useDimensions(ref: R.RefObject<HTMLElement | SVGElement>) {
+  const [dimensions, setDimensions] = R.useState<Vector2.tvector2>(Vector2.zero)
+  const getDimensions = R.useRef(() => {
+    if (ref.current) {
+      const box = ref.current.getBoundingClientRect()
+      return {
+        x: box.width,
+        y: box.height,
+      }
+    }
+    return Vector2.zero
+  })
+  function update() {
+    setDimensions(prev => {
+      if (ref.current == null) return prev
+      const dim = getDimensions.current()
+      return prev.x == dim.x && prev.y == dim.y ? prev : dim
+    })
+  }
+  R.useEffect(() => {
+    update()
+  })
+  R.useEffect(() => {
+    window.addEventListener("resize", update)
+    return () => {
+      window.removeEventListener("resize", update)
+    }
+  }, [])
+  return dimensions
 }
 
 function useMutableVector2() {
@@ -230,7 +257,7 @@ function useMutableRect() {
 // to stop propagation, use a non-passive listener
 // https://stackoverflow.com/a/67258046
 function useWheel(ref: R.RefObject<SVGSVGElement>, direction: 1 | -1) {
-  const { command, mousedown, zoom } = Specviz.useContext()
+  const viewport = Viewport.useContext()
   R.useEffect(() => {
     function onWheel(e: WheelEvent) {
       if (ref.current) {
@@ -238,13 +265,9 @@ function useWheel(ref: R.RefObject<SVGSVGElement>, direction: 1 | -1) {
         const dx = e.deltaX / ref.current.clientWidth
         const dy = e.deltaY / ref.current.clientHeight
         if (e.altKey) {
-          command.zoom(dx * direction, dy * direction)
-          command.scrollTo({
-            x: mousedown.abs.x * zoom.x - mousedown.rel.x,
-            y: mousedown.abs.y * zoom.y - mousedown.rel.y,
-          })
+          viewport.zoomScroll(dx * direction, dy * direction)
         } else {
-          command.scroll(-dx * direction, -dy * direction)
+          viewport.scroll(-dx * direction, -dy * direction)
         }
       }
     }
@@ -256,11 +279,12 @@ function useWheel(ref: R.RefObject<SVGSVGElement>, direction: 1 | -1) {
         ref.current.removeEventListener("wheel", onWheel)
       }
     }
-  }, [ref.current, command, direction, mousedown, zoom])
+  }, [ref, direction, viewport.scroll, viewport.zoomScroll])
 }
 
 export {
   useAnimationFrame,
+  useDimensions,
   useMouse,
   useMutableVector2,
   useMutableCoord,

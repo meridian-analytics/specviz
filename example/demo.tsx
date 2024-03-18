@@ -122,33 +122,72 @@ export default function MyComponent() {
           </div>
           <div id="app">
             <main>
-              <Specviz.Navigator
-                src={data.spectrogram}
-                xaxis={axes.seconds}
-                yaxis={axes.hertz}
-              />
-              <Specviz.Visualization
-                src={data.spectrogram}
-                xaxis={axes.seconds}
-                yaxis={axes.hertz}
-              />
-              <Specviz.Visualization
-                src={data.waveform}
-                xaxis={axes.seconds}
-                yaxis={axes.percent}
-              />
-              <Specviz.Navigator
-                src={data.waveform}
-                xaxis={axes.seconds}
-                yaxis={axes.percent}
-              />
-              <MyAudioControls />
+              <Specviz.Viewport.Provider>
+                <Specviz.Navigator
+                  src={data.spectrogram}
+                  xaxis={axes.seconds}
+                  yaxis={axes.hertz}
+                />
+                <Specviz.Visualization
+                  children={MyAnnotationSvg}
+                  src={data.spectrogram}
+                  xaxis={axes.seconds}
+                  yaxis={axes.hertz}
+                />
+                <Specviz.Viewport.Transform
+                  fn={state => ({
+                    scroll: { x: state.scroll.x, y: 0 },
+                    zoom: { x: state.zoom.x, y: 1 },
+                  })}
+                >
+                  <Specviz.Visualization
+                    children={MyAnnotationSvg}
+                    src={data.waveform}
+                    xaxis={axes.seconds}
+                    yaxis={axes.percent}
+                  />
+                  <Specviz.Navigator
+                    src={data.waveform}
+                    xaxis={axes.seconds}
+                    yaxis={axes.percent}
+                  />
+                </Specviz.Viewport.Transform>
+                <MyAudioControls />
+              </Specviz.Viewport.Provider>
             </main>
             <MyAnnotations />
           </div>
         </Audio.Provider>
       </Focus.Provider>
     </Specviz.Provider>
+  )
+}
+
+function MyAnnotationSvg(props: Specviz.AnnotationProps) {
+  const lines = props.selected
+    ? [
+        props.region.id,
+        `${Format.timestamp(props.region.x)} - ${Format.timestamp(
+          props.region.x + props.region.width,
+        )}`,
+        props.region.yunit == "hertz"
+          ? `${Format.hz(props.region.y)} - ${Format.hz(
+              props.region.y + props.region.height,
+            )}`
+          : "",
+      ]
+    : [`${props.region.id.substring(0, 4)}...`]
+  return (
+    <React.Fragment>
+      {lines.map((line, lineno) => (
+        <text
+          key={String(lineno)}
+          x="4"
+          y={String(4 + 24 * lineno)}
+          children={line}
+        />
+      ))}
+    </React.Fragment>
   )
 }
 

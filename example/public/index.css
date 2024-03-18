@@ -128,12 +128,29 @@ body {
 }
 
 .annotation {
-  fill: rgba(33, 33, 33, 1);
   mix-blend-mode: difference;
 }
 
-.annotation-selected {
-  fill: rgba(99, 99, 99, 1);
+.annotation rect {
+  fill: rgba(66, 66, 66, 0.66);
+  stroke: rgba(200, 200, 200, 0.66);
+}
+
+.annotation text {
+  fill: rgba(200, 200, 200, 0.66);
+  font-size: 10pt;
+  text-anchor: start;
+  alignment-baseline: hanging;
+  font-family: monospace;
+  mix-blend-mode: difference;
+}
+
+.annotation.annotation-selected rect {
+  fill: rgba(200, 200, 200, 1);
+}
+
+.annotation.annotation-selected text {
+  fill: rgba(200, 200, 200, 1)
 }
 
 button.active {

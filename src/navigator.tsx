@@ -4,8 +4,8 @@ import * as Axis from "./axis"
 import * as Hooks from "./hooks"
 import Playhead from "./playhead"
 import * as Specviz from "./specviz"
-import * as Svg from "./svg"
 import * as Vector2 from "./vector2"
+import * as Viewport from "./viewport"
 
 const NOOP = () => {}
 
@@ -14,42 +14,10 @@ function Navigator(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const { src, xaxis, yaxis } = props
-  const {
-    regions,
-    command,
-    input,
-    mouseup,
-    mouseRect,
-    scroll,
-    zoom,
-    toolState,
-  } = Specviz.useContext()
+  const { regions, input, mouseup, mouseRect, toolState } = Specviz.useContext()
   const containerRef = R.useRef<SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
-
-  Hooks.useAnimationFrame(
-    R.useCallback(() => {
-      if (maskRef.current) {
-        Svg.setPath(
-          maskRef.current,
-          `
-          M 0 0
-          h 1
-          v 1
-          h -1
-          z
-          M ${scroll.x / zoom.x} ${scroll.y / zoom.y}
-          v ${1 / zoom.y}
-          h ${1 / zoom.x}
-          v ${-1 / zoom.y}
-          z
-          `,
-        )
-      }
-    }, [scroll, zoom]),
-  )
-
+  const viewport = Viewport.useContext()
   const onMouse = Hooks.useMouse({
     onContextMenu: NOOP,
     onMouseDown: NOOP,
@@ -58,13 +26,14 @@ function Navigator(props: {
     onMouseMove: R.useCallback(
       e => {
         if (input.buttons & 1) {
-          command.scroll(
-            (e.movementX / e.currentTarget.clientWidth) * zoom.x,
-            (e.movementY / e.currentTarget.clientHeight) * zoom.y,
+          viewport.scroll(
+            (e.movementX / e.currentTarget.clientWidth) * viewport.state.zoom.x,
+            (e.movementY / e.currentTarget.clientHeight) *
+              viewport.state.zoom.y,
           )
         }
       },
-      [command, input, zoom],
+      [input, viewport.scroll, viewport.state.zoom],
     ),
     onMouseUp: R.useCallback(
       e => {
@@ -78,24 +47,46 @@ function Navigator(props: {
               case "annotate":
               case "select":
               case "pan":
-                command.scrollTo({
-                  x: mouseup.rel.x * zoom.x - 0.5,
-                  y: mouseup.rel.y * zoom.y - 0.5,
+                viewport.scrollTo({
+                  x: mouseup.rel.x * viewport.state.zoom.x - 0.5,
+                  y: mouseup.rel.y * viewport.state.zoom.y - 0.5,
                 })
                 break
               case "zoom":
-                command.resetView()
+                viewport.resetView()
                 break
             }
           }
         }
       },
-      [command, toolState, input, mouseRect, mouseup, zoom],
+      [
+        toolState,
+        input,
+        mouseRect,
+        mouseup,
+        viewport.resetView,
+        viewport.scrollTo,
+        viewport.state.zoom,
+      ],
     ),
   })
 
   Hooks.useWheel(containerRef, 1)
-
+  const dimensions = Hooks.useDimensions(containerRef)
+  const maskPath = `
+    M 0 0
+    h 1
+    v 1
+    h -1
+    z
+    M ${viewport.state.scroll.x / viewport.state.zoom.x} ${
+      viewport.state.scroll.y / viewport.state.zoom.y
+    }
+    v ${1 / viewport.state.zoom.y}
+    h ${1 / viewport.state.zoom.x}
+    v ${-1 / viewport.state.zoom.y}
+    z
+  `
   return (
     <div className={`navigator ${toolState}`}>
       <svg
@@ -107,21 +98,22 @@ function Navigator(props: {
         {...onMouse}
       >
         <image
-          href={src}
+          href={props.src}
           width="100%"
           height="100%"
           preserveAspectRatio="none"
         />
         {Array.from(regions.values(), region => (
           <Annotation
+            dimensions={dimensions}
             key={region.id}
             region={region}
-            xaxis={xaxis}
-            yaxis={yaxis}
+            xaxis={props.xaxis}
+            yaxis={props.yaxis}
           />
         ))}
-        <path ref={maskRef} className="mask" d="" />
-        <Playhead xaxis={xaxis} yaxis={yaxis} />
+        <path ref={maskRef} className="mask" d={maskPath} />
+        <Playhead xaxis={props.xaxis} yaxis={props.yaxis} />
       </svg>
     </div>
   )

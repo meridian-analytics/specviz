@@ -9,14 +9,17 @@ import * as Rect from "./rect"
 import * as Specviz from "./specviz"
 import * as Svg from "./svg"
 import * as Vector2 from "./vector2"
+import * as Viewport from "./viewport"
 
 const NOOP = () => {}
 
 function Visualization(props: {
+  children?: typeof Annotation
   src: string
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
+  const viewport = Viewport.useContext()
   const {
     command,
     input,
@@ -27,18 +30,15 @@ function Visualization(props: {
     toolState,
     unitDown,
     unitUp,
-    scroll,
-    zoom,
   } = Specviz.useContext()
   const audio = Audio2.useContext()
   const svgRoot = R.useRef<SVGSVGElement>(null)
-  const svgLayer = R.useRef<SVGSVGElement>(null)
   const svgSelection = R.useRef<SVGRectElement>(null)
+  const dimensions = Hooks.useDimensions(svgRoot)
 
   Hooks.useAnimationFrame(
     R.useCallback(() => {
-      if (svgLayer.current && svgSelection.current) {
-        Svg.setTransform(svgLayer.current, scroll, zoom)
+      if (svgSelection.current) {
         switch (toolState) {
           case "annotate":
           case "select":
@@ -62,7 +62,7 @@ function Visualization(props: {
             break
         }
       }
-    }, [toolState, props.xaxis, props.yaxis, input, mouseRect, scroll, zoom]),
+    }, [toolState, props.xaxis, props.yaxis, input, mouseRect]),
   )
 
   const onMouse = Hooks.useMouse({
@@ -84,7 +84,7 @@ function Visualization(props: {
               break
             case "pan":
               if (selection.size == 0) {
-                command.scroll(-dx, -dy)
+                viewport.scroll(-dx, -dy)
               } else {
                 command.moveSelection(dx, dy)
               }
@@ -92,7 +92,7 @@ function Visualization(props: {
           }
         }
       },
-      [command, toolState, input, selection],
+      [command, toolState, input, selection, viewport.scroll],
     ),
     onMouseUp: R.useCallback(
       e => {
@@ -110,7 +110,7 @@ function Visualization(props: {
                 command.selectPoint(mouseup.abs)
                 break
               case "zoom":
-                command.zoomPoint(mouseup.abs)
+                viewport.zoomPoint(mouseup.abs)
                 break
               case "pan":
                 break
@@ -130,7 +130,7 @@ function Visualization(props: {
                 command.selectArea(mouseRect)
                 break
               case "zoom":
-                command.zoomArea(mouseRect)
+                viewport.zoomArea(mouseRect)
                 break
               case "pan":
                 break
@@ -154,11 +154,18 @@ function Visualization(props: {
         toolState,
         props.xaxis,
         props.yaxis,
+        viewport.zoomArea,
+        viewport.zoomPoint,
       ],
     ),
   })
 
   Hooks.useWheel(svgRoot, -1)
+
+  const translate = `translate(${-viewport.state.scroll.x}, ${-viewport.state
+    .scroll.y})`
+  const scale = `scale(${viewport.state.zoom.x}, ${viewport.state.zoom.y})`
+  const transform = `${translate} ${scale}`
 
   return (
     <div className={`visualization ${toolState}`}>
@@ -169,7 +176,7 @@ function Visualization(props: {
           viewBox="0 0 1 1"
           preserveAspectRatio="none"
         >
-          <g ref={svgLayer} width="1" height="1">
+          <g width="1" height="1" transform={transform}>
             <image
               preserveAspectRatio="none"
               href={props.src}
@@ -179,7 +186,10 @@ function Visualization(props: {
             {Array.from(regions.values(), region => (
               <Annotation
                 key={region.id}
+                children={props.children}
+                dimensions={dimensions}
                 region={region}
+                selected={selection.has(region.id)}
                 xaxis={props.xaxis}
                 yaxis={props.yaxis}
               />

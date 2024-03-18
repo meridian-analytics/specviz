@@ -7,8 +7,6 @@ import * as Rect from "./rect"
 import * as T from "./types"
 import * as Vector2 from "./vector2"
 
-const ZOOM_MAX: number = 5
-
 export type tcoord = {
   abs: Vector2.tvector2
   rel: Vector2.tvector2
@@ -37,9 +35,6 @@ type tcommand = {
   delete: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
-  resetView: () => void
-  scroll: (dx: number, dy: number) => void
-  scrollTo: (pt: Vector2.tvector2) => void
   selectArea: (rect: Rect.trect) => void
   selectPoint: (pt: Vector2.tvector2) => void
   setRectX: (region: T.tregion, dx: number) => void
@@ -49,9 +44,6 @@ type tcommand = {
   setRectY1: (region: T.tregion, dy: number) => void
   setRectY2: (region: T.tregion, dy: number) => void
   tool: (toolState: ttoolstate) => void
-  zoom: (dx: number, dy: number) => void
-  zoomArea: (rect: Rect.trect) => void
-  zoomPoint: (pt: Vector2.tvector2) => void
 }
 
 type tcontext = {
@@ -61,8 +53,6 @@ type tcontext = {
   mouseRect: Rect.trect
   unitDown: Vector2.tvector2
   unitUp: Vector2.tvector2
-  scroll: Vector2.tvector2
-  zoom: Vector2.tvector2
   regions: Map<string, T.tregion>
   regionCache: Map<string, Rect.trect>
   selection: tselection
@@ -81,13 +71,11 @@ const defaultContext: tcontext = {
     xaxis: null,
     yaxis: null,
   },
-  mousedown: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
-  mouseup: { abs: { x: 0, y: 0 }, rel: { x: 0, y: 0 } },
+  mousedown: { abs: Vector2.zero, rel: Vector2.zero },
+  mouseup: { abs: Vector2.zero, rel: Vector2.zero },
   mouseRect: { x: 0, y: 0, width: 0, height: 0 },
-  unitDown: { x: 0, y: 0 },
-  unitUp: { x: 0, y: 0 },
-  scroll: { x: 0, y: 0 },
-  zoom: { x: 0, y: 0 },
+  unitDown: Vector2.zero,
+  unitUp: Vector2.zero,
   regions: new Map(),
   regionCache: new Map(),
   selection: new Set(),
@@ -103,15 +91,6 @@ const defaultContext: tcontext = {
     },
     moveSelection: () => {
       throw Error("command.moveSelection called outside of Specviz context")
-    },
-    resetView: () => {
-      throw Error("command.resetView called outside of Specviz context")
-    },
-    scroll: () => {
-      throw Error("command.scroll called outside of Specviz context")
-    },
-    scrollTo: () => {
-      throw Error("command.scrollTo called outside of Specviz context")
     },
     selectPoint: () => {
       throw Error("command.selectPoint called outside of Specviz context")
@@ -139,15 +118,6 @@ const defaultContext: tcontext = {
     },
     tool: () => {
       throw Error("command.tool called outside of Specviz context")
-    },
-    zoom: () => {
-      throw Error("command.zoom called outside of Specviz context")
-    },
-    zoomPoint: () => {
-      throw Error("command.zoomPoint called outside of Specviz context")
-    },
-    zoomArea: () => {
-      throw Error("command.zoomArea called outside of Specviz context")
     },
   },
   toolState: "annotate",
@@ -215,44 +185,6 @@ export function Provider(props: ProviderProps) {
       },
     }
   }, [])
-
-  const zoom = R.useMemo<Vector2.tvector2>(() => {
-    let x = 1
-    let y = 1
-    return {
-      get x() {
-        return x
-      },
-      get y() {
-        return y
-      },
-      set x(v) {
-        x = Mathx.clamp(v, 1, ZOOM_MAX)
-      },
-      set y(v) {
-        y = Mathx.clamp(v, 1, ZOOM_MAX)
-      },
-    }
-  }, [])
-
-  const scroll = R.useMemo<Vector2.tvector2>(() => {
-    let x = 0
-    let y = 0
-    return {
-      get x() {
-        return x
-      },
-      get y() {
-        return y
-      },
-      set x(v) {
-        x = Mathx.clamp(v, 0, zoom.x - 1)
-      },
-      set y(v) {
-        y = Mathx.clamp(v, 0, zoom.y - 1)
-      },
-    }
-  }, [zoom])
 
   const [selection, setSelection] = R.useState<tselection>(() => new Set())
 
@@ -349,20 +281,6 @@ export function Provider(props: ProviderProps) {
               }),
             ),
         )
-      },
-      resetView() {
-        zoom.x = 1
-        zoom.y = 1
-        scroll.x = 0
-        scroll.y = 0
-      },
-      scroll(dx, dy) {
-        scroll.x += dx
-        scroll.y += dy
-      },
-      scrollTo(pt) {
-        scroll.x = pt.x
-        scroll.y = pt.y
       },
       selectArea(area) {
         setSelection(prev => {
@@ -525,24 +443,6 @@ export function Provider(props: ProviderProps) {
       tool(t) {
         setToolState(t)
       },
-      zoom(dx, dy) {
-        zoom.x += dx
-        zoom.y += dy
-      },
-      zoomArea(area) {
-        zoom.x = 1 / area.width
-        zoom.y = 1 / area.height
-        scroll.x = -0.5 + (area.x + area.width / 2) * zoom.x
-        scroll.y = -0.5 + (area.y + area.height / 2) * zoom.y
-      },
-      zoomPoint(pt) {
-        const rx = pt.x * zoom.x - scroll.x
-        const ry = pt.y * zoom.y - scroll.y
-        zoom.x += 0.5
-        zoom.y += 0.5
-        scroll.x = pt.x * zoom.x - rx
-        scroll.y = pt.y * zoom.y - ry
-      },
     }),
     [
       props.regions,
@@ -551,8 +451,6 @@ export function Provider(props: ProviderProps) {
       selection,
       updateRegion,
       input,
-      scroll,
-      zoom,
     ],
   )
 
@@ -584,6 +482,7 @@ export function Provider(props: ProviderProps) {
 
   return (
     <Context.Provider
+      children={props.children}
       value={{
         input,
         mousedown: Hooks.useMutableCoord(),
@@ -591,8 +490,6 @@ export function Provider(props: ProviderProps) {
         mouseRect: Hooks.useMutableRect(),
         unitDown: Hooks.useMutableVector2(),
         unitUp: Hooks.useMutableVector2(),
-        scroll,
-        zoom,
         regions: props.regions,
         regionCache,
         selection,
@@ -601,9 +498,7 @@ export function Provider(props: ProviderProps) {
         setRegions: props.setRegions,
         setSelection,
       }}
-    >
-      {props.children}
-    </Context.Provider>
+    />
   )
 }
 
