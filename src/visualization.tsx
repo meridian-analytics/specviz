@@ -170,6 +170,21 @@ function Visualization(props: {
   return (
     <div className={`visualization ${toolState}`}>
       <svg ref={svgRoot} width="100%" height="100%" {...onMouse}>
+        <svg width="100%" height="100%">
+          <defs>
+            <pattern
+              id="dotted-grid"
+              x="5"
+              y="5"
+              width="10"
+              height="10"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="0" cy="0" r="1" fill="black" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dotted-grid)" />
+        </svg>
         <svg
           width="100%"
           height="100%"
