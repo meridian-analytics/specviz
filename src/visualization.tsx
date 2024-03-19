@@ -86,13 +86,23 @@ function Visualization(props: {
               if (selection.size == 0) {
                 viewport.scroll(-dx, -dy)
               } else {
-                command.moveSelection(dx, dy)
+                command.moveSelection(
+                  dx / viewport.state.zoom.x,
+                  dy / viewport.state.zoom.y,
+                )
               }
               break
           }
         }
       },
-      [command, toolState, input, selection, viewport.scroll],
+      [
+        command,
+        input,
+        selection,
+        toolState,
+        viewport.scroll,
+        viewport.state.zoom,
+      ],
     ),
     onMouseUp: R.useCallback(
       e => {
