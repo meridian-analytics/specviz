@@ -51,7 +51,7 @@ body {
 
 /* specviz defaults */
 .visualization {
-  height: 200px;
+  height: 300px;
   background-color: #FBF1A9;
   border-radius: 0.25rem;
   border: 1px solid #000;
@@ -151,6 +151,21 @@ body {
 
 .annotation.annotation-selected text {
   fill: rgba(200, 200, 200, 1)
+}
+
+.axis-tick line {
+  stroke: rgba(200, 200, 200, 1);
+  stroke-width: 2px;
+  mix-blend-mode: difference;
+}
+
+.axis-tick text {
+  alignment-baseline: hanging;
+  fill: rgba(200, 200, 200, 1);
+  font-family: monospace;
+  font-size: 8pt;
+  mix-blend-mode: difference;
+  text-anchor: start;
 }
 
 button.active {

@@ -167,6 +167,10 @@ function Visualization(props: {
   const scale = `scale(${viewport.state.zoom.x}, ${viewport.state.zoom.y})`
   const transform = `${translate} ${scale}`
 
+  const axisTranslate = `translate(${-viewport.state.scroll.x}, 0)`
+  const axisScale = `scale(${viewport.state.zoom.x}, 1)`
+  const axisTransform = `${axisTranslate} ${axisScale}`
+
   return (
     <div className={`visualization ${toolState}`}>
       <svg ref={svgRoot} width="100%" height="100%" {...onMouse}>
@@ -218,6 +222,9 @@ function Visualization(props: {
               height="0"
             />
             <Playhead xaxis={props.xaxis} yaxis={props.yaxis} />
+          </g>
+          <g transform={axisTransform}>
+            <Axis.Horizontal axis={props.xaxis} dimensions={dimensions} />
           </g>
         </svg>
         <Cursor parent={svgRoot} xaxis={props.xaxis} yaxis={props.yaxis} />
