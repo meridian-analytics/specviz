@@ -184,28 +184,31 @@ function Visualization(props: {
   return (
     <div className={`visualization ${toolState}`}>
       <svg ref={svgRoot} width="100%" height="100%" {...onMouse}>
-        <svg width="100%" height="100%">
-          <defs>
-            <pattern
-              id="dotted-grid"
-              x="5"
-              y="5"
-              width="10"
-              height="10"
-              patternUnits="userSpaceOnUse"
-            >
-              <circle cx="0" cy="0" r="1" fill="black" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dotted-grid)" />
-        </svg>
+        <defs>
+          <pattern
+            id="dotted-grid"
+            x="5"
+            y="5"
+            width="10"
+            height="10"
+            patternUnits="userSpaceOnUse"
+          >
+            <circle cx="0" cy="0" r="1" fill="black" />
+          </pattern>
+        </defs>
+        <rect
+          className="dotted-grid"
+          width="100%"
+          height="100%"
+          fill="url(#dotted-grid)"
+        />
         <svg
           width="100%"
           height="100%"
           viewBox="0 0 1 1"
           preserveAspectRatio="none"
         >
-          <g width="1" height="1" transform={transform}>
+          <g transform={transform}>
             <image
               preserveAspectRatio="none"
               href={props.src}
