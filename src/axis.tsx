@@ -195,7 +195,9 @@ function Horizontal(props: AxisProps) {
   )
 }
 
-type Context = Record<string, undefined | taxis>
+type Axes = Record<string, undefined | taxis>
+
+type Context = Axes
 
 const defaultContext: Context = {}
 
@@ -208,6 +210,7 @@ function useContext() {
 }
 
 export {
+  type Axes,
   type AxisProps,
   type Context,
   type taxis,

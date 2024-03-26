@@ -4,10 +4,12 @@ import * as Input from "./input"
 import * as Region from "./region"
 
 export type ProviderProps = {
-  axes: Record<string, Axis.taxis>
+  axes: Axis.Context
   children: R.ReactNode
-  initialRegions?: Region.Regions
-  initialSelection?: Region.Selection
+  regions?: Region.Context["regions"]
+  selection?: Region.Context["selection"]
+  setRegions?: Region.Context["setRegions"]
+  setSelection?: Region.Context["setSelection"]
 }
 
 export function Provider(props: ProviderProps) {
@@ -15,8 +17,10 @@ export function Provider(props: ProviderProps) {
     <Input.Provider>
       <Axis.Provider value={props.axes}>
         <Region.Provider
-          initialRegions={props.initialRegions}
-          initialSelection={props.initialSelection}
+          regions={props.regions}
+          selection={props.selection}
+          setRegions={props.setRegions}
+          setSelection={props.setSelection}
         >
           {props.children}
         </Region.Provider>

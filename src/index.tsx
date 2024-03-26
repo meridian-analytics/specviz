@@ -1,11 +1,15 @@
 export { type AnnotationProps } from "./annotation"
-export { type taxis as Axis } from "./axis"
+export { type Axes, type taxis as Axis } from "./axis"
 export { default as Encoder } from "./encoder"
 export { useAnimationFrame } from "./hooks"
 export { Keypress, Bindings } from "./keybinds"
 export { default as Navigator } from "./navigator"
 
-export { type Region } from "./region"
+export {
+  type Region,
+  type Regions,
+  type Selection,
+} from "./region"
 
 export {
   type ProviderProps,

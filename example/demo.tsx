@@ -28,7 +28,7 @@ const segment2: tsegment = {
   waveform: "./waveform.png",
 }
 
-const initRegions: Map<string, Specviz.Region> = new Map([
+const initRegions: Specviz.Regions = new Map([
   [
     "df10e63bc928a9850b6f",
     {
@@ -79,8 +79,7 @@ function Duration() {
 
 export default function MyComponent() {
   const [data, setData] = React.useState(segment1)
-
-  const axes = React.useMemo<Record<string, Specviz.Axis>>(
+  const axes: Specviz.Axes = React.useMemo(
     () => ({
       seconds: Axis.linear(0, data.duration, "seconds", Format.timestamp),
       hertz: Axis.linear(20000, 0, "hertz", Format.hz),
@@ -96,9 +95,17 @@ export default function MyComponent() {
     }),
     [data.duration],
   )
+  const [regions, setRegions] = React.useState(initRegions)
+  const [selection, setSelection] = React.useState<Specviz.Selection>(new Set())
 
   return (
-    <Specviz.Provider axes={axes} initialRegions={initRegions}>
+    <Specviz.Provider
+      axes={axes}
+      regions={regions}
+      setRegions={setRegions}
+      selection={selection}
+      setSelection={setSelection}
+    >
       <Focus.Provider>
         <Audio.Provider url={data.audio}>
           <MyKeybinds />

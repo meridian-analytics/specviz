@@ -95,19 +95,30 @@ const Context = R.createContext(defaultContext)
 
 export type ProviderProps = {
   children: R.ReactNode
-  initialRegions?: Context["regions"] | (() => Context["regions"])
-  initialSelection?: Context["selection"] | (() => Context["selection"])
+  regions?: Context["regions"]
+  selection?: Context["selection"]
+  setRegions?: Context["setRegions"]
+  setSelection?: Context["setSelection"]
 }
 
 export function Provider(props: ProviderProps) {
+  // contexts
   const { input } = Input.useContext()
   const axis = Axis.useContext()
-  const [regions, setRegions] = R.useState(
-    props.initialRegions ?? defaultContext.regions,
-  )
-  const [selection, setSelection] = R.useState(
-    props.initialSelection ?? defaultContext.selection,
-  )
+
+  // regions controlled/uncontrolled
+  const [_regions, _setRegions] = R.useState(defaultContext.regions)
+  const [regions, setRegions] =
+    props.regions && props.setRegions
+      ? [props.regions, props.setRegions]
+      : [_regions, _setRegions]
+
+  // selection controlled/uncontrolled
+  const [_selection, _setSelection] = R.useState(defaultContext.selection)
+  const [selection, setSelection] =
+    props.selection && props.setSelection
+      ? [props.selection, props.setSelection]
+      : [_selection, _setSelection]
 
   // biome-ignore lint/correctness/useExhaustiveDependencies:  props.axes specified
   const updateRegion = R.useCallback(
@@ -124,6 +135,7 @@ export function Provider(props: ProviderProps) {
     [axis],
   )
 
+  // commands
   const annotate: Context["annotate"] = R.useCallback(
     (rect, unit, xaxis, yaxis) => {
       const id = Format.randomBytes(10)
@@ -137,10 +149,10 @@ export function Provider(props: ProviderProps) {
       )
       setSelection(new Set([id]))
     },
-    [],
+    [setRegions, setSelection],
   )
 
-  const _delete: Context["delete"] = R.useCallback(() => {
+  const delete_: Context["delete"] = R.useCallback(() => {
     setRegions(
       prev =>
         new Map(
@@ -151,11 +163,11 @@ export function Provider(props: ProviderProps) {
         ),
     )
     setSelection(new Set())
-  }, [selection])
+  }, [selection, setRegions, setSelection])
 
   const deselect: Context["deselect"] = R.useCallback(() => {
     setSelection(new Set())
-  }, [])
+  }, [setSelection])
 
   const moveSelection: Context["moveSelection"] = R.useCallback(
     (dx, dy) => {
@@ -185,7 +197,7 @@ export function Provider(props: ProviderProps) {
           ),
       )
     },
-    [input, selection, updateRegion],
+    [input, selection, setRegions, updateRegion],
   )
 
   const selectArea: Context["selectArea"] = R.useCallback(
@@ -230,7 +242,7 @@ export function Provider(props: ProviderProps) {
         return nextState
       })
     },
-    [axis, input, regions],
+    [axis, input, regions, setSelection],
   )
 
   const selectPoint: Context["selectPoint"] = R.useCallback(
@@ -275,7 +287,7 @@ export function Provider(props: ProviderProps) {
         return nextState
       })
     },
-    [axis, input, regions],
+    [axis, input, regions, setSelection],
   )
 
   const setRectX: Context["setRectX"] = R.useCallback(
@@ -292,7 +304,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [setRegions, updateRegion],
   )
   const setRectX1: Context["setRectX1"] = R.useCallback(() => {
     // todo: implement
@@ -312,7 +324,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [setRegions, updateRegion],
   )
 
   const setRectY: Context["setRectY"] = R.useCallback(
@@ -329,7 +341,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [setRegions, updateRegion],
   )
 
   const setRectY1: Context["setRectY1"] = R.useCallback(
@@ -350,7 +362,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [setRegions, updateRegion],
   )
   const setRectY2: Context["setRectY2"] = R.useCallback(
     (region, dy) => {
@@ -366,13 +378,14 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [setRegions, updateRegion],
   )
 
+  // computed context
   const value: Context = R.useMemo(
     () => ({
       annotate,
-      delete: _delete,
+      delete: delete_,
       deselect,
       moveSelection,
       regions,
@@ -390,11 +403,13 @@ export function Provider(props: ProviderProps) {
     }),
     [
       annotate,
-      _delete,
+      delete_,
       deselect,
       moveSelection,
       regions,
+      regions,
       selectArea,
+      selection,
       selection,
       selectPoint,
       setRectX,
@@ -403,6 +418,8 @@ export function Provider(props: ProviderProps) {
       setRectY,
       setRectY1,
       setRectY2,
+      setRegions,
+      setSelection,
     ],
   )
 
