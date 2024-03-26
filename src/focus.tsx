@@ -25,7 +25,7 @@ export type ProviderProps = {
 }
 
 export function Provider(props: ProviderProps) {
-  const specviz = Specviz.useContext()
+  const regions = Specviz.useRegions()
   const [state, setState] = R.useState<State>({
     focusRegion: null,
   })
@@ -39,7 +39,7 @@ export function Provider(props: ProviderProps) {
   }
 
   const region = state.focusRegion
-    ? specviz.regions.get(state.focusRegion) ?? null
+    ? regions.regions.get(state.focusRegion) ?? null
     : null
 
   const fx: Audio2.FxContext.Context = R.useMemo(() => {

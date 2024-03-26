@@ -1,8 +1,8 @@
 import * as R from "react"
 import * as Axis from "./axis"
+import * as Input from "./input"
 import * as Mathx from "./mathx"
 import * as Rect from "./rect"
-import * as Specviz from "./specviz"
 import * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
@@ -31,7 +31,7 @@ function useMouse(props: {
   onContextMenu: (e: R.MouseEvent<SVGSVGElement>) => void
 }) {
   const { input, mousedown, mouseup, mouseRect, unitDown, unitUp } =
-    Specviz.useContext()
+    Input.useContext()
   const viewport = Viewport.useContext()
   return R.useMemo(() => {
     return {
@@ -180,7 +180,7 @@ function useMutableVector2() {
 }
 
 function useMutableCoord() {
-  return R.useMemo<Specviz.tcoord>(() => {
+  return R.useMemo<Input.tcoord>(() => {
     let absx = 0
     let absy = 0
     let relx = 0

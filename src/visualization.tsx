@@ -19,19 +19,11 @@ function Visualization(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const viewport = Viewport.useContext()
-  const {
-    command,
-    input,
-    mouseup,
-    mouseRect,
-    regions,
-    selection,
-    toolState,
-    unitDown,
-    unitUp,
-  } = Specviz.useContext()
   const audio = Audio2.useContext()
+  const { input, mouseup, mouseRect, toolState, unitDown, unitUp } =
+    Specviz.useInput()
+  const regions = Specviz.useRegions()
+  const viewport = Viewport.useContext()
   const svgRoot = R.useRef<SVGSVGElement>(null)
   const svgSelection = R.useRef<SVGRectElement>(null)
   const dimensions = Hooks.useDimensions(svgRoot)
@@ -83,10 +75,10 @@ function Visualization(props: {
             case "zoom":
               break
             case "pan":
-              if (selection.size == 0) {
+              if (regions.selection.size == 0) {
                 viewport.scroll(-dx, -dy)
               } else {
-                command.moveSelection(
+                regions.moveSelection(
                   dx / viewport.state.zoom.x,
                   dy / viewport.state.zoom.y,
                 )
@@ -96,9 +88,9 @@ function Visualization(props: {
         }
       },
       [
-        command,
         input,
-        selection,
+        regions.moveSelection,
+        regions.selection,
         toolState,
         viewport.scroll,
         viewport.state.zoom,
@@ -114,10 +106,10 @@ function Visualization(props: {
             // click
             switch (toolState) {
               case "annotate":
-                command.deselect()
+                regions.deselect()
                 break
               case "select":
-                command.selectPoint(mouseup.abs)
+                regions.selectPoint(mouseup.abs)
                 break
               case "zoom":
                 viewport.zoomPoint(mouseup.abs)
@@ -129,7 +121,7 @@ function Visualization(props: {
             // drag
             switch (toolState) {
               case "annotate":
-                command.annotate(
+                regions.annotate(
                   { ...mouseRect },
                   Rect.fromPoints(unitDown, unitUp),
                   props.xaxis,
@@ -137,7 +129,7 @@ function Visualization(props: {
                 )
                 break
               case "select":
-                command.selectArea(mouseRect)
+                regions.selectArea(mouseRect)
                 break
               case "zoom":
                 viewport.zoomArea(mouseRect)
@@ -148,22 +140,24 @@ function Visualization(props: {
           }
         }
         if (input.buttons & 2) {
-          // todo: command.seek
           audio.transport.seek(mouseup.abs.x * audio.buffer.duration)
         }
       },
       [
         audio.buffer.duration,
         audio.transport.seek,
-        command,
         input,
-        mouseup,
         mouseRect,
-        unitDown,
-        unitUp,
-        toolState,
+        mouseup,
         props.xaxis,
         props.yaxis,
+        regions.annotate,
+        regions.deselect,
+        regions.selectArea,
+        regions.selectPoint,
+        toolState,
+        unitDown,
+        unitUp,
         viewport.zoomArea,
         viewport.zoomPoint,
       ],
@@ -215,13 +209,13 @@ function Visualization(props: {
               width="100%"
               height="100%"
             />
-            {Array.from(regions.values(), region => (
+            {Array.from(regions.regions.values(), region => (
               <Annotation
                 key={region.id}
                 children={props.children}
                 dimensions={dimensions}
                 region={region}
-                selected={selection.has(region.id)}
+                selected={regions.selection.has(region.id)}
                 xaxis={props.xaxis}
                 yaxis={props.yaxis}
               />

@@ -14,7 +14,8 @@ function Navigator(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const { regions, input, mouseup, mouseRect, toolState } = Specviz.useContext()
+  const { input, mouseup, mouseRect, toolState } = Specviz.useInput()
+  const { regions } = Specviz.useRegions()
   const containerRef = R.useRef<SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
   const viewport = Viewport.useContext()

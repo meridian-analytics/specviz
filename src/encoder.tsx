@@ -1,6 +1,6 @@
 import * as R from "react"
-import * as Specviz from "./specviz"
-import * as T from "./types"
+import * as Input from "./input"
+import * as Region from "./region"
 
 function Encoder(props: {
   state: number
@@ -8,22 +8,21 @@ function Encoder(props: {
   value: number
   unit: string
 }) {
-  const { state, setState, value, unit } = props
-  const { input } = Specviz.useContext()
+  const { input } = Input.useContext()
   const svgRef = R.useRef<SVGSVGElement>(null)
   const min = (5 * Math.PI) / 4
   const max = -Math.PI / 4
 
   const { x, y } = R.useMemo(() => {
-    const rad = min - state * (min - max)
+    const rad = min - props.state * (min - max)
     return { x: (Math.cos(rad) * 4) / 5, y: (-Math.sin(rad) * 4) / 5 }
-  }, [state, min, max])
+  }, [props.state, min, max])
 
   R.useEffect(() => {
     function onWheel(e: WheelEvent) {
       e.preventDefault()
       const dy = e.deltaY / (input.ctrl ? 10000 : 1000)
-      setState(dy)
+      props.setState(dy)
     }
     if (svgRef.current) {
       svgRef.current.addEventListener("wheel", onWheel, { passive: false })
@@ -33,7 +32,7 @@ function Encoder(props: {
         svgRef.current.removeEventListener("wheel", onWheel)
       }
     }
-  }, [input, setState])
+  }, [input, props.setState])
 
   return (
     <svg ref={svgRef} width="60" height="60" viewBox="-1.1 -1.1 2.2 2.2">
@@ -50,77 +49,77 @@ function Encoder(props: {
         textAnchor="middle"
         x="0"
         y="0.15"
-        children={value.toFixed(2)}
+        children={props.value.toFixed(2)}
       />
       <text
         className="encoder-text"
         textAnchor="middle"
         x="0"
         y="0.45"
-        children={unit}
+        children={props.unit}
       />
     </svg>
   )
 }
 
-Encoder.X = function EncoderX(region: T.tregion) {
-  const { command, regionCache } = Specviz.useContext()
-  const rect = regionCache.get(region.id)
+Encoder.X = function EncoderX(region: Region.Region) {
+  const regions = Region.useContext()
+  const rect = regions.regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
   }
   return (
     <Encoder
       state={rect.x}
-      setState={v => command.setRectX(region, v)}
+      setState={v => regions.setRectX(region, v)}
       value={region.x}
       unit={region.xunit}
     />
   )
 }
 
-Encoder.X2 = function EncoderX2(region: T.tregion) {
-  const { command, regionCache } = Specviz.useContext()
-  const rect = regionCache.get(region.id)
+Encoder.X2 = function EncoderX2(region: Region.Region) {
+  const regions = Region.useContext()
+  const rect = regions.regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
   }
   return (
     <Encoder
       state={rect.width}
-      setState={v => command.setRectX2(region, v)}
+      setState={v => regions.setRectX2(region, v)}
       value={region.width}
       unit={region.xunit}
     />
   )
 }
 
-Encoder.Y1 = function EncoderY1(region: T.tregion) {
-  const { command, regionCache } = Specviz.useContext()
-  const rect = regionCache.get(region.id)
+Encoder.Y1 = function EncoderY1(region: Region.Region) {
+  const regions = Region.useContext()
+  const rect = regions.regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
   }
   return (
     <Encoder
       state={1 - rect.y}
-      setState={v => command.setRectY1(region, v)}
+      setState={v => regions.setRectY1(region, v)}
       value={region.y + region.height}
       unit={region.yunit}
     />
   )
 }
 
-Encoder.Y2 = function EncoderY2(region: T.tregion) {
-  const { command, regionCache } = Specviz.useContext()
-  const rect = regionCache.get(region.id)
+Encoder.Y2 = function EncoderY2(region: Region.Region) {
+  const regions = Region.useContext()
+  const rect = regions.regionCache.get(region.id)
   if (rect == null) {
     return <p>Cache Error</p>
   }
   return (
     <Encoder
       state={1 - rect.y - rect.height}
-      setState={v => command.setRectY2(region, v)}
+      setState={v => regions.setRectY2(region, v)}
       value={region.y}
       unit={region.yunit}
     />

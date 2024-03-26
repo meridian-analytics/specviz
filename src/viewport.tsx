@@ -61,7 +61,7 @@ type ProviderProps = {
 }
 
 export function Provider(props: ProviderProps) {
-  const specviz = Specviz.useContext()
+  const input = Specviz.useInput()
   const [state, setState] = React.useState(defaultContext.state)
 
   const resetView: Context["resetView"] = React.useCallback(() => {
@@ -137,12 +137,12 @@ export function Provider(props: ProviderProps) {
           zoom: { x: zx, y: zy },
           scroll: {
             x: Mathx.clamp(
-              specviz.mousedown.abs.x * zx - specviz.mousedown.rel.x,
+              input.mousedown.abs.x * zx - input.mousedown.rel.x,
               0,
               zx - 1,
             ),
             y: Mathx.clamp(
-              specviz.mousedown.abs.y * zy - specviz.mousedown.rel.y,
+              input.mousedown.abs.y * zy - input.mousedown.rel.y,
               0,
               zy - 1,
             ),
@@ -150,7 +150,7 @@ export function Provider(props: ProviderProps) {
         }
       })
     },
-    [specviz.mousedown.abs, specviz.mousedown.rel],
+    [input.mousedown.abs, input.mousedown.rel],
   )
 
   const value = React.useMemo<Context>(

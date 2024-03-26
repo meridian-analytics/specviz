@@ -1,0 +1,440 @@
+import * as R from "react"
+import * as Axis from "./axis"
+import * as Format from "./format"
+import * as Input from "./input"
+import * as Mathx from "./mathx"
+import * as Rect from "./rect"
+import * as Vector2 from "./vector2"
+
+export interface Region {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+  xunit: string
+  yunit: string
+}
+
+export type Regions = Map<Region["id"], Region>
+
+export type Selection = Set<Region["id"]>
+
+export type Context = {
+  annotate: (
+    rect: Rect.trect,
+    unit: Rect.trect,
+    xaxis: Axis.taxis,
+    yaxis: Axis.taxis,
+  ) => void
+  delete: () => void
+  deselect: () => void
+  moveSelection: (dx: number, dy: number) => void
+  regions: Regions
+  regionCache: Map<Region["id"], Rect.trect>
+  selectArea: (rect: Rect.trect) => void
+  selection: Selection
+  selectPoint: (pt: Vector2.tvector2) => void
+  setRectX: (region: Region, dx: number) => void
+  setRectX1: (region: Region, dx: number) => void
+  setRectX2: (region: Region, dx: number) => void
+  setRectY: (region: Region, dy: number) => void
+  setRectY1: (region: Region, dy: number) => void
+  setRectY2: (region: Region, dy: number) => void
+  setRegions: R.Dispatch<R.SetStateAction<Regions>>
+  setSelection: R.Dispatch<R.SetStateAction<Selection>>
+}
+
+const defaultContext: Context = {
+  annotate() {
+    throw Error("annotate called outside of context")
+  },
+  delete() {
+    throw Error("delete called outside of context")
+  },
+  deselect() {
+    throw Error("deselect called outside of context")
+  },
+  moveSelection() {
+    throw Error("moveSelection called outside of context")
+  },
+  regionCache: new Map(),
+  regions: new Map(),
+  selectArea() {
+    throw Error("selectArea called outside of context")
+  },
+  selection: new Set(),
+  selectPoint() {
+    throw Error("selectPoint called outside of context")
+  },
+  setRectX() {
+    throw Error("setRectX called outside of context")
+  },
+  setRectX1() {
+    throw Error("setRectX1 called outside of context")
+  },
+  setRectX2() {
+    throw Error("setRectX2 called outside of context")
+  },
+  setRectY() {
+    throw Error("setRectY called outside of context")
+  },
+  setRectY1() {
+    throw Error("setRectY1 called outside of context")
+  },
+  setRectY2() {
+    throw Error("setRectY2 called outside of context")
+  },
+  setRegions() {
+    throw Error("setRegions called outside of context")
+  },
+  setSelection() {
+    throw Error("setSelection called outside of context")
+  },
+}
+
+const Context = R.createContext(defaultContext)
+
+export type ProviderProps = {
+  children: R.ReactNode
+  initialRegions?: Context["regions"] | (() => Context["regions"])
+  initialSelection?: Context["selection"] | (() => Context["selection"])
+}
+
+export function Provider(props: ProviderProps) {
+  const { input } = Input.useContext()
+  const axis = Axis.useContext()
+  const [regions, setRegions] = R.useState(
+    props.initialRegions ?? defaultContext.regions,
+  )
+  // biome-ignore lint/correctness/useExhaustiveDependencies: props.regions and props.axes specified
+  const regionCache = R.useMemo(
+    () =>
+      new Map(
+        Array.from(regions.values(), r => {
+          const x = axis[r.xunit]
+          const y = axis[r.yunit]
+          if (x == null) {
+            throw Error(`axis not found: ${r.xunit}`, axis)
+          }
+          if (y == null) {
+            throw Error(`axis not found: ${r.yunit}`, axis)
+          }
+          return [r.id, Axis.computeRectInverse(x, y, r)] // bug: r.xunit and r.yunit needs to be compute on *all* axes with the same unit
+        }),
+      ),
+    [regions, axis],
+  )
+  const [selection, setSelection] = R.useState(
+    props.initialSelection ?? defaultContext.selection,
+  )
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies:  props.axes specified
+  const updateRegion = R.useCallback(
+    (p: Region, func: (prev: Rect.trect) => Rect.trect) => {
+      const x = axis[p.xunit]
+      const y = axis[p.yunit]
+      if (x == null) throw Error(`axis not found: ${p.xunit}`)
+      if (y == null) throw Error(`axis not found: ${p.yunit}`)
+      return {
+        ...p,
+        ...Axis.computeRect(x, y, func(Axis.computeRectInverse(x, y, p))),
+      }
+    },
+    [axis],
+  )
+
+  const annotate: Context["annotate"] = R.useCallback(
+    (rect, unit, xaxis, yaxis) => {
+      const id = Format.randomBytes(10)
+      setRegions(prev =>
+        new Map(prev).set(id, {
+          id,
+          ...unit,
+          xunit: xaxis.unit,
+          yunit: yaxis.unit,
+        }),
+      )
+      setSelection(new Set([id]))
+    },
+    [],
+  )
+
+  const _delete: Context["delete"] = R.useCallback(() => {
+    setRegions(
+      prev =>
+        new Map(
+          (function* () {
+            for (const [id, region] of prev.entries())
+              if (!selection.has(id)) yield [id, region]
+          })(),
+        ),
+    )
+    setSelection(new Set())
+  }, [selection])
+
+  const deselect: Context["deselect"] = R.useCallback(() => {
+    setSelection(new Set())
+  }, [])
+
+  const moveSelection: Context["moveSelection"] = R.useCallback(
+    (dx, dy) => {
+      setRegions(
+        prev =>
+          new Map(
+            Array.from(prev, ([id, region]) => {
+              if (!selection.has(id)) return [id, region]
+              return [
+                id,
+                updateRegion(region, rect => ({
+                  x: Mathx.clamp(
+                    rect.x + (input.xaxis?.unit == region.xunit ? dx : 0),
+                    0,
+                    1 - rect.width,
+                  ),
+                  y: Mathx.clamp(
+                    rect.y + (input.yaxis?.unit == region.yunit ? dy : 0),
+                    0,
+                    1 - rect.height,
+                  ),
+                  width: rect.width,
+                  height: rect.height,
+                })),
+              ]
+            }),
+          ),
+      )
+    },
+    [input, selection, updateRegion],
+  )
+
+  const selectArea: Context["selectArea"] = R.useCallback(
+    area => {
+      setSelection(prev => {
+        if (input.ctrl) {
+          const nextState: Selection = new Set(prev)
+          for (const r of regions.values()) {
+            const u = regionCache.get(r.id)
+            if (
+              u &&
+              Rect.intersectRect(
+                Rect.logical(
+                  u,
+                  input.xaxis?.unit == r.xunit,
+                  input.yaxis?.unit == r.yunit,
+                ),
+                area,
+              )
+            ) {
+              if (nextState.has(r.id)) nextState.delete(r.id)
+              else nextState.add(r.id)
+            }
+          }
+          return nextState
+        }
+        const nextState: Selection = new Set()
+        for (const r of regions.values()) {
+          const u = regionCache.get(r.id)
+          if (
+            u &&
+            Rect.intersectRect(
+              Rect.logical(
+                u,
+                input.xaxis?.unit == r.xunit,
+                input.yaxis?.unit == r.yunit,
+              ),
+              area,
+            )
+          ) {
+            nextState.add(r.id)
+          }
+        }
+        return nextState
+      })
+    },
+    [input, regions, regionCache],
+  )
+
+  const selectPoint: Context["selectPoint"] = R.useCallback(
+    pt => {
+      setSelection(prevState => {
+        if (input.ctrl) {
+          const nextState: Selection = new Set(prevState)
+          for (const r of regions.values()) {
+            const u = regionCache.get(r.id)
+            if (
+              u &&
+              Rect.intersectPoint(
+                Rect.logical(
+                  u,
+                  input.xaxis?.unit == r.xunit,
+                  input.yaxis?.unit == r.yunit,
+                ),
+                pt,
+              )
+            ) {
+              if (nextState.has(r.id)) nextState.delete(r.id)
+              else nextState.add(r.id)
+            }
+          }
+          return nextState
+        }
+        const nextState: Selection = new Set()
+        for (const r of regions.values()) {
+          const u = regionCache.get(r.id)
+          if (
+            u &&
+            Rect.intersectPoint(
+              Rect.logical(
+                u,
+                input.xaxis?.unit == r.xunit,
+                input.yaxis?.unit == r.yunit,
+              ),
+              pt,
+            )
+          ) {
+            nextState.add(r.id)
+          }
+        }
+        return nextState
+      })
+    },
+    [input, regions, regionCache],
+  )
+
+  const setRectX: Context["setRectX"] = R.useCallback(
+    (region, dx) => {
+      setRegions(prev =>
+        new Map(prev).set(
+          region.id,
+          updateRegion(region, rect => ({
+            x: Mathx.clamp(rect.x + dx, 0, 1 - rect.width),
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+          })),
+        ),
+      )
+    },
+    [updateRegion],
+  )
+  const setRectX1: Context["setRectX1"] = R.useCallback(() => {
+    // todo: implement
+  }, [])
+
+  const setRectX2: Context["setRectX2"] = R.useCallback(
+    (region, dx) => {
+      setRegions(prev =>
+        new Map(prev).set(
+          region.id,
+          updateRegion(region, rect => ({
+            x: rect.x,
+            y: rect.y,
+            width: Mathx.clamp(rect.width + dx, 0.01, 1 - rect.x),
+            height: rect.height,
+          })),
+        ),
+      )
+    },
+    [updateRegion],
+  )
+
+  const setRectY: Context["setRectY"] = R.useCallback(
+    (region, dy) => {
+      setRegions(prev =>
+        new Map(prev).set(
+          region.id,
+          updateRegion(region, rect => ({
+            x: rect.x,
+            y: Mathx.clamp(rect.y + dy, 0, 1 - rect.height),
+            width: rect.width,
+            height: rect.height,
+          })),
+        ),
+      )
+    },
+    [updateRegion],
+  )
+
+  const setRectY1: Context["setRectY1"] = R.useCallback(
+    (region, dy) => {
+      setRegions(prev =>
+        new Map(prev).set(
+          region.id,
+          updateRegion(region, rect => ({
+            x: rect.x,
+            y: Mathx.clamp(rect.y + dy, 0, rect.y + rect.height - 0.01),
+            width: rect.width,
+            height: Mathx.clamp(
+              rect.height - Math.max(dy, -rect.y),
+              0.01,
+              1 - rect.y,
+            ),
+          })),
+        ),
+      )
+    },
+    [updateRegion],
+  )
+  const setRectY2: Context["setRectY2"] = R.useCallback(
+    (region, dy) => {
+      setRegions(prev =>
+        new Map(prev).set(
+          region.id,
+          updateRegion(region, rect => ({
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: Mathx.clamp(rect.height + dy, 0.01, 1 - rect.y),
+          })),
+        ),
+      )
+    },
+    [updateRegion],
+  )
+
+  const value: Context = R.useMemo(
+    () => ({
+      annotate,
+      delete: _delete,
+      deselect,
+      moveSelection,
+      regionCache,
+      regions,
+      selectArea,
+      selection,
+      selectPoint,
+      setRectX,
+      setRectX1,
+      setRectX2,
+      setRectY,
+      setRectY1,
+      setRectY2,
+      setRegions,
+      setSelection,
+    }),
+    [
+      annotate,
+      _delete,
+      deselect,
+      moveSelection,
+      regionCache,
+      regions,
+      selectArea,
+      selection,
+      selectPoint,
+      setRectX,
+      setRectX1,
+      setRectX2,
+      setRectY,
+      setRectY1,
+      setRectY2,
+    ],
+  )
+
+  return <Context.Provider children={props.children} value={value} />
+}
+
+export function useContext() {
+  return R.useContext(Context)
+}

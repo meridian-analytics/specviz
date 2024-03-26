@@ -2,7 +2,7 @@ import * as R from "react"
 import * as Axis from "./axis"
 import * as Format from "./format"
 import * as Hooks from "./hooks"
-import * as Specviz from "./specviz"
+import * as Input from "./input"
 import * as Svg from "./svg"
 
 function Cursor(props: {
@@ -10,7 +10,7 @@ function Cursor(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const { input, mouseup, unitUp } = Specviz.useContext()
+  const { input, mouseup, unitUp } = Input.useContext()
   const svgLayer = R.useRef<SVGGElement>(null)
   const svgXline = R.useRef<SVGLineElement>(null)
   const svgYline = R.useRef<SVGLineElement>(null)

@@ -97,10 +97,8 @@ export default function MyComponent() {
     [data.duration],
   )
 
-  const [regions, setRegions] = React.useState(initRegions)
-
   return (
-    <Specviz.Provider axes={axes} regions={regions} setRegions={setRegions}>
+    <Specviz.Provider axes={axes} initialRegions={initRegions}>
       <Focus.Provider>
         <Audio.Provider url={data.audio}>
           <MyKeybinds />
@@ -123,35 +121,8 @@ export default function MyComponent() {
           <div id="app">
             <main>
               <Specviz.Viewport.Provider>
-                <Specviz.Navigator
-                  src={data.spectrogram}
-                  xaxis={axes.seconds}
-                  yaxis={axes.hertz}
-                />
-                <Specviz.Visualization
-                  children={MyAnnotationSvg}
-                  src={data.spectrogram}
-                  xaxis={axes.seconds}
-                  yaxis={axes.hertz}
-                />
-                <Specviz.Viewport.Transform
-                  fn={state => ({
-                    scroll: { x: state.scroll.x, y: 0 },
-                    zoom: { x: state.zoom.x, y: 1 },
-                  })}
-                >
-                  <Specviz.Visualization
-                    children={MyAnnotationSvg}
-                    src={data.waveform}
-                    xaxis={axes.seconds}
-                    yaxis={axes.percent}
-                  />
-                  <Specviz.Navigator
-                    src={data.waveform}
-                    xaxis={axes.seconds}
-                    yaxis={axes.percent}
-                  />
-                </Specviz.Viewport.Transform>
+                <MySpectrogram src={data.spectrogram} />
+                <MyWaveform src={data.waveform} />
                 <MyAudioControls />
               </Specviz.Viewport.Provider>
             </main>
@@ -160,6 +131,53 @@ export default function MyComponent() {
         </Audio.Provider>
       </Focus.Provider>
     </Specviz.Provider>
+  )
+}
+
+function MySpectrogram(props: { src: string }) {
+  const axis = Axis.useContext()
+  if (axis.seconds == null) throw Error("axis not found: seconds")
+  if (axis.hertz == null) throw Error("axis not found: hertz")
+  return (
+    <React.Fragment>
+      <Specviz.Navigator
+        src={props.src}
+        xaxis={axis.seconds}
+        yaxis={axis.hertz}
+      />
+      <Specviz.Visualization
+        children={MyAnnotationSvg}
+        src={props.src}
+        xaxis={axis.seconds}
+        yaxis={axis.hertz}
+      />
+    </React.Fragment>
+  )
+}
+
+function MyWaveform(props: { src: string }) {
+  const axis = Axis.useContext()
+  if (axis.seconds == null) throw Error("axis not found: seconds")
+  if (axis.percent == null) throw Error("axis not found: percent")
+  return (
+    <Specviz.Viewport.Transform
+      fn={state => ({
+        scroll: { x: state.scroll.x, y: 0 },
+        zoom: { x: state.zoom.x, y: 1 },
+      })}
+    >
+      <Specviz.Visualization
+        children={MyAnnotationSvg}
+        src={props.src}
+        xaxis={axis.seconds}
+        yaxis={axis.percent}
+      />
+      <Specviz.Navigator
+        src={props.src}
+        xaxis={axis.seconds}
+        yaxis={axis.percent}
+      />
+    </Specviz.Viewport.Transform>
   )
 }
 
@@ -192,7 +210,7 @@ function MyAnnotationSvg(props: Specviz.AnnotationProps) {
 }
 
 function MyAudioControls() {
-  const { command, toolState } = Specviz.useContext()
+  const input = Specviz.useInput()
   const audio = Audio.useContext()
   const focus = Focus.useContext()
   return (
@@ -200,29 +218,29 @@ function MyAudioControls() {
       <button
         title="A"
         type="button"
-        onClick={_ => command.tool("annotate")}
-        className={toolState === "annotate" ? "active" : ""}
+        onClick={_ => input.setToolState("annotate")}
+        className={input.toolState === "annotate" ? "active" : ""}
         children="Annotate"
       />
       <button
         title="S"
         type="button"
-        onClick={_ => command.tool("select")}
-        className={toolState === "select" ? "active" : ""}
+        onClick={_ => input.setToolState("select")}
+        className={input.toolState === "select" ? "active" : ""}
         children="Select"
       />
       <button
         title="D"
         type="button"
-        onClick={_ => command.tool("zoom")}
-        className={toolState === "zoom" ? "active" : ""}
+        onClick={_ => input.setToolState("zoom")}
+        className={input.toolState === "zoom" ? "active" : ""}
         children="Zoom"
       />
       <button
         title="F"
         type="button"
-        onClick={_ => command.tool("pan")}
-        className={toolState === "pan" ? "active" : ""}
+        onClick={_ => input.setToolState("pan")}
+        className={input.toolState === "pan" ? "active" : ""}
         children="Pan"
       />
       <br />
@@ -248,45 +266,52 @@ function MyAudioControls() {
 }
 
 function MyKeybinds() {
-  const { command } = Specviz.useContext()
+  const input = Specviz.useInput()
+  const region = Specviz.useRegions()
   const focus = Focus.useContext()
   const audio = Audio.useContext()
   return (
     <Specviz.Bindings>
-      <Specviz.Keypress bind="Backspace" onKeyDown={command.delete} />
-      <Specviz.Keypress bind="Escape" onKeyDown={command.deselect} />
+      <Specviz.Keypress bind="Backspace" onKeyDown={region.delete} />
+      <Specviz.Keypress bind="Escape" onKeyDown={region.deselect} />
       <Specviz.Keypress
         bind="ArrowLeft"
         onKeyDown={e => {
           e.preventDefault()
-          command.moveSelection(-0.01, 0)
+          region.moveSelection(-0.01, 0)
         }}
       />
       <Specviz.Keypress
         bind="ArrowRight"
         onKeyDown={e => {
           e.preventDefault()
-          command.moveSelection(0.01, 0)
+          region.moveSelection(0.01, 0)
         }}
       />
       <Specviz.Keypress
         bind="ArrowUp"
         onKeyDown={e => {
           e.preventDefault()
-          command.moveSelection(0, -0.03)
+          region.moveSelection(0, -0.03)
         }}
       />
       <Specviz.Keypress
         bind="ArrowDown"
         onKeyDown={e => {
           e.preventDefault()
-          command.moveSelection(0, 0.03)
+          region.moveSelection(0, 0.03)
         }}
       />
-      <Specviz.Keypress bind="a" onKeyDown={() => command.tool("annotate")} />
-      <Specviz.Keypress bind="s" onKeyDown={() => command.tool("select")} />
-      <Specviz.Keypress bind="d" onKeyDown={() => command.tool("zoom")} />
-      <Specviz.Keypress bind="f" onKeyDown={() => command.tool("pan")} />
+      <Specviz.Keypress
+        bind="a"
+        onKeyDown={() => input.setToolState("annotate")}
+      />
+      <Specviz.Keypress
+        bind="s"
+        onKeyDown={() => input.setToolState("select")}
+      />
+      <Specviz.Keypress bind="d" onKeyDown={() => input.setToolState("zoom")} />
+      <Specviz.Keypress bind="f" onKeyDown={() => input.setToolState("pan")} />
       <Specviz.Keypress bind="z" onKeyDown={() => audio.transport.play()} />
       <Specviz.Keypress
         bind="x"
@@ -300,7 +325,7 @@ function MyKeybinds() {
 }
 
 function MyAnnotations() {
-  const { regions, selection } = Specviz.useContext()
+  const { regions, selection } = Specviz.useRegions()
   return selection.size > 0 ? (
     <aside>
       {Array.from(selection).map(id => (

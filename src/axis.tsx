@@ -195,8 +195,21 @@ function Horizontal(props: AxisProps) {
   )
 }
 
+type Context = Record<string, undefined | taxis>
+
+const defaultContext: Context = {}
+
+const Context = R.createContext(defaultContext)
+
+const Provider = Context.Provider
+
+function useContext() {
+  return R.useContext(Context)
+}
+
 export {
   type AxisProps,
+  type Context,
   type taxis,
   computeRect,
   computeRectInverse,
@@ -206,4 +219,6 @@ export {
   Horizontal,
   linear,
   nonlinear,
+  Provider,
+  useContext,
 }
