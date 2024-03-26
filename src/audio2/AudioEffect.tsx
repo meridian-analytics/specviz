@@ -5,6 +5,11 @@ import * as FxContext from "./FxContext"
 import * as TransportContext from "./TransportContext"
 
 export default function AudioEffect() {
+  const transport = TransportContext.useContext()
+  return transport.state.pause ? <R.Fragment /> : <PlayEffect />
+}
+
+function PlayEffect() {
   const audioContext = AudioContext.useContext()
   const buffer = BufferContext.useContext()
   const fx = FxContext.useContext()
@@ -86,6 +91,23 @@ export default function AudioEffect() {
     fx.loop?.[0],
     fx.loop?.[1],
   ])
+
+  // when seek goes out of bounds, restart loop
+  R.useEffect(() => {
+    const seek = transport.getSeek(transport.state)
+    if (fx.loop && (seek < fx.loop[0] || seek > fx.loop[1])) {
+      transport.play(fx.loop[0])
+    }
+  }, [
+    audioContext,
+    fx.loop,
+    fx.loop?.[0],
+    fx.loop?.[1],
+    transport.getSeek,
+    transport.play,
+    transport.state,
+  ])
+
   // render empty node
   return <R.Fragment />
 }

@@ -9,21 +9,18 @@ import * as Specviz from "../src/index"
 
 type tsegment = {
   audio: string
-  duration: number
   spectrogram: string
   waveform: string
 }
 
 const segment1: tsegment = {
   audio: "./audio.wav",
-  duration: 44.416,
   spectrogram: "./spectrogram.png",
   waveform: "./waveform.png",
 }
 
 const segment2: tsegment = {
   audio: "./audio2.wav",
-  duration: 44.416,
   spectrogram: "./spectrogram.png",
   waveform: "./waveform.png",
 }
@@ -77,11 +74,43 @@ function Duration() {
   return <React.Fragment>({audio.buffer.duration})</React.Fragment>
 }
 
-export default function MyComponent() {
+export default function MyApp() {
   const [data, setData] = React.useState(segment1)
+  return (
+    <Audio.Provider url={data.audio}>
+      <div style={{ padding: 20, backgroundColor: "#E8FDF5" }}>
+        <h3>specviz-react</h3>
+        <div className="segments">
+          <button
+            type="button"
+            onClick={_ => setData(segment1)}
+            children={segment1.audio}
+          />
+          <button
+            type="button"
+            onClick={_ => setData(segment2)}
+            children={segment2.audio}
+          />
+          <p>
+            {data.audio} <Duration />
+          </p>
+        </div>
+        <MyVisualizer {...data} />
+      </div>
+    </Audio.Provider>
+  )
+}
+
+function MyVisualizer(props: tsegment) {
+  const audio = Audio.useContext()
   const axes: Specviz.Axes = React.useMemo(
     () => ({
-      seconds: Axis.linear(0, data.duration, "seconds", Format.timestamp),
+      seconds: Axis.linear(
+        0,
+        audio.buffer.duration,
+        "seconds",
+        Format.timestamp,
+      ),
       hertz: Axis.linear(20000, 0, "hertz", Format.hz),
       percent: Axis.nonlinear(
         [
@@ -93,7 +122,7 @@ export default function MyComponent() {
         Format.percent,
       ),
     }),
-    [data.duration],
+    [audio.buffer.duration],
   )
   const [regions, setRegions] = React.useState(initRegions)
   const [selection, setSelection] = React.useState<Specviz.Selection>(new Set())
@@ -107,35 +136,17 @@ export default function MyComponent() {
       setSelection={setSelection}
     >
       <Focus.Provider>
-        <Audio.Provider url={data.audio}>
-          <MyKeybinds />
-          <h3>specviz-react</h3>
-          <div className="segments">
-            <button
-              type="button"
-              onClick={_ => setData(segment1)}
-              children={segment1.audio}
-            />
-            <button
-              type="button"
-              onClick={_ => setData(segment2)}
-              children={segment2.audio}
-            />
-            <p>
-              {data.audio} <Duration />
-            </p>
-          </div>
-          <div id="app">
-            <main>
-              <Specviz.Viewport.Provider>
-                <MySpectrogram src={data.spectrogram} />
-                <MyWaveform src={data.waveform} />
-                <MyAudioControls />
-              </Specviz.Viewport.Provider>
-            </main>
-            <MyAnnotations />
-          </div>
-        </Audio.Provider>
+        <div id="app">
+          <main>
+            <Specviz.Viewport.Provider>
+              <MySpectrogram src={props.spectrogram} />
+              <MyWaveform src={props.waveform} />
+              <MyAudioControls />
+            </Specviz.Viewport.Provider>
+          </main>
+          <MyAnnotations />
+        </div>
+        <MyKeybinds />
       </Focus.Provider>
     </Specviz.Provider>
   )
@@ -413,9 +424,7 @@ function Fallback(props: Reb.FallbackProps) {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Reb.ErrorBoundary FallbackComponent={Fallback}>
-      <div style={{ padding: 20, backgroundColor: "#E8FDF5" }}>
-        <MyComponent />
-      </div>
+      <MyApp />
     </Reb.ErrorBoundary>
   </React.StrictMode>,
 )

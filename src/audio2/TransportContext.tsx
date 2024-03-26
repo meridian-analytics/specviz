@@ -1,7 +1,5 @@
 import * as R from "react"
 import * as AudioContext from "./AudioContext"
-import AudioEffect from "./AudioEffect"
-import * as FxContext from "./FxContext"
 
 export type State = {
   pause: boolean
@@ -45,7 +43,6 @@ type ProviderProps = {
 
 export function Provider(props: ProviderProps) {
   const audioContext = AudioContext.useContext()
-  const fx = FxContext.useContext()
   const [state, setState] = R.useState(() => defaultContext.state)
 
   const play: Context["play"] = seek => {
@@ -81,20 +78,6 @@ export function Provider(props: ProviderProps) {
     return state.pause ? state.seek : audioContext.currentTime - state.timecode
   }
 
-  R.useEffect(() => {
-    setState(prev => {
-      const seek = getSeek(prev)
-      if (fx.loop && (seek < fx.loop[0] || seek > fx.loop[1])) {
-        return {
-          pause: prev.pause,
-          seek: fx.loop[0],
-          timecode: audioContext.currentTime - fx.loop[0],
-        }
-      }
-      return prev
-    })
-  }, [audioContext, getSeek, fx.loop, fx.loop?.[0], fx.loop?.[1]])
-
   return (
     <Context.Provider
       value={{
@@ -105,7 +88,6 @@ export function Provider(props: ProviderProps) {
         getSeek,
       }}
     >
-      {!state.pause && <AudioEffect />}
       {props.children}
     </Context.Provider>
   )

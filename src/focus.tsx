@@ -59,7 +59,10 @@ export function Provider(props: ProviderProps) {
         setFocusRegion,
       }}
     >
-      <Audio2.FxContext.Provider children={props.children} value={fx} />
+      <Audio2.FxContext.Provider value={fx}>
+        <Audio2.AudioEffect />
+        {props.children}
+      </Audio2.FxContext.Provider>
     </Context.Provider>
   )
 }
