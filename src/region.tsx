@@ -31,7 +31,6 @@ export type Context = {
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
   regions: Regions
-  regionCache: Map<Region["id"], Rect.trect>
   selectArea: (rect: Rect.trect) => void
   selection: Selection
   selectPoint: (pt: Vector2.tvector2) => void
@@ -58,7 +57,6 @@ const defaultContext: Context = {
   moveSelection() {
     throw Error("moveSelection called outside of context")
   },
-  regionCache: new Map(),
   regions: new Map(),
   selectArea() {
     throw Error("selectArea called outside of context")
@@ -106,24 +104,6 @@ export function Provider(props: ProviderProps) {
   const axis = Axis.useContext()
   const [regions, setRegions] = R.useState(
     props.initialRegions ?? defaultContext.regions,
-  )
-  // biome-ignore lint/correctness/useExhaustiveDependencies: props.regions and props.axes specified
-  const regionCache = R.useMemo(
-    () =>
-      new Map(
-        Array.from(regions.values(), r => {
-          const x = axis[r.xunit]
-          const y = axis[r.yunit]
-          if (x == null) {
-            throw Error(`axis not found: ${r.xunit}`, axis)
-          }
-          if (y == null) {
-            throw Error(`axis not found: ${r.yunit}`, axis)
-          }
-          return [r.id, Axis.computeRectInverse(x, y, r)] // bug: r.xunit and r.yunit needs to be compute on *all* axes with the same unit
-        }),
-      ),
-    [regions, axis],
   )
   const [selection, setSelection] = R.useState(
     props.initialSelection ?? defaultContext.selection,
@@ -214,9 +194,8 @@ export function Provider(props: ProviderProps) {
         if (input.ctrl) {
           const nextState: Selection = new Set(prev)
           for (const r of regions.values()) {
-            const u = regionCache.get(r.id)
+            const u = computeRectInverse(r, axis)
             if (
-              u &&
               Rect.intersectRect(
                 Rect.logical(
                   u,
@@ -234,9 +213,8 @@ export function Provider(props: ProviderProps) {
         }
         const nextState: Selection = new Set()
         for (const r of regions.values()) {
-          const u = regionCache.get(r.id)
+          const u = computeRectInverse(r, axis)
           if (
-            u &&
             Rect.intersectRect(
               Rect.logical(
                 u,
@@ -252,7 +230,7 @@ export function Provider(props: ProviderProps) {
         return nextState
       })
     },
-    [input, regions, regionCache],
+    [axis, input, regions],
   )
 
   const selectPoint: Context["selectPoint"] = R.useCallback(
@@ -261,9 +239,8 @@ export function Provider(props: ProviderProps) {
         if (input.ctrl) {
           const nextState: Selection = new Set(prevState)
           for (const r of regions.values()) {
-            const u = regionCache.get(r.id)
+            const u = computeRectInverse(r, axis)
             if (
-              u &&
               Rect.intersectPoint(
                 Rect.logical(
                   u,
@@ -281,9 +258,8 @@ export function Provider(props: ProviderProps) {
         }
         const nextState: Selection = new Set()
         for (const r of regions.values()) {
-          const u = regionCache.get(r.id)
+          const u = computeRectInverse(r, axis)
           if (
-            u &&
             Rect.intersectPoint(
               Rect.logical(
                 u,
@@ -299,7 +275,7 @@ export function Provider(props: ProviderProps) {
         return nextState
       })
     },
-    [input, regions, regionCache],
+    [axis, input, regions],
   )
 
   const setRectX: Context["setRectX"] = R.useCallback(
@@ -399,7 +375,6 @@ export function Provider(props: ProviderProps) {
       delete: _delete,
       deselect,
       moveSelection,
-      regionCache,
       regions,
       selectArea,
       selection,
@@ -418,7 +393,6 @@ export function Provider(props: ProviderProps) {
       _delete,
       deselect,
       moveSelection,
-      regionCache,
       regions,
       selectArea,
       selection,
@@ -437,4 +411,12 @@ export function Provider(props: ProviderProps) {
 
 export function useContext() {
   return R.useContext(Context)
+}
+
+export function computeRectInverse(region: Region, axes: Axis.Context) {
+  const x = axes[region.xunit]
+  const y = axes[region.yunit]
+  if (x == null) throw Error(`axis not found: ${region.xunit}`)
+  if (y == null) throw Error(`axis not found: ${region.yunit}`)
+  return Axis.computeRectInverse(x, y, region)
 }

@@ -1,4 +1,5 @@
 import * as R from "react"
+import * as Axis from "./axis"
 import * as Input from "./input"
 import * as Region from "./region"
 
@@ -64,10 +65,8 @@ function Encoder(props: {
 
 Encoder.X = function EncoderX(region: Region.Region) {
   const regions = Region.useContext()
-  const rect = regions.regionCache.get(region.id)
-  if (rect == null) {
-    return <p>Cache Error</p>
-  }
+  const axis = Axis.useContext()
+  const rect = Region.computeRectInverse(region, axis)
   return (
     <Encoder
       state={rect.x}
@@ -80,10 +79,8 @@ Encoder.X = function EncoderX(region: Region.Region) {
 
 Encoder.X2 = function EncoderX2(region: Region.Region) {
   const regions = Region.useContext()
-  const rect = regions.regionCache.get(region.id)
-  if (rect == null) {
-    return <p>Cache Error</p>
-  }
+  const axis = Axis.useContext()
+  const rect = Region.computeRectInverse(region, axis)
   return (
     <Encoder
       state={rect.width}
@@ -96,10 +93,8 @@ Encoder.X2 = function EncoderX2(region: Region.Region) {
 
 Encoder.Y1 = function EncoderY1(region: Region.Region) {
   const regions = Region.useContext()
-  const rect = regions.regionCache.get(region.id)
-  if (rect == null) {
-    return <p>Cache Error</p>
-  }
+  const axis = Axis.useContext()
+  const rect = Region.computeRectInverse(region, axis)
   return (
     <Encoder
       state={1 - rect.y}
@@ -112,10 +107,8 @@ Encoder.Y1 = function EncoderY1(region: Region.Region) {
 
 Encoder.Y2 = function EncoderY2(region: Region.Region) {
   const regions = Region.useContext()
-  const rect = regions.regionCache.get(region.id)
-  if (rect == null) {
-    return <p>Cache Error</p>
-  }
+  const axis = Axis.useContext()
+  const rect = Region.computeRectInverse(region, axis)
   return (
     <Encoder
       state={1 - rect.y - rect.height}
