@@ -14,7 +14,10 @@ export interface Region {
   height: number
   xunit: string
   yunit: string
+  [key: string]: RegionValue
 }
+
+export type RegionValue = boolean | number | string | string[]
 
 export type Regions = Map<Region["id"], Region>
 
