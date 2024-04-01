@@ -11,18 +11,21 @@ type tsegment = {
   audio: string
   spectrogram: string
   waveform: string
+  offset: number
 }
 
 const segment1: tsegment = {
   audio: "./audio.wav",
   spectrogram: "./spectrogram.png",
   waveform: "./waveform.png",
+  offset: 0,
 }
 
 const segment2: tsegment = {
   audio: "./audio2.wav",
   spectrogram: "./spectrogram.png",
   waveform: "./waveform.png",
+  offset: 0,
 }
 
 const initRegions: Specviz.Regions = new Map([
@@ -36,6 +39,8 @@ const initRegions: Specviz.Regions = new Map([
       height: 6200,
       xunit: "seconds",
       yunit: "hertz",
+      additional: "sample one",
+      someField: 1,
     },
   ],
 
@@ -49,8 +54,8 @@ const initRegions: Specviz.Regions = new Map([
       height: 9200,
       xunit: "seconds",
       yunit: "hertz",
-      additional: "ok",
-      someField: 1,
+      additional: "sample two",
+      someField: 2,
     },
   ],
 
@@ -64,14 +69,19 @@ const initRegions: Specviz.Regions = new Map([
       height: 6100,
       xunit: "seconds",
       yunit: "hertz",
-      anyField: 123,
+      additional: "sample three",
+      someField: 3,
     },
   ],
 ])
 
 function Duration() {
   const audio = Audio.useContext()
-  return <React.Fragment>({audio.buffer.duration})</React.Fragment>
+  return (
+    <React.Fragment>
+      ({audio.buffer.duration.toFixed(2)} seconds)
+    </React.Fragment>
+  )
 }
 
 export default function MyApp() {
@@ -106,8 +116,8 @@ function MyVisualizer(props: tsegment) {
   const axes: Specviz.Axes = React.useMemo(
     () => ({
       seconds: Axis.linear(
-        0,
-        audio.buffer.duration,
+        props.offset + 0,
+        props.offset + audio.buffer.duration,
         "seconds",
         Format.timestamp,
       ),
@@ -122,7 +132,7 @@ function MyVisualizer(props: tsegment) {
         Format.percent,
       ),
     }),
-    [audio.buffer.duration],
+    [audio.buffer.duration, props.offset],
   )
   const [regions, setRegions] = React.useState(initRegions)
   const [selection, setSelection] = React.useState<Specviz.Selection>(new Set())
