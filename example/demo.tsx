@@ -1,6 +1,7 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom/client"
 import * as Reb from "react-error-boundary"
+import pkg from "../package.json"
 import * as Audio from "../src/audio2"
 import * as Axis from "../src/axis"
 import * as Focus from "../src/focus"
@@ -89,7 +90,7 @@ export default function MyApp() {
   return (
     <Audio.Provider url={data.audio}>
       <div style={{ padding: 20, backgroundColor: "#E8FDF5" }}>
-        <h3>specviz-react</h3>
+        <h3>specviz-react (version {pkg.version})</h3>
         <div className="segments">
           <button
             type="button"
