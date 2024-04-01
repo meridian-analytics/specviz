@@ -16,6 +16,7 @@ export type AnnotationProps = {
 
 function Annotation(props: AnnotationProps) {
   const viewport = Viewport.useContext()
+  // compute logical rect
   const lrect: Rect.trect = R.useMemo(() => {
     return Rect.logical(
       Axis.computeRectInverse(props.xaxis, props.yaxis, props.region),
@@ -23,6 +24,12 @@ function Annotation(props: AnnotationProps) {
       props.yaxis.unit == props.region.yunit,
     )
   }, [props.region, props.xaxis, props.yaxis])
+  // rect out of bounds (not on axis)
+  if (Number.isNaN(lrect.x)) return <R.Fragment />
+  if (Number.isNaN(lrect.y)) return <R.Fragment />
+  if (Number.isNaN(lrect.width)) return <R.Fragment />
+  if (Number.isNaN(lrect.height)) return <R.Fragment />
+  // viewbox
   const width = lrect.width * props.dimensions.x * viewport.state.zoom.x
   const height = lrect.height * props.dimensions.y * viewport.state.zoom.y
   const viewBox = `0 0 ${width} ${height}`
