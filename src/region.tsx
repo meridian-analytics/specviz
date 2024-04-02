@@ -4,7 +4,7 @@ import * as Format from "./format"
 import * as Input from "./input"
 import * as Mathx from "./mathx"
 import * as Rect from "./rect"
-import * as Vector2 from "./vector2"
+import type * as Vector2 from "./vector2"
 
 export interface Region {
   id: string
@@ -123,7 +123,6 @@ export function Provider(props: ProviderProps) {
       ? [props.selection, props.setSelection]
       : [_selection, _setSelection]
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies:  props.axes specified
   const updateRegion = R.useCallback(
     (p: Region, func: (prev: Rect.trect) => Rect.trect) => {
       const x = axis[p.xunit]

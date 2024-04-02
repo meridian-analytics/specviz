@@ -1,4 +1,4 @@
-import * as R from "react"
+import type * as R from "react"
 import * as Axis from "./axis"
 import * as Input from "./input"
 import * as Region from "./region"

@@ -83,9 +83,10 @@ function PlayEffect() {
     }
   }, [
     audioContext,
+    buffer,
     transport.play,
     transport.stop,
-    transport.state.seek,
+    transport.state.timecode,
     fx.hpf,
     fx.lpf,
     fx.loop?.[0],
@@ -99,7 +100,6 @@ function PlayEffect() {
       transport.play(fx.loop[0])
     }
   }, [
-    audioContext,
     fx.loop,
     fx.loop?.[0],
     fx.loop?.[1],

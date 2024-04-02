@@ -1,7 +1,7 @@
 import * as R from "react"
-import * as Axis from "./axis"
+import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
-import * as Rect from "./rect"
+import type * as Rect from "./rect"
 import * as Vector2 from "./vector2"
 
 export type tcoord = {

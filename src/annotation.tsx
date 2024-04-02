@@ -1,8 +1,8 @@
 import * as R from "react"
 import * as Axis from "./axis"
 import * as Rect from "./rect"
-import * as Region from "./region"
-import * as Vector2 from "./vector2"
+import type * as Region from "./region"
+import type * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
 export type AnnotationProps = {

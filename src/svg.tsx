@@ -1,5 +1,5 @@
-import * as Rect from "./rect"
-import * as Vector2 from "./vector2"
+import type * as Rect from "./rect"
+import type * as Vector2 from "./vector2"
 
 type tpositional = SVGLineElement | SVGRectElement | SVGTextElement
 

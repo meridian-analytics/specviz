@@ -1,8 +1,8 @@
 import * as React from "react"
 import * as Mathx from "./mathx"
-import * as Rect from "./rect"
+import type * as Rect from "./rect"
 import * as Specviz from "./specviz"
-import * as Vector2 from "./vector2"
+import type * as Vector2 from "./vector2"
 
 export type Context = {
   state: State

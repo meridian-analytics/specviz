@@ -1,6 +1,6 @@
 import * as R from "react"
 import * as Audio2 from "./audio2"
-import * as Axis from "./axis"
+import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
 import * as Svg from "./svg"
 

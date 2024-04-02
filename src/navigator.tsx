@@ -1,6 +1,6 @@
 import * as R from "react"
 import Annotation from "./annotation"
-import * as Axis from "./axis"
+import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
 import Playhead from "./playhead"
 import * as Specviz from "./specviz"

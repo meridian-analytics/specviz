@@ -1,6 +1,6 @@
 import * as R from "react"
 import * as Rect from "./rect"
-import * as Vector2 from "./vector2"
+import type * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
 type taxisunit = "hertz" | "seconds" | "percent"
@@ -18,9 +18,9 @@ type taxis = {
  * map value from unit space to user space
  */
 function computeUnit(t: taxis, q: number) {
-  if (t == null) return -Infinity
+  if (t == null) return Number.NEGATIVE_INFINITY
   const { intervals: s } = t
-  if (s.length < 2) return -Infinity
+  if (s.length < 2) return Number.NEGATIVE_INFINITY
   let ax: number
   let ay: number
   let bx: number
@@ -32,7 +32,7 @@ function computeUnit(t: taxis, q: number) {
     if (ax <= q && q <= bx) return ay + ((by - ay) * (q - ax)) / (bx - ax)
     i += 1
   }
-  return -Infinity
+  return Number.NEGATIVE_INFINITY
 }
 
 /**
@@ -40,9 +40,9 @@ function computeUnit(t: taxis, q: number) {
  * map value from user space to unit space
  */
 function computeUnitInverse(t: taxis, q: number): number {
-  if (t == null) return -Infinity
+  if (t == null) return Number.NEGATIVE_INFINITY
   const s = [...t.intervals].sort(([ax, ay], [bx, by]) => ay - by) // todo: memoize
-  if (s.length < 2) return -Infinity
+  if (s.length < 2) return Number.NEGATIVE_INFINITY
   let ax: number
   let ay: number
   let bx: number
@@ -54,7 +54,7 @@ function computeUnitInverse(t: taxis, q: number): number {
     if (ay <= q && q <= by) return ax + ((bx - ax) * (q - ay)) / (by - ay)
     i += 1
   }
-  return -Infinity
+  return Number.NEGATIVE_INFINITY
 }
 
 /**

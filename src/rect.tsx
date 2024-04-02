@@ -1,4 +1,4 @@
-import * as Vector2 from "./vector2"
+import type * as Vector2 from "./vector2"
 
 type trect = {
   x: number
