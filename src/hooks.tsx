@@ -129,7 +129,7 @@ function useMouse(props: {
 
 function useDimensions(ref: R.RefObject<HTMLElement | SVGElement>) {
   const [dimensions, setDimensions] = R.useState<Vector2.tvector2>(Vector2.zero)
-  const getDimensions = R.useRef(() => {
+  const getDimensions = R.useRef(function getDimensions() {
     if (ref.current) {
       const box = ref.current.getBoundingClientRect()
       return {
@@ -139,20 +139,20 @@ function useDimensions(ref: R.RefObject<HTMLElement | SVGElement>) {
     }
     return Vector2.zero
   })
-  function update() {
+  const update = R.useRef(function update() {
     setDimensions(prev => {
       if (ref.current == null) return prev
       const dim = getDimensions.current()
       return prev.x == dim.x && prev.y == dim.y ? prev : dim
     })
-  }
-  R.useEffect(() => {
-    update()
   })
   R.useEffect(() => {
-    window.addEventListener("resize", update)
+    update.current()
+  })
+  R.useEffect(() => {
+    window.addEventListener("resize", update.current)
     return () => {
-      window.removeEventListener("resize", update)
+      window.removeEventListener("resize", update.current)
     }
   }, [])
   return dimensions
