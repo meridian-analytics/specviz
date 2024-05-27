@@ -5,6 +5,7 @@ import * as Axis from "./axis"
 import Cursor from "./cursor"
 import * as Hooks from "./hooks"
 import * as Input from "./input"
+import * as Plane from "./plane"
 import Playhead from "./playhead"
 import * as Rect from "./rect"
 import * as Region from "./region"
@@ -18,11 +19,10 @@ const NOOP = () => {}
 function Visualization(props: {
   children?: typeof Annotation
   src: string
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
 }) {
   const audio = Audio2.useContext()
   const { input, mouseup, mouseRect, unitDown, unitUp } = Input.useContext()
+  const plane = Plane.useContext()
   const region = Region.useContext()
   const tool = Tool.useContext()
   const viewport = Viewport.useContext()
@@ -43,8 +43,8 @@ function Visualization(props: {
                 svgSelection.current,
                 Rect.logical(
                   mouseRect,
-                  props.xaxis === input.xaxis,
-                  props.yaxis === input.yaxis,
+                  plane.xaxis === input.xaxis,
+                  plane.yaxis === input.yaxis,
                 ),
               )
             } else {
@@ -56,12 +56,12 @@ function Visualization(props: {
             break
         }
       }
-    }, [tool.tool, props.xaxis, props.yaxis, input, mouseRect]),
+    }, [tool.tool, plane.xaxis, plane.yaxis, input, mouseRect]),
   )
 
   const onMouse = Hooks.useMouse({
-    xaxis: props.xaxis,
-    yaxis: props.yaxis,
+    xaxis: plane.xaxis,
+    yaxis: plane.yaxis,
     onContextMenu: NOOP,
     onMouseDown: NOOP,
     onMouseEnter: NOOP,
@@ -125,8 +125,8 @@ function Visualization(props: {
               case "annotate":
                 region.annotate(
                   Rect.fromPoints(unitDown, unitUp),
-                  props.xaxis,
-                  props.yaxis,
+                  plane.xaxis,
+                  plane.yaxis,
                 )
                 break
               case "select":
@@ -150,8 +150,8 @@ function Visualization(props: {
         input,
         mouseRect,
         mouseup,
-        props.xaxis,
-        props.yaxis,
+        plane.xaxis,
+        plane.yaxis,
         region.annotate,
         region.deselect,
         region.selectArea,
@@ -217,8 +217,8 @@ function Visualization(props: {
                 dimensions={dimensions}
                 region={r}
                 selected={region.selection.has(r.id)}
-                xaxis={props.xaxis}
-                yaxis={props.yaxis}
+                xaxis={plane.xaxis}
+                yaxis={plane.yaxis}
               />
             ))}
             <rect
@@ -232,10 +232,10 @@ function Visualization(props: {
             <Playhead />
           </g>
           <g transform={axisTransform}>
-            <Axis.Horizontal axis={props.xaxis} dimensions={dimensions} />
+            <Axis.Horizontal axis={plane.xaxis} dimensions={dimensions} />
           </g>
         </svg>
-        <Cursor parent={svgRoot} xaxis={props.xaxis} yaxis={props.yaxis} />
+        <Cursor parent={svgRoot} />
       </svg>
     </div>
   )

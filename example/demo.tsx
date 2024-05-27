@@ -134,7 +134,9 @@ function MyVisualizer(props: tsegment) {
     [audio.buffer.duration, props.offset],
   )
   const [regions, setRegions] = React.useState(initRegions)
-  const [selection, setSelection] = React.useState<Specviz.Selection>(new Set())
+  const [selection, setSelection] = React.useState<Specviz.Selection>(
+    new Set(initRegions.keys()),
+  )
 
   return (
     <Specviz.InputProvider>
@@ -146,19 +148,21 @@ function MyVisualizer(props: tsegment) {
           setSelection={setSelection}
         >
           <Specviz.FocusProvider>
-            <Specviz.ToolProvider>
-              <div id="app">
-                <main>
-                  <Specviz.ViewportProvider>
+            <Specviz.ViewportProvider>
+              <Specviz.ToolProvider>
+                <div id="app">
+                  <main>
                     <MySpectrogram src={props.spectrogram} />
                     <MyWaveform src={props.waveform} />
                     <MyAudioControls />
-                  </Specviz.ViewportProvider>
-                </main>
-                <MyAnnotations />
-              </div>
-              <MyKeybinds />
-            </Specviz.ToolProvider>
+                  </main>
+                  <aside>
+                    <MyAnnotations />
+                  </aside>
+                </div>
+                <MyKeybinds />
+              </Specviz.ToolProvider>
+            </Specviz.ViewportProvider>
           </Specviz.FocusProvider>
         </Specviz.RegionProvider>
       </Specviz.AxisProvider>
@@ -167,30 +171,15 @@ function MyVisualizer(props: tsegment) {
 }
 
 function MySpectrogram(props: { src: string }) {
-  const axis = Specviz.useAxis()
-  if (axis.seconds == null) throw Error("axis not found: seconds")
-  if (axis.hertz == null) throw Error("axis not found: hertz")
   return (
-    <React.Fragment>
-      <Specviz.Navigator
-        src={props.src}
-        xaxis={axis.seconds}
-        yaxis={axis.hertz}
-      />
-      <Specviz.Visualization
-        children={MyAnnotationSvg}
-        src={props.src}
-        xaxis={axis.seconds}
-        yaxis={axis.hertz}
-      />
-    </React.Fragment>
+    <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
+      <Specviz.Navigator src={props.src} />
+      <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
+    </Specviz.PlaneProvider>
   )
 }
 
 function MyWaveform(props: { src: string }) {
-  const axis = Specviz.useAxis()
-  if (axis.seconds == null) throw Error("axis not found: seconds")
-  if (axis.percent == null) throw Error("axis not found: percent")
   return (
     <Specviz.ViewportContext.Transform
       fn={state => ({
@@ -198,17 +187,10 @@ function MyWaveform(props: { src: string }) {
         zoom: { x: state.zoom.x, y: 1 },
       })}
     >
-      <Specviz.Visualization
-        children={MyAnnotationSvg}
-        src={props.src}
-        xaxis={axis.seconds}
-        yaxis={axis.percent}
-      />
-      <Specviz.Navigator
-        src={props.src}
-        xaxis={axis.seconds}
-        yaxis={axis.percent}
-      />
+      <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
+        <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
+        <Specviz.Navigator src={props.src} />
+      </Specviz.PlaneProvider>
     </Specviz.ViewportContext.Transform>
   )
 }
@@ -352,16 +334,14 @@ function MyKeybinds() {
 
 function MyAnnotations() {
   const region = Specviz.useRegion()
-  return region.selection.size > 0 ? (
-    <aside>
+  return (
+    <>
       {Array.from(region.selection).map(id => {
         const r = region.regions.get(id)
         if (r == null) return <MyFormStaleSelection id={id} />
         return <MyForm key={id} {...r} />
       })}
-    </aside>
-  ) : (
-    <></>
+    </>
   )
 }
 

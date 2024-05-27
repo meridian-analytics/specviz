@@ -1,8 +1,8 @@
 import * as R from "react"
 import Annotation from "./annotation"
-import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
 import * as Input from "./input"
+import * as Plane from "./plane"
 import Playhead from "./playhead"
 import * as Region from "./region"
 import * as Tool from "./tool"
@@ -13,9 +13,8 @@ const NOOP = () => {}
 
 function Navigator(props: {
   src: string
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
 }) {
+  const plane = Plane.useContext()
   const { input, mouseup, mouseRect } = Input.useContext()
   const region = Region.useContext()
   const tool = Tool.useContext()
@@ -112,8 +111,8 @@ function Navigator(props: {
             dimensions={dimensions}
             key={region.id}
             region={region}
-            xaxis={props.xaxis}
-            yaxis={props.yaxis}
+            xaxis={plane.xaxis}
+            yaxis={plane.yaxis}
           />
         ))}
         <path ref={maskRef} className="mask" d={maskPath} />

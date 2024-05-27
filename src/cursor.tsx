@@ -3,18 +3,18 @@ import * as Axis from "./axis"
 import * as Format from "./format"
 import * as Hooks from "./hooks"
 import * as Input from "./input"
+import * as Plane from "./plane"
 import * as Svg from "./svg"
 
 function Cursor(props: {
   parent: R.RefObject<SVGGElement>
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
 }) {
   const { input, mouseup, unitUp } = Input.useContext()
   const svgLayer = R.useRef<SVGGElement>(null)
   const svgXline = R.useRef<SVGLineElement>(null)
   const svgYline = R.useRef<SVGLineElement>(null)
   const svgText = R.useRef<SVGTextElement>(null)
+  const plane = Plane.useContext()
   Hooks.useAnimationFrame(
     R.useCallback(() => {
       if (
@@ -35,9 +35,9 @@ function Cursor(props: {
           // x line
           if (
             props.parent.current == input.focus ||
-            props.xaxis == input.xaxis
+            plane.xaxis == input.xaxis
           ) {
-            x = Axis.formatUnit(props.xaxis, unitUp.x)
+            x = Axis.formatUnit(plane.xaxis, unitUp.x)
             Svg.setX(xline, mouseup.rel.x, undefined, Format.percent)
             Svg.show(xline)
           } else {
@@ -47,9 +47,9 @@ function Cursor(props: {
           // y line
           if (
             props.parent.current == input.focus ||
-            props.yaxis == input.yaxis
+            plane.yaxis == input.yaxis
           ) {
-            y = Axis.formatUnit(props.yaxis, unitUp.y)
+            y = Axis.formatUnit(plane.yaxis, unitUp.y)
             Svg.setY(yline, mouseup.rel.y, undefined, Format.percent)
             Svg.show(yline)
           } else {
@@ -63,7 +63,7 @@ function Cursor(props: {
           Svg.hide(layer)
         }
       }
-    }, [props, input, mouseup, unitUp]),
+    }, [input, mouseup, plane.xaxis, plane.yaxis, props.parent, unitUp]),
   )
 
   return (
