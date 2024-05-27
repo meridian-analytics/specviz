@@ -3,6 +3,9 @@ import * as Axis from "./axis"
 import * as Input from "./input"
 import * as Region from "./region"
 
+const min = (5 * Math.PI) / 4
+const max = -Math.PI / 4
+
 function Encoder(props: {
   state: number
   setState: (nextState: number) => void
@@ -11,13 +14,11 @@ function Encoder(props: {
 }) {
   const { input } = Input.useContext()
   const svgRef = R.useRef<SVGSVGElement>(null)
-  const min = (5 * Math.PI) / 4
-  const max = -Math.PI / 4
 
   const { x, y } = R.useMemo(() => {
     const rad = min - props.state * (min - max)
     return { x: (Math.cos(rad) * 4) / 5, y: (-Math.sin(rad) * 4) / 5 }
-  }, [props.state, min, max])
+  }, [props.state])
 
   R.useEffect(() => {
     function onWheel(e: WheelEvent) {
