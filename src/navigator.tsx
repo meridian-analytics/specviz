@@ -117,7 +117,7 @@ function Navigator(props: {
           />
         ))}
         <path ref={maskRef} className="mask" d={maskPath} />
-        <Playhead xaxis={props.xaxis} yaxis={props.yaxis} />
+        <Playhead />
       </svg>
     </div>
   )

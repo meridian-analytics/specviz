@@ -229,7 +229,7 @@ function Visualization(props: {
               width="0"
               height="0"
             />
-            <Playhead xaxis={props.xaxis} yaxis={props.yaxis} />
+            <Playhead />
           </g>
           <g transform={axisTransform}>
             <Axis.Horizontal axis={props.xaxis} dimensions={dimensions} />

@@ -1,13 +1,9 @@
 import * as R from "react"
 import * as Audio2 from "./audio2"
-import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
 import * as Svg from "./svg"
 
-function Playhead(props: {
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
-}) {
+function Playhead() {
   const line = R.useRef<SVGLineElement>(null)
   const { buffer, transport } = Audio2.useContext()
   Hooks.useAnimationFrame(
