@@ -18,15 +18,11 @@ type tinput = {
   yaxis: null | Axis.taxis
 }
 
-type ttoolstate = "annotate" | "select" | "zoom" | "pan"
-
 type Context = {
   input: tinput
   mousedown: tcoord
   mouseRect: Rect.trect
   mouseup: tcoord
-  setToolState: R.Dispatch<R.SetStateAction<ttoolstate>>
-  toolState: ttoolstate
   unitDown: Vector2.tvector2
   unitUp: Vector2.tvector2
 }
@@ -43,10 +39,6 @@ const defaultContext: Context = {
   mousedown: { abs: Vector2.zero, rel: Vector2.zero },
   mouseRect: { x: 0, y: 0, width: 0, height: 0 },
   mouseup: { abs: Vector2.zero, rel: Vector2.zero },
-  setToolState() {
-    throw Error("setToolState called outside of context")
-  },
-  toolState: "annotate",
   unitDown: Vector2.zero,
   unitUp: Vector2.zero,
 }
@@ -108,7 +100,6 @@ export function Provider(props: ProviderProps) {
   const mousedown: Context["mousedown"] = Hooks.useMutableCoord()
   const mouseup: Context["mouseup"] = Hooks.useMutableCoord()
   const mouseRect: Context["mouseRect"] = Hooks.useMutableRect()
-  const [toolState, setToolState] = R.useState<Context["toolState"]>("annotate")
   const unitDown: Context["unitDown"] = Hooks.useMutableVector2()
   const unitUp: Context["unitUp"] = Hooks.useMutableVector2()
 
@@ -117,8 +108,6 @@ export function Provider(props: ProviderProps) {
     mousedown,
     mouseRect,
     mouseup,
-    setToolState,
-    toolState,
     unitDown,
     unitUp,
   }

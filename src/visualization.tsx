@@ -8,6 +8,7 @@ import Playhead from "./playhead"
 import * as Rect from "./rect"
 import * as Specviz from "./specviz"
 import * as Svg from "./svg"
+import * as Tool from "./tool"
 import * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
@@ -20,9 +21,9 @@ function Visualization(props: {
   yaxis: Axis.taxis
 }) {
   const audio = Audio2.useContext()
-  const { input, mouseup, mouseRect, toolState, unitDown, unitUp } =
-    Specviz.useInput()
+  const { input, mouseup, mouseRect, unitDown, unitUp } = Specviz.useInput()
   const regions = Specviz.useRegions()
+  const tool = Tool.useContext()
   const viewport = Viewport.useContext()
   const svgRoot = R.useRef<SVGSVGElement>(null)
   const svgSelection = R.useRef<SVGRectElement>(null)
@@ -31,7 +32,7 @@ function Visualization(props: {
   Hooks.useAnimationFrame(
     R.useCallback(() => {
       if (svgSelection.current) {
-        switch (toolState) {
+        switch (tool.tool) {
           case "annotate":
           case "select":
           case "zoom":
@@ -54,7 +55,7 @@ function Visualization(props: {
             break
         }
       }
-    }, [toolState, props.xaxis, props.yaxis, input, mouseRect]),
+    }, [tool.tool, props.xaxis, props.yaxis, input, mouseRect]),
   )
 
   const onMouse = Hooks.useMouse({
@@ -69,7 +70,7 @@ function Visualization(props: {
         if (input.buttons & 1) {
           const dx = e.movementX / e.currentTarget.clientWidth
           const dy = e.movementY / e.currentTarget.clientHeight
-          switch (toolState) {
+          switch (tool.tool) {
             case "annotate":
             case "select":
             case "zoom":
@@ -91,7 +92,7 @@ function Visualization(props: {
         input,
         regions.moveSelection,
         regions.selection,
-        toolState,
+        tool.tool,
         viewport.scroll,
         viewport.state.zoom,
       ],
@@ -104,7 +105,7 @@ function Visualization(props: {
             0.01
           ) {
             // click
-            switch (toolState) {
+            switch (tool.tool) {
               case "annotate":
                 regions.deselect()
                 break
@@ -119,7 +120,7 @@ function Visualization(props: {
             }
           } else {
             // drag
-            switch (toolState) {
+            switch (tool.tool) {
               case "annotate":
                 regions.annotate(
                   { ...mouseRect },
@@ -155,7 +156,7 @@ function Visualization(props: {
         regions.deselect,
         regions.selectArea,
         regions.selectPoint,
-        toolState,
+        tool.tool,
         unitDown,
         unitUp,
         viewport.zoomArea,
@@ -176,7 +177,7 @@ function Visualization(props: {
   const axisTransform = `${axisTranslate} ${axisScale}`
 
   return (
-    <div className={`visualization ${toolState}`}>
+    <div className={`visualization ${tool.tool}`}>
       <svg ref={svgRoot} width="100%" height="100%" {...onMouse}>
         <defs>
           <pattern

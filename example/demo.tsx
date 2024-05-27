@@ -147,16 +147,18 @@ function MyVisualizer(props: tsegment) {
       setSelection={setSelection}
     >
       <Focus.Provider>
-        <div id="app">
-          <main>
-            <Specviz.Viewport.Provider>
-              <MySpectrogram src={props.spectrogram} />
-              <MyWaveform src={props.waveform} />
-              <MyAudioControls />
-            </Specviz.Viewport.Provider>
-          </main>
-          <MyAnnotations />
-        </div>
+        <Specviz.ToolProvider>
+          <div id="app">
+            <main>
+              <Specviz.Viewport.Provider>
+                <MySpectrogram src={props.spectrogram} />
+                <MyWaveform src={props.waveform} />
+                <MyAudioControls />
+              </Specviz.Viewport.Provider>
+            </main>
+            <MyAnnotations />
+          </div>
+        </Specviz.ToolProvider>
         <MyKeybinds />
       </Focus.Provider>
     </Specviz.Provider>

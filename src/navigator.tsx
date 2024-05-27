@@ -4,6 +4,7 @@ import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
 import Playhead from "./playhead"
 import * as Specviz from "./specviz"
+import * as Tool from "./tool"
 import * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
@@ -14,8 +15,9 @@ function Navigator(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const { input, mouseup, mouseRect, toolState } = Specviz.useInput()
+  const { input, mouseup, mouseRect } = Specviz.useInput()
   const { regions } = Specviz.useRegions()
+  const tool = Tool.useContext()
   const containerRef = R.useRef<SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
   const viewport = Viewport.useContext()
@@ -44,7 +46,7 @@ function Navigator(props: {
             0.01
           ) {
             // click
-            switch (toolState) {
+            switch (tool.tool) {
               case "annotate":
               case "select":
               case "pan":
@@ -61,7 +63,7 @@ function Navigator(props: {
         }
       },
       [
-        toolState,
+        tool.tool,
         input,
         mouseRect,
         mouseup,
@@ -89,7 +91,7 @@ function Navigator(props: {
     z
   `
   return (
-    <div className={`navigator ${toolState}`}>
+    <div className={`navigator ${tool.tool}`}>
       <svg
         ref={containerRef}
         width="100%"
