@@ -3,12 +3,10 @@ import * as Rect from "./rect"
 import type * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
-type taxisunit = "hertz" | "seconds" | "percent"
-
 type taxisformat = (x: number) => string
 
 type taxis = {
-  unit: taxisunit
+  unit: string
   format: taxisformat
   intervals: Array<[number, number]>
 }
@@ -118,12 +116,12 @@ function formatUnit(t: taxis, q: number) {
 function linear(
   min: number,
   max: number,
-  unit: taxisunit = "percent",
-  format: taxisformat = String,
+  unit?: string,
+  format?: taxisformat,
 ): taxis {
   return {
-    unit,
-    format,
+    unit: unit ?? "units",
+    format: format ?? String,
     intervals: [
       [0, min],
       [1, max],
@@ -133,12 +131,12 @@ function linear(
 
 function nonlinear(
   intervals: Array<[number, number]>,
-  unit: taxisunit = "percent",
-  format: taxisformat = String,
+  unit?: string,
+  format?: taxisformat,
 ): taxis {
   return {
-    unit,
-    format,
+    unit: unit ?? "units",
+    format: format ?? String,
     intervals,
   }
 }
