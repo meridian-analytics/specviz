@@ -110,18 +110,18 @@ export function Provider(props: ProviderProps) {
   const axis = Axis.useContext()
 
   // regions controlled/uncontrolled
-  const [_regions, _setRegions] = R.useState(defaultContext.regions)
+  const controlledRegion = R.useState(defaultContext.regions)
   const [regions, setRegions] =
     props.regions && props.setRegions
       ? [props.regions, props.setRegions]
-      : [_regions, _setRegions]
+      : controlledRegion
 
   // selection controlled/uncontrolled
-  const [_selection, _setSelection] = R.useState(defaultContext.selection)
+  const controlledSelection = R.useState(defaultContext.selection)
   const [selection, setSelection] =
     props.selection && props.setSelection
       ? [props.selection, props.setSelection]
-      : [_selection, _setSelection]
+      : controlledSelection
 
   const updateRegion = R.useCallback(
     (p: Region, func: (prev: Rect.trect) => Rect.trect) => {
