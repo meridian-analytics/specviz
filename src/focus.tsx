@@ -1,19 +1,17 @@
 import * as R from "react"
-import * as Audio2 from "../src/audio2"
-import * as Specviz from "../src/index"
+import * as Audio2 from "./audio2"
+import * as RegionContext from "./region"
 
-type State = {
-  focusRegion: null | string
-}
+type FocusState = null | string
 
 type Context = {
-  region: null | Specviz.Region
-  setFocusRegion: (regionId: State["focusRegion"]) => void
+  region: null | RegionContext.Region
+  setFocus: (regionId: FocusState) => void
 }
 
 const defaultContext: Context = {
   region: null,
-  setFocusRegion() {
+  setFocus() {
     throw Error("setFocusRegion called outside of context")
   },
 }
@@ -25,23 +23,13 @@ export type ProviderProps = {
 }
 
 export function Provider(props: ProviderProps) {
-  const regions = Specviz.useRegions()
-  const [state, setState] = R.useState<State>({
-    focusRegion: null,
-  })
-  const setFocusRegion: Context["setFocusRegion"] = regionId => {
-    setState(prev => {
-      if (prev.focusRegion === regionId) {
-        return { focusRegion: null }
-      }
-      return { focusRegion: regionId }
-    })
+  const regionCtx = RegionContext.useContext()
+  const [focus, originalSetFocus] = R.useState<FocusState>(null)
+  const region = focus ? regionCtx.regions.get(focus) ?? null : null
+  const setFocus: Context["setFocus"] = next => {
+    // setting the same focus will toggle the focus off
+    originalSetFocus(prev => (prev == next ? null : next))
   }
-
-  const region = state.focusRegion
-    ? regions.regions.get(state.focusRegion) ?? null
-    : null
-
   const fx: Audio2.FxContext.Context = R.useMemo(() => {
     return region == null
       ? Audio2.FxContext.default
@@ -56,7 +44,7 @@ export function Provider(props: ProviderProps) {
     <Context.Provider
       value={{
         region,
-        setFocusRegion,
+        setFocus,
       }}
     >
       <Audio2.FxContext.Provider value={fx}>

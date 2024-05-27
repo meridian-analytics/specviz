@@ -1,7 +1,7 @@
 import * as React from "react"
+import * as Input from "./input"
 import * as Mathx from "./mathx"
 import type * as Rect from "./rect"
-import * as Specviz from "./specviz"
 import type * as Vector2 from "./vector2"
 
 export type Context = {
@@ -61,7 +61,7 @@ type ProviderProps = {
 }
 
 export function Provider(props: ProviderProps) {
-  const input = Specviz.useInput()
+  const input = Input.useContext()
   const [state, setState] = React.useState(defaultContext.state)
 
   const resetView: Context["resetView"] = React.useCallback(() => {

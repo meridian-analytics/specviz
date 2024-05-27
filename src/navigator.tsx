@@ -2,8 +2,9 @@ import * as R from "react"
 import Annotation from "./annotation"
 import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
+import * as Input from "./input"
 import Playhead from "./playhead"
-import * as Specviz from "./specviz"
+import * as Region from "./region"
 import * as Tool from "./tool"
 import * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
@@ -15,8 +16,8 @@ function Navigator(props: {
   xaxis: Axis.taxis
   yaxis: Axis.taxis
 }) {
-  const { input, mouseup, mouseRect } = Specviz.useInput()
-  const { regions } = Specviz.useRegions()
+  const { input, mouseup, mouseRect } = Input.useContext()
+  const region = Region.useContext()
   const tool = Tool.useContext()
   const containerRef = R.useRef<SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
@@ -106,7 +107,7 @@ function Navigator(props: {
           height="100%"
           preserveAspectRatio="none"
         />
-        {Array.from(regions.values(), region => (
+        {Array.from(region.regions.values(), region => (
           <Annotation
             dimensions={dimensions}
             key={region.id}
