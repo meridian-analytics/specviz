@@ -24,12 +24,7 @@ export type Regions = Map<Region["id"], Region>
 export type Selection = Set<Region["id"]>
 
 export type Context = {
-  annotate: (
-    rect: Rect.trect,
-    unit: Rect.trect,
-    xaxis: Axis.taxis,
-    yaxis: Axis.taxis,
-  ) => void
+  annotate: (rect: Rect.trect, xaxis: Axis.taxis, yaxis: Axis.taxis) => void
   delete: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
@@ -139,12 +134,12 @@ export function Provider(props: ProviderProps) {
 
   // commands
   const annotate: Context["annotate"] = R.useCallback(
-    (rect, unit, xaxis, yaxis) => {
+    (rect, xaxis, yaxis) => {
       const id = Format.randomBytes(10)
       setRegions(prev =>
         new Map(prev).set(id, {
           id,
-          ...unit,
+          ...rect,
           xunit: xaxis.unit,
           yunit: yaxis.unit,
         }),

@@ -124,7 +124,6 @@ function Visualization(props: {
             switch (tool.tool) {
               case "annotate":
                 region.annotate(
-                  { ...mouseRect },
                   Rect.fromPoints(unitDown, unitUp),
                   props.xaxis,
                   props.yaxis,
