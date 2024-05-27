@@ -354,12 +354,24 @@ function MyAnnotations() {
   const region = Specviz.useRegion()
   return region.selection.size > 0 ? (
     <aside>
-      {Array.from(region.selection).map(id => (
-        <MyForm key={id} {...(region.regions.get(id) as Specviz.Region)} />
-      ))}
+      {Array.from(region.selection).map(id => {
+        const r = region.regions.get(id)
+        if (r == null) return <MyFormStaleSelection id={id} />
+        return <MyForm key={id} {...r} />
+      })}
     </aside>
   ) : (
     <></>
+  )
+}
+
+function MyFormStaleSelection(props: { id: string }) {
+  return (
+    <div className="annotation-form">
+      <div className="title">
+        {props.id} is selected but not found in the region context
+      </div>
+    </div>
   )
 }
 
