@@ -7,7 +7,10 @@ type trect = {
   height: number
 }
 
-function fromPoints(pt1: Vector2.tvector2, pt2: Vector2.tvector2): trect {
+export function diagonal(t: trect): number {
+  return Math.sqrt(t.width ** 2 + t.height ** 2)
+}
+
   return {
     x: Math.min(pt1.x, pt2.x),
     y: Math.min(pt1.y, pt2.y),
