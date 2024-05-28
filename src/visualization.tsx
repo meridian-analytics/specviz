@@ -1,6 +1,5 @@
 import * as R from "react"
 import Annotation from "./annotation"
-import * as Audio2 from "./audio2"
 import * as Axis from "./axis"
 import Cursor from "./cursor"
 import * as Hooks from "./hooks"
@@ -11,23 +10,22 @@ import * as Rect from "./rect"
 import * as Region from "./region"
 import * as Svg from "./svg"
 import * as Tool from "./tool"
-import * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
-const NOOP = () => {}
-
-function Visualization(props: {
+export type VisualizationProps = {
+  actions?: Hooks.UseMouseProps
   children?: typeof Annotation
   src: string
-}) {
-  const audio = Audio2.useContext()
-  const { input, mouseup, mouseRect, unitDown, unitUp } = Input.useContext()
+}
+
+export default function Visualization(props: VisualizationProps) {
+  const svgRoot = R.useRef<SVGSVGElement>(null)
+  const svgSelection = R.useRef<SVGRectElement>(null)
+  const input = Input.useContext()
   const plane = Plane.useContext()
   const region = Region.useContext()
   const tool = Tool.useContext()
   const viewport = Viewport.useContext()
-  const svgRoot = R.useRef<SVGSVGElement>(null)
-  const svgSelection = R.useRef<SVGRectElement>(null)
   const dimensions = Hooks.useDimensions(svgRoot)
 
   Hooks.useAnimationFrame(
@@ -37,14 +35,14 @@ function Visualization(props: {
           case "annotate":
           case "select":
           case "zoom":
-            if (input.buttons & 1) {
+            if (input.input.buttons & 1) {
               Svg.show(svgSelection.current)
               Svg.setRect(
                 svgSelection.current,
                 Rect.logical(
-                  mouseRect,
-                  plane.xaxis === input.xaxis,
-                  plane.yaxis === input.yaxis,
+                  Rect.fromPoints(input.mousedown.abs, input.mouseup.abs), // input.mouseRect,
+                  plane.xaxis === input.input.xaxis,
+                  plane.yaxis === input.input.yaxis,
                 ),
               )
             } else {
@@ -56,114 +54,17 @@ function Visualization(props: {
             break
         }
       }
-    }, [tool.tool, plane.xaxis, plane.yaxis, input, mouseRect]),
+    }, [
+      tool.tool,
+      plane.xaxis,
+      plane.yaxis,
+      input.input,
+      input.mousedown,
+      input.mouseup,
+    ]),
   )
 
-  const onMouse = Hooks.useMouse({
-    xaxis: plane.xaxis,
-    yaxis: plane.yaxis,
-    onContextMenu: NOOP,
-    onMouseDown: NOOP,
-    onMouseEnter: NOOP,
-    onMouseLeave: NOOP,
-    onMouseMove: R.useCallback(
-      e => {
-        if (input.buttons & 1) {
-          const dx = e.movementX / e.currentTarget.clientWidth
-          const dy = e.movementY / e.currentTarget.clientHeight
-          switch (tool.tool) {
-            case "annotate":
-            case "select":
-            case "zoom":
-              break
-            case "pan":
-              if (region.selection.size == 0) {
-                viewport.scroll(-dx, -dy)
-              } else {
-                region.moveSelection(
-                  dx / viewport.state.zoom.x,
-                  dy / viewport.state.zoom.y,
-                )
-              }
-              break
-          }
-        }
-      },
-      [
-        input,
-        region.moveSelection,
-        region.selection,
-        tool.tool,
-        viewport.scroll,
-        viewport.state.zoom,
-      ],
-    ),
-    onMouseUp: R.useCallback(
-      e => {
-        if (input.buttons & 1) {
-          if (
-            Vector2.magnitude({ x: mouseRect.width, y: mouseRect.height }) <
-            0.01
-          ) {
-            // click
-            switch (tool.tool) {
-              case "annotate":
-                region.deselect()
-                break
-              case "select":
-                region.selectPoint(mouseup.abs)
-                break
-              case "zoom":
-                viewport.zoomPoint(mouseup.abs)
-                break
-              case "pan":
-                break
-            }
-          } else {
-            // drag
-            switch (tool.tool) {
-              case "annotate":
-                region.annotate(
-                  Rect.fromPoints(unitDown, unitUp),
-                  plane.xaxis,
-                  plane.yaxis,
-                )
-                break
-              case "select":
-                region.selectArea(mouseRect)
-                break
-              case "zoom":
-                viewport.zoomArea(mouseRect)
-                break
-              case "pan":
-                break
-            }
-          }
-        }
-        if (input.buttons & 2) {
-          audio.transport.seek(mouseup.abs.x * audio.buffer.duration)
-        }
-      },
-      [
-        audio.buffer.duration,
-        audio.transport.seek,
-        input,
-        mouseRect,
-        mouseup,
-        plane.xaxis,
-        plane.yaxis,
-        region.annotate,
-        region.deselect,
-        region.selectArea,
-        region.selectPoint,
-        tool.tool,
-        unitDown,
-        unitUp,
-        viewport.zoomArea,
-        viewport.zoomPoint,
-      ],
-    ),
-  })
+  const onMouse = Hooks.useMouse(props.actions ?? {})
 
   Hooks.useWheel(svgRoot, -1)
 
@@ -240,5 +141,3 @@ function Visualization(props: {
     </div>
   )
 }
-
-export default Visualization

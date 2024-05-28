@@ -1,7 +1,6 @@
 import * as R from "react"
 import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
-import type * as Rect from "./rect"
 import * as Vector2 from "./vector2"
 
 export type tcoord = {
@@ -21,7 +20,6 @@ type tinput = {
 type Context = {
   input: tinput
   mousedown: tcoord
-  mouseRect: Rect.trect
   mouseup: tcoord
   unitDown: Vector2.tvector2
   unitUp: Vector2.tvector2
@@ -37,7 +35,6 @@ const defaultContext: Context = {
     yaxis: null,
   },
   mousedown: { abs: Vector2.zero, rel: Vector2.zero },
-  mouseRect: { x: 0, y: 0, width: 0, height: 0 },
   mouseup: { abs: Vector2.zero, rel: Vector2.zero },
   unitDown: Vector2.zero,
   unitUp: Vector2.zero,
@@ -99,14 +96,12 @@ export function Provider(props: ProviderProps) {
 
   const mousedown: Context["mousedown"] = Hooks.useMutableCoord()
   const mouseup: Context["mouseup"] = Hooks.useMutableCoord()
-  const mouseRect: Context["mouseRect"] = Hooks.useMutableRect()
   const unitDown: Context["unitDown"] = Hooks.useMutableVector2()
   const unitUp: Context["unitUp"] = Hooks.useMutableVector2()
 
   const value: Context = {
     input,
     mousedown,
-    mouseRect,
     mouseup,
     unitDown,
     unitUp,

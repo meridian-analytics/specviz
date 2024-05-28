@@ -1,11 +1,13 @@
 // types
 export { type AnnotationProps } from "./annotation"
 export { type Axes, type taxis as Axis } from "./axis"
+export { type NavigatorProps } from "./navigator"
 export {
   type Region,
   type Regions,
   type Selection,
 } from "./region"
+export { type VisualizationProps } from "./visualization"
 
 // components
 export { default as Encoder } from "./encoder"
@@ -39,4 +41,4 @@ export { useContext as useTool } from "./tool"
 export { useContext as useViewport } from "./viewport"
 
 // hooks
-export { useAnimationFrame } from "./hooks"
+export { useAnimationFrame, useMouse } from "./hooks"

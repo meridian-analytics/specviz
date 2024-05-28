@@ -171,15 +171,21 @@ function MyVisualizer(props: tsegment) {
 }
 
 function MySpectrogram(props: { src: string }) {
+  const tool = Specviz.useTool()
   return (
     <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
-      <Specviz.Navigator src={props.src} />
-      <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
+      <Specviz.Navigator actions={tool.actions.navigator} src={props.src} />
+      <Specviz.Visualization
+        actions={tool.actions.visualization}
+        children={MyAnnotationSvg}
+        src={props.src}
+      />
     </Specviz.PlaneProvider>
   )
 }
 
 function MyWaveform(props: { src: string }) {
+  const tool = Specviz.useTool()
   return (
     <Specviz.ViewportContext.Transform
       fn={state => ({
@@ -188,8 +194,12 @@ function MyWaveform(props: { src: string }) {
       })}
     >
       <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
-        <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
-        <Specviz.Navigator src={props.src} />
+        <Specviz.Visualization
+          actions={tool.actions.visualization}
+          children={MyAnnotationSvg}
+          src={props.src}
+        />
+        <Specviz.Navigator actions={tool.actions.navigator} src={props.src} />
       </Specviz.PlaneProvider>
     </Specviz.ViewportContext.Transform>
   )
