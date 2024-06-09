@@ -42,3 +42,7 @@ export { useContext as useViewport } from "./viewport"
 
 // hooks
 export { useAnimationFrame, useMouse } from "./hooks"
+
+// package
+import pkg from "../../../package.json"
+export const version = pkg.version

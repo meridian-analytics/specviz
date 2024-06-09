@@ -1,10 +1,9 @@
+import * as Audio from "@specviz/audio"
+import * as Specviz from "@specviz/core"
+import * as Format from "@specviz/format"
 import * as React from "react"
 import * as ReactDOM from "react-dom/client"
 import * as Reb from "react-error-boundary"
-import pkg from "../package.json"
-import * as Audio from "../src/audio2"
-import * as Format from "../src/format"
-import * as Specviz from "../src/index"
 
 type tsegment = {
   audio: string
@@ -88,7 +87,7 @@ export default function MyApp() {
   return (
     <Audio.Provider url={data.audio}>
       <div style={{ padding: 20, backgroundColor: "#E8FDF5" }}>
-        <h3>specviz-react (version {pkg.version})</h3>
+        <h3>specviz-react (version {Specviz.version})</h3>
         <div className="segments">
           <button
             type="button"

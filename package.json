@@ -3,8 +3,7 @@
   "version": "0.7.0-rc.3",
   "type": "module",
   "scripts": {
-    "test": "bun run --bun vitest run",
-    "check": "biome check --apply ."
+    "check": "biome check --write ."
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -13,16 +12,15 @@
   "devDependencies": {
     "@biomejs/biome": "^1.7.3",
     "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "vitest": "^0.30.1"
+    "@types/react-dom": "^18.3.0"
   },
   "exports": {
-    ".": "./src/index.tsx",
-    "./audio": "./src/audio2/index.tsx",
-    "./axis": "./src/axis.tsx",
-    "./format": "./src/format.tsx"
+    ".": "./packages/specviz/src/index.ts",
+    "./audio": "./packages/audio2/src/index.ts",
+    "./format": "./packages/format/src/index.ts"
   },
   "peerDependencies": {
     "typescript": "5.4.5"
-  }
+  },
+  "workspaces": ["packages/*"]
 }

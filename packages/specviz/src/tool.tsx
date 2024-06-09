@@ -1,5 +1,5 @@
 import * as R from "react"
-import * as Audio from "./audio2"
+import * as Audio from "../../audio2/src"
 import type * as Hooks from "./hooks"
 import * as Region from "./region"
 import * as Viewport from "./viewport"

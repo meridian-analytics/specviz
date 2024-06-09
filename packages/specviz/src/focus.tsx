@@ -1,5 +1,5 @@
 import * as R from "react"
-import * as Audio2 from "./audio2"
+import * as Audio2 from "../../audio2/src"
 import * as RegionContext from "./region"
 
 type FocusState = null | string

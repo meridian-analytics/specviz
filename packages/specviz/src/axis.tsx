@@ -25,8 +25,10 @@ function computeUnit(t: taxis, q: number) {
   let by: number
   let i = 0
   while (i < s.length - 1) {
-    ;[ax, ay] = s[i]
-    ;[bx, by] = s[i + 1]
+    // biome-ignore lint/style/noNonNullAssertion: s[i] is not null
+    ;[ax, ay] = s[i]!
+    // biome-ignore lint/style/noNonNullAssertion: s[i + 1] is not null
+    ;[bx, by] = s[i + 1]!
     if (ax <= q && q <= bx) return ay + ((by - ay) * (q - ax)) / (bx - ax)
     i += 1
   }
@@ -47,8 +49,10 @@ function computeUnitInverse(t: taxis, q: number): number {
   let by: number
   let i = 0
   while (i < s.length - 1) {
-    ;[ax, ay] = s[i]
-    ;[bx, by] = s[i + 1]
+    // biome-ignore lint/style/noNonNullAssertion: s[i] is not null
+    ;[ax, ay] = s[i]!
+    // biome-ignore lint/style/noNonNullAssertion: s[i + 1] is not null
+    ;[bx, by] = s[i + 1]!
     if (ay <= q && q <= by) return ax + ((bx - ax) * (q - ay)) / (by - ay)
     i += 1
   }
