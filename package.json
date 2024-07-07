@@ -1,6 +1,6 @@
 {
   "name": "specviz-react",
-  "version": "0.7.0-rc.3",
+  "version": "0.8.0",
   "type": "module",
   "scripts": {
     "check": "biome check --write ."
