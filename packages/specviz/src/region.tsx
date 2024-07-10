@@ -1,5 +1,5 @@
-import * as Format from "@specviz/format"
 import * as R from "react"
+import * as Format from "../../format/src"
 import * as Axis from "./axis"
 import * as Input from "./input"
 import * as Mathx from "./mathx"
@@ -422,9 +422,11 @@ export function computeRectInverse(region: Region, axes: Axis.Context) {
   return Axis.computeRectInverse(x, y, region)
 }
 
+export type TransformFn = (regionState: RegionState) => RegionState
+
 export type TransformProps = {
   children: R.ReactNode
-  fn: (regionState: RegionState) => RegionState
+  fn: TransformFn
 }
 
 export function Transform(props: TransformProps) {
