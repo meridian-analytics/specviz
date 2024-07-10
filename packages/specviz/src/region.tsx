@@ -28,6 +28,8 @@ export type Context = {
   delete: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
+  transformedRegions: RegionState
+  transformedSelection: SelectionState
   regions: RegionState
   selectArea: (rect: Rect.trect) => void
   selection: SelectionState
@@ -87,6 +89,8 @@ const defaultContext: Context = {
   setSelection() {
     throw Error("setSelection called outside of context")
   },
+  transformedRegions: new Map(),
+  transformedSelection: new Set(),
 }
 
 const Context = R.createContext(defaultContext)
@@ -388,6 +392,8 @@ export function Provider(props: ProviderProps) {
       setRectY2,
       setRegions,
       setSelection,
+      transformedRegions: regions,
+      transformedSelection: selection,
     }),
     [
       annotate,
@@ -432,12 +438,14 @@ export type TransformProps = {
 export function Transform(props: TransformProps) {
   const context = useContext()
   const value = R.useMemo<Context>(() => {
-    const regions = props.fn(context.regions)
-    const selection = new Set(context.selection).intersection(regions)
+    const transformedRegions = props.fn(context.regions)
+    const transformedSelection = new Set(context.selection).intersection(
+      transformedRegions,
+    )
     return {
       ...context,
-      regions,
-      selection,
+      transformedRegions,
+      transformedSelection,
     }
   }, [context, props.fn])
   return <Context.Provider children={props.children} value={value} />
