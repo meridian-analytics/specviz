@@ -4,8 +4,8 @@ export { type Axes, type taxis as Axis } from "./axis"
 export { type NavigatorProps } from "./navigator"
 export {
   type Region,
-  type Regions,
-  type Selection,
+  type RegionState,
+  type SelectionState,
 } from "./region"
 export { type VisualizationProps } from "./visualization"
 

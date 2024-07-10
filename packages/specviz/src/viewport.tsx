@@ -174,16 +174,16 @@ export function useContext() {
   return React.useContext(Context)
 }
 
-type TransformProps = {
+export type TransformProps = {
   children: React.ReactNode
   fn: (state: State) => State
 }
 
 export function Transform(props: TransformProps) {
-  const viewport = useContext()
-  const value = React.useMemo<Context>(
-    () => ({ ...viewport, state: props.fn(viewport.state) }),
-    [props.fn, viewport],
-  )
+  const context = useContext()
+  const value = React.useMemo<Context>(() => {
+    const state = props.fn(context.state)
+    return { ...context, state }
+  }, [context, props.fn])
   return <Context.Provider children={props.children} value={value} />
 }

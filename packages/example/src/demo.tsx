@@ -26,7 +26,7 @@ const segment2: tsegment = {
   offset: 0,
 }
 
-const initRegions: Specviz.Regions = new Map([
+const initRegions: Specviz.RegionState = new Map([
   [
     "df10e63bc928a9850b6f",
     {
@@ -132,19 +132,13 @@ function MyVisualizer(props: tsegment) {
     }),
     [audio.buffer.duration, props.offset],
   )
-  const [regions, setRegions] = React.useState(initRegions)
-  const [selection, setSelection] = React.useState<Specviz.Selection>(
-    new Set(initRegions.keys()),
-  )
 
   return (
     <Specviz.InputProvider>
       <Specviz.AxisProvider value={axes}>
         <Specviz.RegionProvider
-          regions={regions}
-          selection={selection}
-          setRegions={setRegions}
-          setSelection={setSelection}
+          initRegions={initRegions}
+          initSelection={() => new Set(initRegions.keys())}
         >
           <Specviz.FocusProvider>
             <Specviz.ViewportProvider>

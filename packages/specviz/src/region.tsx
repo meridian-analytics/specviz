@@ -19,18 +19,18 @@ export interface Region {
 
 export type RegionValue = boolean | number | string | string[]
 
-export type Regions = Map<Region["id"], Region>
+export type RegionState = Map<Region["id"], Region>
 
-export type Selection = Set<Region["id"]>
+export type SelectionState = Set<Region["id"]>
 
 export type Context = {
   annotate: (rect: Rect.trect, xaxis: Axis.taxis, yaxis: Axis.taxis) => void
   delete: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
-  regions: Regions
+  regions: RegionState
   selectArea: (rect: Rect.trect) => void
-  selection: Selection
+  selection: SelectionState
   selectPoint: (pt: Vector2.tvector2) => void
   setRectX: (region: Region, dx: number) => void
   setRectX1: (region: Region, dx: number) => void
@@ -38,8 +38,8 @@ export type Context = {
   setRectY: (region: Region, dy: number) => void
   setRectY1: (region: Region, dy: number) => void
   setRectY2: (region: Region, dy: number) => void
-  setRegions: R.Dispatch<R.SetStateAction<Regions>>
-  setSelection: R.Dispatch<R.SetStateAction<Selection>>
+  setRegions: R.Dispatch<R.SetStateAction<RegionState>>
+  setSelection: R.Dispatch<R.SetStateAction<SelectionState>>
 }
 
 const defaultContext: Context = {
@@ -91,12 +91,12 @@ const defaultContext: Context = {
 
 const Context = R.createContext(defaultContext)
 
+type InitialState<T> = T | (() => T)
+
 export type ProviderProps = {
   children: R.ReactNode
-  regions?: Context["regions"]
-  selection?: Context["selection"]
-  setRegions?: Context["setRegions"]
-  setSelection?: Context["setSelection"]
+  initRegions?: InitialState<Context["regions"]>
+  initSelection?: InitialState<Context["selection"]>
 }
 
 export function Provider(props: ProviderProps) {
@@ -104,19 +104,13 @@ export function Provider(props: ProviderProps) {
   const { input } = Input.useContext()
   const axis = Axis.useContext()
 
-  // regions controlled/uncontrolled
-  const controlledRegion = R.useState(defaultContext.regions)
-  const [regions, setRegions] =
-    props.regions && props.setRegions
-      ? [props.regions, props.setRegions]
-      : controlledRegion
-
-  // selection controlled/uncontrolled
-  const controlledSelection = R.useState(defaultContext.selection)
-  const [selection, setSelection] =
-    props.selection && props.setSelection
-      ? [props.selection, props.setSelection]
-      : controlledSelection
+  // state
+  const [regions, setRegions] = R.useState(
+    props.initRegions ?? defaultContext.regions,
+  )
+  const [selection, setSelection] = R.useState(
+    props.initSelection ?? defaultContext.selection,
+  )
 
   const updateRegion = R.useCallback(
     (p: Region, func: (prev: Rect.trect) => Rect.trect) => {
@@ -133,21 +127,18 @@ export function Provider(props: ProviderProps) {
   )
 
   // commands
-  const annotate: Context["annotate"] = R.useCallback(
-    (rect, xaxis, yaxis) => {
-      const id = Format.randomBytes(10)
-      setRegions(prev =>
-        new Map(prev).set(id, {
-          id,
-          ...rect,
-          xunit: xaxis.unit,
-          yunit: yaxis.unit,
-        }),
-      )
-      setSelection(new Set([id]))
-    },
-    [setRegions, setSelection],
-  )
+  const annotate: Context["annotate"] = R.useCallback((rect, xaxis, yaxis) => {
+    const id = Format.randomBytes(10)
+    setRegions(prev =>
+      new Map(prev).set(id, {
+        id,
+        ...rect,
+        xunit: xaxis.unit,
+        yunit: yaxis.unit,
+      }),
+    )
+    setSelection(new Set([id]))
+  }, [])
 
   const delete_: Context["delete"] = R.useCallback(() => {
     setRegions(
@@ -160,11 +151,11 @@ export function Provider(props: ProviderProps) {
         ),
     )
     setSelection(new Set())
-  }, [selection, setRegions, setSelection])
+  }, [selection])
 
   const deselect: Context["deselect"] = R.useCallback(() => {
     setSelection(new Set())
-  }, [setSelection])
+  }, [])
 
   const moveSelection: Context["moveSelection"] = R.useCallback(
     (dx, dy) => {
@@ -194,14 +185,14 @@ export function Provider(props: ProviderProps) {
           ),
       )
     },
-    [input, selection, setRegions, updateRegion],
+    [input, selection, updateRegion],
   )
 
   const selectArea: Context["selectArea"] = R.useCallback(
     area => {
       setSelection(prev => {
         if (input.ctrl) {
-          const nextState: Selection = new Set(prev)
+          const nextState: SelectionState = new Set(prev)
           for (const r of regions.values()) {
             const u = computeRectInverse(r, axis)
             if (
@@ -220,7 +211,7 @@ export function Provider(props: ProviderProps) {
           }
           return nextState
         }
-        const nextState: Selection = new Set()
+        const nextState: SelectionState = new Set()
         for (const r of regions.values()) {
           const u = computeRectInverse(r, axis)
           if (
@@ -239,14 +230,14 @@ export function Provider(props: ProviderProps) {
         return nextState
       })
     },
-    [axis, input, regions, setSelection],
+    [axis, input, regions],
   )
 
   const selectPoint: Context["selectPoint"] = R.useCallback(
     pt => {
       setSelection(prevState => {
         if (input.ctrl) {
-          const nextState: Selection = new Set(prevState)
+          const nextState: SelectionState = new Set(prevState)
           for (const r of regions.values()) {
             const u = computeRectInverse(r, axis)
             if (
@@ -265,7 +256,7 @@ export function Provider(props: ProviderProps) {
           }
           return nextState
         }
-        const nextState: Selection = new Set()
+        const nextState: SelectionState = new Set()
         for (const r of regions.values()) {
           const u = computeRectInverse(r, axis)
           if (
@@ -284,7 +275,7 @@ export function Provider(props: ProviderProps) {
         return nextState
       })
     },
-    [axis, input, regions, setSelection],
+    [axis, input, regions],
   )
 
   const setRectX: Context["setRectX"] = R.useCallback(
@@ -301,7 +292,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [setRegions, updateRegion],
+    [updateRegion],
   )
   const setRectX1: Context["setRectX1"] = R.useCallback(() => {
     // todo: implement
@@ -321,7 +312,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [setRegions, updateRegion],
+    [updateRegion],
   )
 
   const setRectY: Context["setRectY"] = R.useCallback(
@@ -338,7 +329,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [setRegions, updateRegion],
+    [updateRegion],
   )
 
   const setRectY1: Context["setRectY1"] = R.useCallback(
@@ -359,7 +350,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [setRegions, updateRegion],
+    [updateRegion],
   )
   const setRectY2: Context["setRectY2"] = R.useCallback(
     (region, dy) => {
@@ -375,7 +366,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [setRegions, updateRegion],
+    [updateRegion],
   )
 
   // computed context
@@ -413,8 +404,6 @@ export function Provider(props: ProviderProps) {
       setRectY,
       setRectY1,
       setRectY2,
-      setRegions,
-      setSelection,
     ],
   )
 
@@ -431,4 +420,32 @@ export function computeRectInverse(region: Region, axes: Axis.Context) {
   if (x == null) throw Error(`axis not found: ${region.xunit}`)
   if (y == null) throw Error(`axis not found: ${region.yunit}`)
   return Axis.computeRectInverse(x, y, region)
+}
+
+export type TransformProps = {
+  children: R.ReactNode
+  fn: (regionState: RegionState) => RegionState
+}
+
+export function Transform(props: TransformProps) {
+  const context = useContext()
+  const value = R.useMemo<Context>(() => {
+    const regions = props.fn(context.regions)
+    const selection = new Set(context.selection).intersection(regions)
+    return {
+      ...context,
+      regions,
+      selection,
+    }
+  }, [context, props.fn])
+  return <Context.Provider children={props.children} value={value} />
+}
+
+export function transformFilter(fn: (region: Region) => boolean) {
+  return (regions: RegionState) => {
+    const next = new Map()
+    for (const [id, region] of regions.entries())
+      if (fn(region)) next.set(id, region)
+    return next
+  }
 }
