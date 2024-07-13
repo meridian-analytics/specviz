@@ -28,8 +28,6 @@ export type Context = {
   delete: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
-  transformedRegions: RegionState
-  transformedSelection: SelectionState
   regions: RegionState
   selectArea: (rect: Rect.trect) => void
   selection: SelectionState
@@ -42,6 +40,9 @@ export type Context = {
   setRectY2: (region: Region, dy: number) => void
   setRegions: R.Dispatch<R.SetStateAction<RegionState>>
   setSelection: R.Dispatch<R.SetStateAction<SelectionState>>
+  transformedRegions: RegionState
+  transformedSelection: SelectionState
+  updateRegion: (id: string, region: Region) => void
 }
 
 const defaultContext: Context = {
@@ -91,6 +92,9 @@ const defaultContext: Context = {
   },
   transformedRegions: new Map(),
   transformedSelection: new Set(),
+  updateRegion() {
+    throw Error("updateRegion called outside of context")
+  },
 }
 
 const Context = R.createContext(defaultContext)
@@ -116,7 +120,7 @@ export function Provider(props: ProviderProps) {
     props.initSelection ?? defaultContext.selection,
   )
 
-  const updateRegion = R.useCallback(
+  const updateRegionRect = R.useCallback(
     (p: Region, func: (prev: Rect.trect) => Rect.trect) => {
       const x = axis[p.xunit]
       const y = axis[p.yunit]
@@ -170,7 +174,7 @@ export function Provider(props: ProviderProps) {
               if (!selection.has(id)) return [id, region]
               return [
                 id,
-                updateRegion(region, rect => ({
+                updateRegionRect(region, rect => ({
                   x: Mathx.clamp(
                     rect.x + (input.xaxis?.unit == region.xunit ? dx : 0),
                     0,
@@ -189,7 +193,7 @@ export function Provider(props: ProviderProps) {
           ),
       )
     },
-    [input, selection, updateRegion],
+    [input, selection, updateRegionRect],
   )
 
   const selectArea: Context["selectArea"] = R.useCallback(
@@ -287,7 +291,7 @@ export function Provider(props: ProviderProps) {
       setRegions(prev =>
         new Map(prev).set(
           region.id,
-          updateRegion(region, rect => ({
+          updateRegionRect(region, rect => ({
             x: Mathx.clamp(rect.x + dx, 0, 1 - rect.width),
             y: rect.y,
             width: rect.width,
@@ -296,7 +300,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [updateRegionRect],
   )
   const setRectX1: Context["setRectX1"] = R.useCallback(() => {
     // todo: implement
@@ -307,7 +311,7 @@ export function Provider(props: ProviderProps) {
       setRegions(prev =>
         new Map(prev).set(
           region.id,
-          updateRegion(region, rect => ({
+          updateRegionRect(region, rect => ({
             x: rect.x,
             y: rect.y,
             width: Mathx.clamp(rect.width + dx, 0.01, 1 - rect.x),
@@ -316,7 +320,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [updateRegionRect],
   )
 
   const setRectY: Context["setRectY"] = R.useCallback(
@@ -324,7 +328,7 @@ export function Provider(props: ProviderProps) {
       setRegions(prev =>
         new Map(prev).set(
           region.id,
-          updateRegion(region, rect => ({
+          updateRegionRect(region, rect => ({
             x: rect.x,
             y: Mathx.clamp(rect.y + dy, 0, 1 - rect.height),
             width: rect.width,
@@ -333,7 +337,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [updateRegionRect],
   )
 
   const setRectY1: Context["setRectY1"] = R.useCallback(
@@ -341,7 +345,7 @@ export function Provider(props: ProviderProps) {
       setRegions(prev =>
         new Map(prev).set(
           region.id,
-          updateRegion(region, rect => ({
+          updateRegionRect(region, rect => ({
             x: rect.x,
             y: Mathx.clamp(rect.y + dy, 0, rect.y + rect.height - 0.01),
             width: rect.width,
@@ -354,14 +358,15 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [updateRegionRect],
   )
+
   const setRectY2: Context["setRectY2"] = R.useCallback(
     (region, dy) => {
       setRegions(prev =>
         new Map(prev).set(
           region.id,
-          updateRegion(region, rect => ({
+          updateRegionRect(region, rect => ({
             x: rect.x,
             y: rect.y,
             width: rect.width,
@@ -370,8 +375,12 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegion],
+    [updateRegionRect],
   )
+
+  const updateRegion: Context["updateRegion"] = R.useCallback((id, region) => {
+    setRegions(prev => new Map(prev).set(id, region))
+  }, [])
 
   // computed context
   const value: Context = R.useMemo(
@@ -394,6 +403,7 @@ export function Provider(props: ProviderProps) {
       setSelection,
       transformedRegions: regions,
       transformedSelection: selection,
+      updateRegion,
     }),
     [
       annotate,
@@ -410,6 +420,7 @@ export function Provider(props: ProviderProps) {
       setRectY,
       setRectY1,
       setRectY2,
+      updateRegion,
     ],
   )
 
