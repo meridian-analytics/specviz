@@ -109,6 +109,104 @@ export default function MyApp() {
   )
 }
 
+function NavigatorToolProvider(props: { children: React.ReactNode }) {
+  const viewport = Specviz.useViewport()
+  const fn = React.useCallback<Specviz.ToolContext.TransformProps["fn"]>(
+    tool => ({
+      onClick: (unit, rel, abs, xaxis, yaxis) => {
+        switch (tool) {
+          case "annotate":
+          case "select":
+          case "pan":
+            viewport.scrollTo({
+              x: rel.x * viewport.state.zoom.x - 0.5,
+              y: rel.y * viewport.state.zoom.y - 0.5,
+            })
+            break
+          case "zoom":
+            viewport.resetView()
+            break
+        }
+      },
+      onMove: (dx, dy) => {
+        viewport.scroll(dx * viewport.state.zoom.x, dy * viewport.state.zoom.y)
+      },
+    }),
+    [
+      viewport.resetView,
+      viewport.scroll,
+      viewport.scrollTo,
+      viewport.state.zoom.x,
+      viewport.state.zoom.y,
+    ],
+  )
+  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
+}
+
+function VisualizationToolProvider(props: { children: React.ReactNode }) {
+  const region = Specviz.useRegion()
+  const viewport = Specviz.useViewport()
+  const fn = React.useCallback<Specviz.ToolContext.TransformProps["fn"]>(
+    tool => {
+      switch (tool) {
+        case "annotate":
+          return {
+            onClick: (unit, rel, abs, xaxis, yaxis) => {
+              region.selectPoint(abs)
+            },
+            onRect: (unit, rel, abs, xaxis, yaxis) => {
+              region.annotate(unit, xaxis, yaxis)
+            },
+          }
+        case "select":
+          return {
+            onClick: (unit, rel, abs, xaxis, yaxis) => {
+              region.selectPoint(abs)
+            },
+            onRect: (unit, rel, abs, xaxis, yaxis) => {
+              region.selectArea(abs)
+            },
+          }
+        case "zoom":
+          return {
+            onClick: (unit, rel, abs, xaxis, yaxis) => {
+              viewport.zoomPoint(abs)
+            },
+            onRect: (unit, rel, abs, xaxis, yaxis) => {
+              viewport.zoomArea(abs)
+            },
+          }
+        case "pan":
+          return {
+            onMove: (dx, dy) => {
+              if (region.selection.size == 0) {
+                viewport.scroll(-dx, -dy)
+              } else {
+                region.moveSelection(
+                  dx / viewport.state.zoom.x,
+                  dy / viewport.state.zoom.y,
+                )
+              }
+            },
+          }
+      }
+    },
+    [
+      region.annotate,
+      region.moveSelection,
+      region.selectArea,
+      region.selectPoint,
+      region.selection,
+      viewport.scroll,
+      viewport.state.zoom.x,
+      viewport.state.zoom.y,
+      viewport.zoomArea,
+      viewport.zoomPoint,
+    ],
+  )
+  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
+}
+
 function MyVisualizer(props: tsegment) {
   const audio = Audio.useContext()
   const axes: Specviz.Axes = React.useMemo(
@@ -132,7 +230,14 @@ function MyVisualizer(props: tsegment) {
     }),
     [audio.buffer.duration, props.offset],
   )
-
+  const actions = React.useMemo<Specviz.ToolContext.Actions>(
+    () => ({
+      onContextMenu: (unit, rel, abs, xaxis, yaxis) => {
+        audio.transport.seek(unit.x)
+      },
+    }),
+    [audio.transport.seek],
+  )
   return (
     <Specviz.InputProvider>
       <Specviz.AxisProvider value={axes}>
@@ -142,7 +247,7 @@ function MyVisualizer(props: tsegment) {
         >
           <Specviz.FocusProvider>
             <Specviz.ViewportProvider>
-              <Specviz.ToolProvider>
+              <Specviz.ToolProvider actions={actions}>
                 <div id="app">
                   <main>
                     <MySpectrogram src={props.spectrogram} />
@@ -166,8 +271,12 @@ function MyVisualizer(props: tsegment) {
 function MySpectrogram(props: { src: string }) {
   return (
     <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
-      <Specviz.Navigator src={props.src} />
-      <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
+      <NavigatorToolProvider>
+        <Specviz.Navigator src={props.src} />
+      </NavigatorToolProvider>
+      <VisualizationToolProvider>
+        <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
+      </VisualizationToolProvider>
     </Specviz.PlaneProvider>
   )
 }
@@ -181,8 +290,12 @@ function MyWaveform(props: { src: string }) {
       })}
     >
       <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
-        <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
-        <Specviz.Navigator src={props.src} />
+        <VisualizationToolProvider>
+          <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
+        </VisualizationToolProvider>
+        <NavigatorToolProvider>
+          <Specviz.Navigator src={props.src} />
+        </NavigatorToolProvider>
       </Specviz.PlaneProvider>
     </Specviz.ViewportContext.Transform>
   )

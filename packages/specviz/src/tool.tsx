@@ -1,157 +1,65 @@
-import * as R from "react"
-import * as Audio from "../../audio2/src"
+import * as React from "react"
 import type * as Hooks from "./hooks"
-import * as Region from "./region"
-import * as Viewport from "./viewport"
 
-type Tool = "annotate" | "select" | "zoom" | "pan"
+export type Tool = "annotate" | "select" | "zoom" | "pan"
 
-type Context = {
-  actions: {
-    navigator: Hooks.UseMouseProps
-    visualization: Hooks.UseMouseProps
-  }
+export type Actions = Hooks.UseMouseProps
+
+export type Context = {
+  actions: Actions
   tool: Tool
-  setTool: R.Dispatch<R.SetStateAction<Tool>>
+  setTool: React.Dispatch<React.SetStateAction<Tool>>
 }
 
 const defaultContext: Context = {
-  actions: {
-    navigator: {},
-    visualization: {},
-  },
+  actions: {},
   tool: "annotate",
   setTool() {
     throw Error("setTool called outside of context")
   },
 }
 
-const Context = R.createContext(defaultContext)
+const Context = React.createContext(defaultContext)
 
 export type ProviderProps = {
-  children: R.ReactNode
+  actions?: Actions
+  children: React.ReactNode
+  initialTool?: Tool
 }
 
 export function Provider(props: ProviderProps) {
-  const audio = Audio.useContext()
-  const region = Region.useContext()
-  const viewport = Viewport.useContext()
-  const [tool, setTool] = R.useState(defaultContext.tool)
-
-  const navigatorActions = R.useMemo<Hooks.UseMouseProps>(() => {
+  const [tool, setTool] = React.useState(
+    props.initialTool ?? defaultContext.tool,
+  )
+  const actions = props.actions ?? defaultContext.actions
+  const value = React.useMemo<Context>(() => {
     return {
-      onClick: (unit, rel, abs, xaxis, yaxis) => {
-        switch (tool) {
-          case "annotate":
-          case "select":
-          case "pan":
-            viewport.scrollTo({
-              x: rel.x * viewport.state.zoom.x - 0.5,
-              y: rel.y * viewport.state.zoom.y - 0.5,
-            })
-            break
-          case "zoom":
-            viewport.resetView()
-            break
-        }
-      },
-      onMove: (dx, dy) => {
-        viewport.scroll(dx * viewport.state.zoom.x, dy * viewport.state.zoom.y)
-      },
+      actions,
+      tool,
+      setTool,
     }
-  }, [
-    tool,
-    viewport.resetView,
-    viewport.scroll,
-    viewport.scrollTo,
-    viewport.state.zoom.x,
-    viewport.state.zoom.y,
-  ])
+  }, [actions, tool])
+  return <Context.Provider children={props.children} value={value} />
+}
 
-  const visualizationActions = R.useMemo<Hooks.UseMouseProps>(() => {
-    return {
-      onClick: (unit, rel, abs, xaxis, yaxis) => {
-        switch (tool) {
-          case "annotate":
-            region.selectPoint(abs) // new
-            break
-          case "select":
-            region.selectPoint(abs)
-            break
-          case "zoom":
-            viewport.zoomPoint(abs)
-            break
-          case "pan":
-            break
-        }
-      },
-      onContextMenu: (unit, rel, abs, xaxis, yaxis) => {
-        audio.transport.seek(unit.x)
-      },
-      onMove: (dx, dy) => {
-        switch (tool) {
-          case "annotate":
-          case "select":
-          case "zoom":
-            break
-          case "pan":
-            if (region.selection.size == 0) {
-              viewport.scroll(-dx, -dy)
-            } else {
-              region.moveSelection(
-                dx / viewport.state.zoom.x,
-                dy / viewport.state.zoom.y,
-              )
-            }
-            break
-        }
-      },
-      onRect: (unit, rel, abs, xaxis, yaxis) => {
-        switch (tool) {
-          case "annotate":
-            region.annotate(unit, xaxis, yaxis)
-            break
-          case "select":
-            region.selectArea(abs)
-            break
-          case "zoom":
-            viewport.zoomArea(abs)
-            break
-          case "pan":
-            break
-        }
-      },
-    }
-  }, [
-    audio.transport.seek,
-    region.annotate,
-    region.moveSelection,
-    region.selectArea,
-    region.selectPoint,
-    region.selection,
-    tool,
-    viewport.scroll,
-    viewport.state.zoom.x,
-    viewport.state.zoom.y,
-    viewport.zoomArea,
-    viewport.zoomPoint,
-  ])
+export function useContext() {
+  return React.useContext(Context)
+}
+export type TransformProps = {
+  fn: (tool: Tool) => Context["actions"]
+  children: React.ReactNode
+}
+
+export function Transform(props: TransformProps) {
+  const context = useContext()
+  const actions = React.useMemo<Actions>(() => {
+    return props.fn(context.tool)
+  }, [context.tool, props.fn])
 
   return (
     <Context.Provider
       children={props.children}
-      value={{
-        actions: {
-          navigator: navigatorActions,
-          visualization: visualizationActions,
-        },
-        tool,
-        setTool,
-      }}
+      value={{ ...context, actions: { ...context.actions, ...actions } }}
     />
   )
-}
-
-export function useContext() {
-  return R.useContext(Context)
 }

@@ -19,7 +19,7 @@ export default function Navigator(props: NavigatorProps) {
   const containerRef = R.useRef<SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
   const viewport = Viewport.useContext()
-  const onMouse = Hooks.useMouse(tool.actions.navigator)
+  const onMouse = Hooks.useMouse(tool.actions)
 
   Hooks.useWheel(containerRef, 1)
   const dimensions = Hooks.useDimensions(containerRef)

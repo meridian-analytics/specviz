@@ -64,7 +64,7 @@ export default function Visualization(props: VisualizationProps) {
     ]),
   )
 
-  const onMouse = Hooks.useMouse(tool.actions.visualization)
+  const onMouse = Hooks.useMouse(tool.actions)
 
   Hooks.useWheel(svgRoot, -1)
 
