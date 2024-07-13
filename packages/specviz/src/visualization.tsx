@@ -13,7 +13,6 @@ import * as Tool from "./tool"
 import * as Viewport from "./viewport"
 
 export type VisualizationProps = {
-  actions?: Hooks.UseMouseProps
   children?: typeof Annotation
   src: string
 }
@@ -64,7 +63,7 @@ export default function Visualization(props: VisualizationProps) {
     ]),
   )
 
-  const onMouse = Hooks.useMouse(props.actions ?? {})
+  const onMouse = Hooks.useMouse(tool.actions.visualization)
 
   Hooks.useWheel(svgRoot, -1)
 

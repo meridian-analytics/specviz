@@ -8,7 +8,6 @@ import * as Tool from "./tool"
 import * as Viewport from "./viewport"
 
 export type NavigatorProps = {
-  actions?: Hooks.UseMouseProps
   src: string
 }
 
@@ -19,7 +18,7 @@ export default function Navigator(props: NavigatorProps) {
   const containerRef = R.useRef<SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
   const viewport = Viewport.useContext()
-  const onMouse = Hooks.useMouse(props.actions ?? {})
+  const onMouse = Hooks.useMouse(tool.actions.navigator)
 
   Hooks.useWheel(containerRef, 1)
   const dimensions = Hooks.useDimensions(containerRef)
