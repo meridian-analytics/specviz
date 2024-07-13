@@ -82,7 +82,7 @@ function Duration() {
   )
 }
 
-export default function MyApp() {
+export default function App() {
   const [data, setData] = React.useState(segment1)
   return (
     <Audio.Provider url={data.audio}>
@@ -103,7 +103,7 @@ export default function MyApp() {
             {data.audio} <Duration />
           </p>
         </div>
-        <MyVisualizer {...data} />
+        <Visualizer {...data} />
       </div>
     </Audio.Provider>
   )
@@ -207,7 +207,7 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
   return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
 }
 
-function MyVisualizer(props: tsegment) {
+function Visualizer(props: tsegment) {
   const audio = Audio.useContext()
   const axes: Specviz.Axes = React.useMemo(
     () => ({
@@ -250,15 +250,15 @@ function MyVisualizer(props: tsegment) {
               <Specviz.ToolProvider actions={actions}>
                 <div id="app">
                   <main>
-                    <MySpectrogram src={props.spectrogram} />
-                    <MyWaveform src={props.waveform} />
-                    <MyAudioControls />
+                    <Spectrogram src={props.spectrogram} />
+                    <Waveform src={props.waveform} />
+                    <AudioControls />
                   </main>
                   <aside>
-                    <MyAnnotations />
+                    <Annotations />
                   </aside>
                 </div>
-                <MyKeybinds />
+                <Keybinds />
               </Specviz.ToolProvider>
             </Specviz.ViewportProvider>
           </Specviz.FocusProvider>
@@ -268,20 +268,20 @@ function MyVisualizer(props: tsegment) {
   )
 }
 
-function MySpectrogram(props: { src: string }) {
+function Spectrogram(props: { src: string }) {
   return (
     <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
       <NavigatorToolProvider>
         <Specviz.Navigator src={props.src} />
       </NavigatorToolProvider>
       <VisualizationToolProvider>
-        <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
+        <Specviz.Visualization children={AnnotationSvg} src={props.src} />
       </VisualizationToolProvider>
     </Specviz.PlaneProvider>
   )
 }
 
-function MyWaveform(props: { src: string }) {
+function Waveform(props: { src: string }) {
   return (
     <Specviz.ViewportContext.Transform
       fn={state => ({
@@ -291,7 +291,7 @@ function MyWaveform(props: { src: string }) {
     >
       <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
         <VisualizationToolProvider>
-          <Specviz.Visualization children={MyAnnotationSvg} src={props.src} />
+          <Specviz.Visualization children={AnnotationSvg} src={props.src} />
         </VisualizationToolProvider>
         <NavigatorToolProvider>
           <Specviz.Navigator src={props.src} />
@@ -301,7 +301,7 @@ function MyWaveform(props: { src: string }) {
   )
 }
 
-function MyAnnotationSvg(props: Specviz.AnnotationProps) {
+function AnnotationSvg(props: Specviz.AnnotationProps) {
   const lines = props.selected
     ? [
         props.region.id,
@@ -329,7 +329,7 @@ function MyAnnotationSvg(props: Specviz.AnnotationProps) {
   )
 }
 
-function MyAudioControls() {
+function AudioControls() {
   const audio = Audio.useContext()
   const focus = Specviz.useFocus()
   const tool = Specviz.useTool()
@@ -385,7 +385,7 @@ function MyAudioControls() {
   )
 }
 
-function MyKeybinds() {
+function Keybinds() {
   const audio = Audio.useContext()
   const focus = Specviz.useFocus()
   const region = Specviz.useRegion()
@@ -438,20 +438,20 @@ function MyKeybinds() {
   )
 }
 
-function MyAnnotations() {
+function Annotations() {
   const region = Specviz.useRegion()
   return (
     <>
       {Array.from(region.selection).map(id => {
         const r = region.regions.get(id)
-        if (r == null) return <MyFormStaleSelection id={id} />
-        return <MyForm key={id} {...r} />
+        if (r == null) return <AnnotationFormStaleSelection id={id} />
+        return <AnnotationForm key={id} {...r} />
       })}
     </>
   )
 }
 
-function MyFormStaleSelection(props: { id: string }) {
+function AnnotationFormStaleSelection(props: { id: string }) {
   return (
     <div className="annotation-form">
       <div className="title">
@@ -461,7 +461,7 @@ function MyFormStaleSelection(props: { id: string }) {
   )
 }
 
-function MyForm(region: Specviz.Region) {
+function AnnotationForm(region: Specviz.Region) {
   const audio = Audio.useContext()
   const focus = Specviz.useFocus()
   return (
@@ -530,7 +530,7 @@ function Fallback(props: Reb.FallbackProps) {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Reb.ErrorBoundary FallbackComponent={Fallback}>
-      <MyApp />
+      <App />
     </Reb.ErrorBoundary>
   </React.StrictMode>,
 )
