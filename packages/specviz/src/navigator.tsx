@@ -8,6 +8,7 @@ import * as Tool from "./tool"
 import * as Viewport from "./viewport"
 
 export type NavigatorProps = {
+  ignoreRegionTransform?: boolean
   src: string
 }
 
@@ -52,15 +53,21 @@ export default function Navigator(props: NavigatorProps) {
           height="100%"
           preserveAspectRatio="none"
         />
-        {Array.from(region.regions.values(), region => (
-          <Annotation
-            dimensions={dimensions}
-            key={region.id}
-            region={region}
-            xaxis={plane.xaxis}
-            yaxis={plane.yaxis}
-          />
-        ))}
+        {Array.from(
+          (props.ignoreRegionTransform
+            ? region.regions
+            : region.transformedRegions
+          ).values(),
+          region => (
+            <Annotation
+              dimensions={dimensions}
+              key={region.id}
+              region={region}
+              xaxis={plane.xaxis}
+              yaxis={plane.yaxis}
+            />
+          ),
+        )}
         <path ref={maskRef} className="mask" d={maskPath} />
         <Playhead />
       </svg>

@@ -14,6 +14,7 @@ import * as Viewport from "./viewport"
 
 export type VisualizationProps = {
   children?: typeof Annotation
+  ignoreRegionTransform?: boolean
   src: string
 }
 
@@ -110,17 +111,26 @@ export default function Visualization(props: VisualizationProps) {
               width="100%"
               height="100%"
             />
-            {Array.from(region.regions.values(), r => (
-              <Annotation
-                key={r.id}
-                children={props.children}
-                dimensions={dimensions}
-                region={r}
-                selected={region.selection.has(r.id)}
-                xaxis={plane.xaxis}
-                yaxis={plane.yaxis}
-              />
-            ))}
+            {Array.from(
+              (props.ignoreRegionTransform
+                ? region.regions
+                : region.transformedRegions
+              ).values(),
+              r => (
+                <Annotation
+                  key={r.id}
+                  children={props.children}
+                  dimensions={dimensions}
+                  region={r}
+                  selected={(props.ignoreRegionTransform
+                    ? region.selection
+                    : region.transformedSelection
+                  ).has(r.id)}
+                  xaxis={plane.xaxis}
+                  yaxis={plane.yaxis}
+                />
+              ),
+            )}
             <rect
               ref={svgSelection}
               className="selection"
