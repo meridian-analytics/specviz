@@ -436,19 +436,19 @@ export type TransformProps = {
 }
 
 export function Transform(props: TransformProps) {
-  const context = useContext()
-  const value = R.useMemo<Context>(() => {
-    const transformedRegions = props.fn(context.regions)
-    const transformedSelection = new Set(context.selection).intersection(
+  const prev = useContext()
+  const next: Context = R.useMemo(() => {
+    const transformedRegions = props.fn(prev.regions)
+    const transformedSelection = new Set(prev.selection).intersection(
       transformedRegions,
     )
     return {
-      ...context,
+      ...prev,
       transformedRegions,
       transformedSelection,
     }
-  }, [context, props.fn])
-  return <Context.Provider children={props.children} value={value} />
+  }, [prev, props.fn])
+  return <Context.Provider children={props.children} value={next} />
 }
 
 export function transformFilter(fn: (region: Region) => boolean) {

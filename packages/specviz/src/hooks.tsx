@@ -32,14 +32,14 @@ export function useMouseLowLevel(props: {
   const plane = Plane.useContext()
   const input = Input.useContext()
   const viewport = Viewport.useContext()
-  const onContextMenu = R.useCallback<R.MouseEventHandler<SVGSVGElement>>(
+  const onContextMenu: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
     e => {
       e.preventDefault() // disable context menu
       props.onContextMenu?.(e)
     },
     [props.onContextMenu],
   )
-  const onMouseDown = R.useCallback<R.MouseEventHandler<SVGSVGElement>>(
+  const onMouseDown: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
     e => {
       e.preventDefault() // disable native drag
       input.input.buttons = e.buttons
@@ -47,7 +47,7 @@ export function useMouseLowLevel(props: {
     },
     [input.input, props.onMouseDown],
   )
-  const onMouseMove = R.useCallback<R.MouseEventHandler<SVGSVGElement>>(
+  const onMouseMove: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
     e => {
       const elem = e.currentTarget
       const box = elem.getBoundingClientRect()
@@ -101,14 +101,14 @@ export function useMouseLowLevel(props: {
       viewport.state.zoom.y,
     ],
   )
-  const onMouseUp = R.useCallback<R.MouseEventHandler<SVGSVGElement>>(
+  const onMouseUp: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
     e => {
       props.onMouseUp?.(e)
       input.input.buttons = 0
     },
     [input.input, props.onMouseUp],
   )
-  const onMouseEnter = R.useCallback<R.MouseEventHandler<SVGSVGElement>>(
+  const onMouseEnter: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
     e => {
       input.input.focus = e.currentTarget
       if (plane.xaxis != null) input.input.xaxis = plane.xaxis
@@ -117,7 +117,7 @@ export function useMouseLowLevel(props: {
     },
     [input.input, plane.xaxis, plane.yaxis, props.onMouseEnter],
   )
-  const onMouseLeave = R.useCallback<R.MouseEventHandler<SVGSVGElement>>(
+  const onMouseLeave: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
     e => {
       props.onMouseLeave?.(e)
       input.input.buttons = 0
@@ -235,7 +235,7 @@ export function useMouse(props: UseMouseProps) {
 }
 
 export function useDimensions(ref: R.RefObject<HTMLElement | SVGElement>) {
-  const [dimensions, setDimensions] = R.useState<Vector2.tvector2>(Vector2.zero)
+  const [dimensions, setDimensions] = R.useState(Vector2.zero)
   const getDimensions = R.useRef(function getDimensions() {
     if (ref.current) {
       const box = ref.current.getBoundingClientRect()

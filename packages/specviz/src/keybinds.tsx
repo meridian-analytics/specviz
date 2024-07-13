@@ -1,16 +1,18 @@
 import * as R from "react"
 
-type tcontext = {
+type Context = {
   onKeyUps: R.RefObject<Set<(e: KeyboardEvent) => void>>
   onKeyDowns: R.RefObject<Set<(e: KeyboardEvent) => void>>
 }
 
-const KeybindsContext = R.createContext<tcontext>({
+const defaultContext: Context = {
   onKeyUps: { current: new Set() },
   onKeyDowns: { current: new Set() },
-})
+}
 
-function Bindings(props: {
+const Context = R.createContext(defaultContext)
+
+export function Bindings(props: {
   children: R.ReactNode
 }) {
   const onKeyUps = R.useRef<Set<(e: KeyboardEvent) => void>>(new Set())
@@ -30,7 +32,7 @@ function Bindings(props: {
     }
   }, [])
   return (
-    <KeybindsContext.Provider
+    <Context.Provider
       value={{
         onKeyUps,
         onKeyDowns,
@@ -40,12 +42,12 @@ function Bindings(props: {
   )
 }
 
-function Keypress(props: {
+export function Keypress(props: {
   bind: string
   onKeyDown?: (e: KeyboardEvent) => void
   onKeyUp?: (e: KeyboardEvent) => void
 }) {
-  const { onKeyUps, onKeyDowns } = R.useContext(KeybindsContext)
+  const { onKeyUps, onKeyDowns } = R.useContext(Context)
   R.useEffect(() => {
     function onDown(e: KeyboardEvent) {
       if (props.onKeyDown && e.key === props.bind) props.onKeyDown(e)
@@ -62,5 +64,3 @@ function Keypress(props: {
   }, [props.onKeyDown, props.onKeyUp, props.bind, onKeyUps, onKeyDowns])
   return <></>
 }
-
-export { Bindings, Keypress }

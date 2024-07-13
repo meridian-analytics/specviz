@@ -199,7 +199,7 @@ function Horizontal(props: AxisProps) {
 
 type Axes = Record<string, undefined | taxis>
 
-type Context = Axes
+export type Context = Axes
 
 const defaultContext: Context = {}
 

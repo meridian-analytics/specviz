@@ -32,7 +32,7 @@ export function Provider(props: ProviderProps) {
     props.initialTool ?? defaultContext.tool,
   )
   const actions = props.actions ?? defaultContext.actions
-  const value = React.useMemo<Context>(() => {
+  const value: Context = React.useMemo(() => {
     return {
       actions,
       tool,
@@ -46,20 +46,18 @@ export function useContext() {
   return React.useContext(Context)
 }
 export type TransformProps = {
-  fn: (tool: Tool) => Context["actions"]
+  fn: (tool: Tool) => Actions
   children: React.ReactNode
 }
 
 export function Transform(props: TransformProps) {
-  const context = useContext()
-  const actions = React.useMemo<Actions>(() => {
-    return props.fn(context.tool)
-  }, [context.tool, props.fn])
-
-  return (
-    <Context.Provider
-      children={props.children}
-      value={{ ...context, actions: { ...context.actions, ...actions } }}
-    />
+  const prev = useContext()
+  const next: Context = React.useMemo(
+    () => ({
+      ...prev,
+      actions: { ...prev.actions, ...props.fn(prev.tool) },
+    }),
+    [prev, props.fn],
   )
+  return <Context.Provider children={props.children} value={next} />
 }

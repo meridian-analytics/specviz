@@ -4,7 +4,7 @@ import * as RegionContext from "./region"
 
 type FocusState = null | string
 
-type Context = {
+export type Context = {
   region: null | RegionContext.Region
   setFocus: (regionId: FocusState) => void
 }

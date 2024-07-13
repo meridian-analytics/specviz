@@ -30,25 +30,25 @@ const defaultContext: Context = {
     zoom: { x: 1, y: 1 },
   },
   resetView: () => {
-    throw new Error("resetView called outside of context")
+    throw Error("resetView called outside of context")
   },
-  scroll: (dx, dy) => {
-    throw new Error("scroll called outside of context")
+  scroll: () => {
+    throw Error("scroll called outside of context")
   },
-  scrollTo: scroll => {
-    throw new Error("scrollTo called outside of context")
+  scrollTo: () => {
+    throw Error("scrollTo called outside of context")
   },
-  zoom: (dx, dy) => {
-    throw new Error("zoom called outside of context")
+  zoom: () => {
+    throw Error("zoom called outside of context")
   },
-  zoomArea: rect => {
-    throw new Error("zoomArea called outside of context")
+  zoomArea: () => {
+    throw Error("zoomArea called outside of context")
   },
-  zoomPoint: point => {
-    throw new Error("zoomPoint called outside of context")
+  zoomPoint: () => {
+    throw Error("zoomPoint called outside of context")
   },
-  zoomScroll: (dx, dy) => {
-    throw new Error("zoomScroll called outside of context")
+  zoomScroll: () => {
+    throw Error("zoomScroll called outside of context")
   },
 }
 
@@ -56,7 +56,7 @@ const ZOOM_MAX = { x: 10, y: 10 }
 
 const Context = React.createContext(defaultContext)
 
-type ProviderProps = {
+export type ProviderProps = {
   children: React.ReactNode
 }
 
@@ -153,18 +153,18 @@ export function Provider(props: ProviderProps) {
     [input.mousedown.abs, input.mousedown.rel],
   )
 
-  const value = React.useMemo<Context>(
+  const value: Context = React.useMemo(
     () => ({
-      state,
       resetView,
       scroll,
       scrollTo,
+      state,
       zoom,
       zoomArea,
       zoomPoint,
       zoomScroll,
     }),
-    [state, resetView, scroll, scrollTo, zoom, zoomArea, zoomPoint, zoomScroll],
+    [resetView, scroll, scrollTo, state, zoom, zoomArea, zoomPoint, zoomScroll],
   )
 
   return <Context.Provider children={props.children} value={value} />
@@ -180,10 +180,10 @@ export type TransformProps = {
 }
 
 export function Transform(props: TransformProps) {
-  const context = useContext()
-  const value = React.useMemo<Context>(() => {
-    const state = props.fn(context.state)
-    return { ...context, state }
-  }, [context, props.fn])
-  return <Context.Provider children={props.children} value={value} />
+  const prev = useContext()
+  const next: Context = React.useMemo(() => {
+    const state = props.fn(prev.state)
+    return { ...prev, state }
+  }, [prev, props.fn])
+  return <Context.Provider children={props.children} value={next} />
 }

@@ -111,7 +111,7 @@ export default function App() {
 
 function NavigatorToolProvider(props: { children: React.ReactNode }) {
   const viewport = Specviz.useViewport()
-  const fn = React.useCallback<Specviz.ToolContext.TransformProps["fn"]>(
+  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
     tool => ({
       onClick: (unit, rel, abs, xaxis, yaxis) => {
         switch (tool) {
@@ -146,7 +146,7 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
 function VisualizationToolProvider(props: { children: React.ReactNode }) {
   const region = Specviz.useRegion()
   const viewport = Specviz.useViewport()
-  const fn = React.useCallback<Specviz.ToolContext.TransformProps["fn"]>(
+  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
     tool => {
       switch (tool) {
         case "annotate":
@@ -230,7 +230,7 @@ function Visualizer(props: tsegment) {
     }),
     [audio.buffer.duration, props.offset],
   )
-  const actions = React.useMemo<Specviz.ToolContext.Actions>(
+  const actions: Specviz.ToolContext.Actions = React.useMemo(
     () => ({
       onContextMenu: (unit, rel, abs, xaxis, yaxis) => {
         audio.transport.seek(unit.x)
