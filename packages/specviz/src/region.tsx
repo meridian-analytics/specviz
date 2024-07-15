@@ -25,6 +25,10 @@ export type SelectionState = Set<Region["id"]>
 
 export type Context = {
   annotate: (rect: Rect.trect, xaxis: Axis.taxis, yaxis: Axis.taxis) => void
+  canCreate: boolean
+  canDelete: (region: Region) => boolean
+  canRead: (region: Region) => boolean
+  canUpdate: (region: Region) => boolean
   delete: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
@@ -48,6 +52,16 @@ export type Context = {
 const defaultContext: Context = {
   annotate() {
     throw Error("annotate called outside of context")
+  },
+  canCreate: true,
+  canDelete() {
+    return true
+  },
+  canRead() {
+    return true
+  },
+  canUpdate() {
+    return true
   },
   delete() {
     throw Error("delete called outside of context")
@@ -102,6 +116,10 @@ const Context = R.createContext(defaultContext)
 type InitialState<T> = T | (() => T)
 
 export type ProviderProps = {
+  canCreate?: Context["canCreate"]
+  canDelete?: Context["canDelete"]
+  canRead?: Context["canRead"]
+  canUpdate?: Context["canUpdate"]
   children: R.ReactNode
   initRegions?: InitialState<Context["regions"]>
   initSelection?: InitialState<Context["selection"]>
@@ -112,6 +130,12 @@ export function Provider(props: ProviderProps) {
   const { input } = Input.useContext()
   const axis = Axis.useContext()
 
+  // access control
+  const canCreate = props.canCreate ?? true
+  const canDelete = props.canDelete ?? defaultContext.canDelete
+  const canRead = props.canRead ?? defaultContext.canRead
+  const canUpdate = props.canUpdate ?? defaultContext.canUpdate
+
   // state
   const [regions, setRegions] = R.useState(
     props.initRegions ?? defaultContext.regions,
@@ -120,6 +144,21 @@ export function Provider(props: ProviderProps) {
     props.initSelection ?? defaultContext.selection,
   )
 
+  // computed state
+  const transformedRegions = R.useMemo(() => {
+    const next = new Map()
+    for (const [id, region] of regions) {
+      if (canRead(region)) next.set(id, region)
+    }
+    return next
+  }, [canRead, regions])
+
+  const transformedSelection = R.useMemo(
+    () => new Set(selection).intersection(transformedRegions),
+    [selection, transformedRegions],
+  )
+
+  // helpers
   const updateRegionRect = R.useCallback(
     (p: Region, func: (prev: Rect.trect) => Rect.trect) => {
       const x = axis[p.xunit]
@@ -135,31 +174,35 @@ export function Provider(props: ProviderProps) {
   )
 
   // commands
-  const annotate: Context["annotate"] = R.useCallback((rect, xaxis, yaxis) => {
-    const id = Format.randomBytes(10)
-    setRegions(prev =>
-      new Map(prev).set(id, {
-        id,
-        ...rect,
-        xunit: xaxis.unit,
-        yunit: yaxis.unit,
-      }),
-    )
-    setSelection(new Set([id]))
-  }, [])
+  const annotate: Context["annotate"] = R.useCallback(
+    (rect, xaxis, yaxis) => {
+      if (!canCreate) return
+      const id = Format.randomBytes(10)
+      setRegions(prev =>
+        new Map(prev).set(id, {
+          id,
+          ...rect,
+          xunit: xaxis.unit,
+          yunit: yaxis.unit,
+        }),
+      )
+      setSelection(new Set([id]))
+    },
+    [canCreate],
+  )
 
   const delete_: Context["delete"] = R.useCallback(() => {
-    setRegions(
-      prev =>
-        new Map(
-          (function* () {
-            for (const [id, region] of prev.entries())
-              if (!selection.has(id)) yield [id, region]
-          })(),
-        ),
-    )
+    setRegions(prev => {
+      const next = new Map()
+      for (const [id, region] of prev) {
+        if (!selection.has(id) || !canDelete(region)) {
+          next.set(id, region)
+        }
+      }
+      return next
+    })
     setSelection(new Set())
-  }, [selection])
+  }, [canDelete, selection])
 
   const deselect: Context["deselect"] = R.useCallback(() => {
     setSelection(new Set())
@@ -171,7 +214,7 @@ export function Provider(props: ProviderProps) {
         prev =>
           new Map(
             Array.from(prev, ([id, region]) => {
-              if (!selection.has(id)) return [id, region]
+              if (!selection.has(id) || !canUpdate(region)) return [id, region]
               return [
                 id,
                 updateRegionRect(region, rect => ({
@@ -193,7 +236,7 @@ export function Provider(props: ProviderProps) {
           ),
       )
     },
-    [input, selection, updateRegionRect],
+    [canUpdate, input, selection, updateRegionRect],
   )
 
   const selectArea: Context["selectArea"] = R.useCallback(
@@ -288,6 +331,7 @@ export function Provider(props: ProviderProps) {
 
   const setRectX: Context["setRectX"] = R.useCallback(
     (region, dx) => {
+      if (!canUpdate(region)) return
       setRegions(prev =>
         new Map(prev).set(
           region.id,
@@ -300,7 +344,7 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegionRect],
+    [canUpdate, updateRegionRect],
   )
   const setRectX1: Context["setRectX1"] = R.useCallback(() => {
     // todo: implement
@@ -308,6 +352,7 @@ export function Provider(props: ProviderProps) {
 
   const setRectX2: Context["setRectX2"] = R.useCallback(
     (region, dx) => {
+      if (!canUpdate(region)) return
       setRegions(prev =>
         new Map(prev).set(
           region.id,
@@ -320,11 +365,12 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegionRect],
+    [canUpdate, updateRegionRect],
   )
 
   const setRectY: Context["setRectY"] = R.useCallback(
     (region, dy) => {
+      if (!canUpdate(region)) return
       setRegions(prev =>
         new Map(prev).set(
           region.id,
@@ -337,11 +383,12 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegionRect],
+    [canUpdate, updateRegionRect],
   )
 
   const setRectY1: Context["setRectY1"] = R.useCallback(
     (region, dy) => {
+      if (!canUpdate(region)) return
       setRegions(prev =>
         new Map(prev).set(
           region.id,
@@ -358,11 +405,12 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegionRect],
+    [canUpdate, updateRegionRect],
   )
 
   const setRectY2: Context["setRectY2"] = R.useCallback(
     (region, dy) => {
+      if (!canUpdate(region)) return
       setRegions(prev =>
         new Map(prev).set(
           region.id,
@@ -375,17 +423,25 @@ export function Provider(props: ProviderProps) {
         ),
       )
     },
-    [updateRegionRect],
+    [canUpdate, updateRegionRect],
   )
 
-  const updateRegion: Context["updateRegion"] = R.useCallback((id, region) => {
-    setRegions(prev => new Map(prev).set(id, region))
-  }, [])
+  const updateRegion: Context["updateRegion"] = R.useCallback(
+    (id, region) => {
+      if (!canUpdate(region)) return
+      setRegions(prev => new Map(prev).set(id, region))
+    },
+    [canUpdate],
+  )
 
   // computed context
   const value: Context = R.useMemo(
     () => ({
       annotate,
+      canCreate,
+      canDelete,
+      canRead,
+      canUpdate,
       delete: delete_,
       deselect,
       moveSelection,
@@ -401,12 +457,16 @@ export function Provider(props: ProviderProps) {
       setRectY2,
       setRegions,
       setSelection,
-      transformedRegions: regions,
-      transformedSelection: selection,
+      transformedRegions,
+      transformedSelection,
       updateRegion,
     }),
     [
       annotate,
+      canCreate,
+      canDelete,
+      canRead,
+      canUpdate,
       delete_,
       deselect,
       moveSelection,
@@ -421,6 +481,8 @@ export function Provider(props: ProviderProps) {
       setRectY1,
       setRectY2,
       updateRegion,
+      transformedRegions,
+      transformedSelection,
     ],
   )
 
@@ -465,8 +527,7 @@ export function Transform(props: TransformProps) {
 export function transformFilter(fn: (region: Region) => boolean) {
   return (regions: RegionState) => {
     const next = new Map()
-    for (const [id, region] of regions.entries())
-      if (fn(region)) next.set(id, region)
+    for (const [id, region] of regions) if (fn(region)) next.set(id, region)
     return next
   }
 }
