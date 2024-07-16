@@ -6,7 +6,9 @@ import * as Mathx from "./mathx"
 import * as Rect from "./rect"
 import type * as Vector2 from "./vector2"
 
-export interface Region {
+export type UserData = Record<string, RegionValue>
+
+export type Region = {
   id: string
   x: number
   y: number
@@ -14,8 +16,7 @@ export interface Region {
   height: number
   xunit: string
   yunit: string
-  [key: string]: RegionValue
-}
+} & UserData
 
 export type RegionValue = boolean | number | string | string[]
 
@@ -24,7 +25,12 @@ export type RegionState = Map<Region["id"], Region>
 export type SelectionState = Set<Region["id"]>
 
 export type Context = {
-  annotate: (rect: Rect.trect, xaxis: Axis.taxis, yaxis: Axis.taxis) => void
+  annotate: (
+    rect: Rect.trect,
+    xaxis: Axis.taxis,
+    yaxis: Axis.taxis,
+    userData?: UserData,
+  ) => void
   canCreate: boolean
   canDelete: (region: Region) => boolean
   canRead: (region: Region) => boolean
@@ -175,11 +181,12 @@ export function Provider(props: ProviderProps) {
 
   // commands
   const annotate: Context["annotate"] = R.useCallback(
-    (rect, xaxis, yaxis) => {
+    (rect, xaxis, yaxis, userData) => {
       if (!canCreate) return
       const id = Format.randomBytes(10)
       setRegions(prev =>
         new Map(prev).set(id, {
+          ...userData,
           id,
           ...rect,
           xunit: xaxis.unit,
