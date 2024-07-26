@@ -24,6 +24,30 @@ export type RegionState = Map<Region["id"], Region>
 
 export type SelectionState = Set<Region["id"]>
 
+export enum SelectionMode {
+  add = "add",
+  invert = "invert",
+  replace = "replace",
+  subtract = "subtract",
+}
+
+function concatSelection(
+  prev: SelectionState,
+  next: SelectionState,
+  selectionMode: SelectionMode,
+) {
+  switch (selectionMode) {
+    case SelectionMode.invert:
+      return prev.symmetricDifference(next)
+    case SelectionMode.add:
+      return prev.union(next)
+    case SelectionMode.subtract:
+      return prev.difference(next)
+    case SelectionMode.replace:
+      return next
+  }
+}
+
 export type Context = {
   annotate: (
     rect: Rect.trect,
@@ -39,9 +63,10 @@ export type Context = {
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
   regions: RegionState
-  selectArea: (rect: Rect.trect) => void
+  selectArea: (rect: Rect.trect, selectionMode?: SelectionMode) => void
   selection: SelectionState
-  selectPoint: (pt: Vector2.tvector2) => void
+  selectPoint: (pt: Vector2.tvector2, selectionMode?: SelectionMode) => void
+  selectId: (id: string, selectionMode?: SelectionMode) => void
   setRectX: (region: Region, dx: number) => void
   setRectX1: (region: Region, dx: number) => void
   setRectX2: (region: Region, dx: number) => void
@@ -81,6 +106,9 @@ const defaultContext: Context = {
   regions: new Map(),
   selectArea() {
     throw Error("selectArea called outside of context")
+  },
+  selectId() {
+    throw Error("selectId called outside of context")
   },
   selection: new Set(),
   selectPoint() {
@@ -165,6 +193,37 @@ export function Provider(props: ProviderProps) {
   )
 
   // helpers
+  const selectHelper = R.useCallback(
+    (
+      selectFn: (rect: Rect.trect) => boolean,
+      selectionMode?: SelectionMode,
+    ) => {
+      setSelection(prev => {
+        const next: SelectionState = new Set()
+        for (const r of regions.values()) {
+          const u = computeRectInverse(r, axis)
+          if (
+            selectFn(
+              Rect.logical(
+                u,
+                input.xaxis?.unit == r.xunit,
+                input.yaxis?.unit == r.yunit,
+              ),
+            )
+          ) {
+            next.add(r.id)
+          }
+        }
+        return concatSelection(
+          prev,
+          next,
+          selectionMode ?? SelectionMode.replace,
+        )
+      })
+    },
+    [axis, input, regions],
+  )
+
   const updateRegionRect = R.useCallback(
     (p: Region, func: (prev: Rect.trect) => Rect.trect) => {
       const x = axis[p.xunit]
@@ -247,93 +306,27 @@ export function Provider(props: ProviderProps) {
   )
 
   const selectArea: Context["selectArea"] = R.useCallback(
-    area => {
-      setSelection(prev => {
-        if (input.ctrl) {
-          const nextState: SelectionState = new Set(prev)
-          for (const r of regions.values()) {
-            const u = computeRectInverse(r, axis)
-            if (
-              Rect.intersectRect(
-                Rect.logical(
-                  u,
-                  input.xaxis?.unit == r.xunit,
-                  input.yaxis?.unit == r.yunit,
-                ),
-                area,
-              )
-            ) {
-              if (nextState.has(r.id)) nextState.delete(r.id)
-              else nextState.add(r.id)
-            }
-          }
-          return nextState
-        }
-        const nextState: SelectionState = new Set()
-        for (const r of regions.values()) {
-          const u = computeRectInverse(r, axis)
-          if (
-            Rect.intersectRect(
-              Rect.logical(
-                u,
-                input.xaxis?.unit == r.xunit,
-                input.yaxis?.unit == r.yunit,
-              ),
-              area,
-            )
-          ) {
-            nextState.add(r.id)
-          }
-        }
-        return nextState
-      })
+    (area, selectionMode) => {
+      selectHelper(
+        rect => Rect.intersectRect(rect, area) != null,
+        selectionMode,
+      )
     },
-    [axis, input, regions],
+    [selectHelper],
   )
 
+  const selectId: Context["selectId"] = R.useCallback((id, selectionMode) => {
+    setSelection(prev => {
+      const next = new Set([id])
+      return concatSelection(prev, next, selectionMode ?? SelectionMode.replace)
+    })
+  }, [])
+
   const selectPoint: Context["selectPoint"] = R.useCallback(
-    pt => {
-      setSelection(prevState => {
-        if (input.ctrl) {
-          const nextState: SelectionState = new Set(prevState)
-          for (const r of regions.values()) {
-            const u = computeRectInverse(r, axis)
-            if (
-              Rect.intersectPoint(
-                Rect.logical(
-                  u,
-                  input.xaxis?.unit == r.xunit,
-                  input.yaxis?.unit == r.yunit,
-                ),
-                pt,
-              )
-            ) {
-              if (nextState.has(r.id)) nextState.delete(r.id)
-              else nextState.add(r.id)
-            }
-          }
-          return nextState
-        }
-        const nextState: SelectionState = new Set()
-        for (const r of regions.values()) {
-          const u = computeRectInverse(r, axis)
-          if (
-            Rect.intersectPoint(
-              Rect.logical(
-                u,
-                input.xaxis?.unit == r.xunit,
-                input.yaxis?.unit == r.yunit,
-              ),
-              pt,
-            )
-          ) {
-            nextState.add(r.id)
-          }
-        }
-        return nextState
-      })
+    (pt, selectionMode) => {
+      selectHelper(rect => Rect.intersectPoint(rect, pt), selectionMode)
     },
-    [axis, input, regions],
+    [selectHelper],
   )
 
   const setRectX: Context["setRectX"] = R.useCallback(
@@ -454,6 +447,7 @@ export function Provider(props: ProviderProps) {
       moveSelection,
       regions,
       selectArea,
+      selectId,
       selection,
       selectPoint,
       setRectX,
@@ -479,6 +473,7 @@ export function Provider(props: ProviderProps) {
       moveSelection,
       regions,
       selectArea,
+      selectId,
       selection,
       selectPoint,
       setRectX,
