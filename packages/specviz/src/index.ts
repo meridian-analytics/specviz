@@ -7,6 +7,7 @@ export {
   type RegionState,
   type SelectionState,
 } from "./region"
+export { type ZoomDirection } from "./viewport"
 export { type VisualizationProps } from "./visualization"
 
 // components

@@ -11,7 +11,7 @@ export type Context = {
   scrollTo: (scroll: Scroll) => void
   zoom: (dx: number, dy: number) => void
   zoomArea: (rect: Rect.trect) => void
-  zoomPoint: (point: Vector2.tvector2) => void
+  zoomPoint: (point: Vector2.tvector2, zoomDirection?: ZoomDirection) => void
   zoomScroll: (dx: number, dy: number) => void
 }
 
@@ -23,6 +23,11 @@ type State = {
 type Scroll = Vector2.tvector2
 
 type Zoom = Vector2.tvector2
+
+export enum ZoomDirection {
+  in = "in",
+  out = "out",
+}
 
 const defaultContext: Context = {
   state: {
@@ -112,21 +117,25 @@ export function Provider(props: ProviderProps) {
     })
   }, [])
 
-  const zoomPoint: Context["zoomPoint"] = React.useCallback(point => {
-    setState(prev => {
-      const rx = point.x * prev.zoom.x - prev.scroll.x
-      const ry = point.y * prev.zoom.y - prev.scroll.y
-      const zx = Mathx.clamp(prev.zoom.x + 0.5, 1, ZOOM_MAX.x)
-      const zy = Mathx.clamp(prev.zoom.y + 0.5, 1, ZOOM_MAX.y)
-      return {
-        zoom: { x: zx, y: zy },
-        scroll: {
-          x: Mathx.clamp(point.x * zx - rx, 0, zx - 1),
-          y: Mathx.clamp(point.y * zy - ry, 0, zy - 1),
-        },
-      }
-    })
-  }, [])
+  const zoomPoint: Context["zoomPoint"] = React.useCallback(
+    (point, zoomDirection) => {
+      setState(prev => {
+        const step = zoomDirection == "out" ? -0.5 : 0.5
+        const rx = point.x * prev.zoom.x - prev.scroll.x
+        const ry = point.y * prev.zoom.y - prev.scroll.y
+        const zx = Mathx.clamp(prev.zoom.x + step, 1, ZOOM_MAX.x)
+        const zy = Mathx.clamp(prev.zoom.y + step, 1, ZOOM_MAX.y)
+        return {
+          zoom: { x: zx, y: zy },
+          scroll: {
+            x: Mathx.clamp(point.x * zx - rx, 0, zx - 1),
+            y: Mathx.clamp(point.y * zy - ry, 0, zy - 1),
+          },
+        }
+      })
+    },
+    [],
+  )
 
   const zoomScroll: Context["zoomScroll"] = React.useCallback(
     (dx, dy) => {
