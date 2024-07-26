@@ -45,12 +45,12 @@ function PlayEffect() {
     // hpf
     hpf = audioContext.createBiquadFilter()
     hpf.type = "highpass"
-    hpf.frequency.value = fx.hpf ?? 0
+    hpf.frequency.value = clamp(fx.hpf ?? 0, 0, 22050)
     hpf.Q.value = 20
     // lpf
     lpf = audioContext.createBiquadFilter()
     lpf.type = "lowpass"
-    lpf.frequency.value = fx.lpf ?? 200000
+    lpf.frequency.value = clamp(fx.lpf ?? 22050, 0, 22050)
     lpf.Q.value = 20
     // source
     source = audioContext.createBufferSource()
@@ -110,4 +110,8 @@ function PlayEffect() {
 
   // render empty node
   return <R.Fragment />
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max)
 }
