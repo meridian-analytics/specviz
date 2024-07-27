@@ -22,24 +22,24 @@ export function useAnimationFrame(callback: (frameId: number) => void) {
 }
 
 export function useMouseLowLevel(props: {
-  onMouseDown?: R.MouseEventHandler<SVGSVGElement>
-  onMouseMove?: R.MouseEventHandler<SVGSVGElement>
-  onMouseUp?: R.MouseEventHandler<SVGSVGElement>
-  onMouseEnter?: R.MouseEventHandler<SVGSVGElement>
-  onMouseLeave?: R.MouseEventHandler<SVGSVGElement>
-  onContextMenu?: R.MouseEventHandler<SVGSVGElement>
+  onMouseDown?: R.MouseEventHandler
+  onMouseMove?: R.MouseEventHandler
+  onMouseUp?: R.MouseEventHandler
+  onMouseEnter?: R.MouseEventHandler
+  onMouseLeave?: R.MouseEventHandler
+  onContextMenu?: R.MouseEventHandler
 }) {
   const plane = Plane.useContext()
   const input = Input.useContext()
   const viewport = Viewport.useContext()
-  const onContextMenu: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
+  const onContextMenu: R.MouseEventHandler = R.useCallback(
     e => {
       e.preventDefault() // disable context menu
       props.onContextMenu?.(e)
     },
     [props.onContextMenu],
   )
-  const onMouseDown: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
+  const onMouseDown: R.MouseEventHandler = R.useCallback(
     e => {
       e.preventDefault() // disable native drag
       input.input.buttons = e.buttons
@@ -47,7 +47,7 @@ export function useMouseLowLevel(props: {
     },
     [input.input, props.onMouseDown],
   )
-  const onMouseMove: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
+  const onMouseMove: R.MouseEventHandler = R.useCallback(
     e => {
       const elem = e.currentTarget
       const box = elem.getBoundingClientRect()
@@ -101,14 +101,14 @@ export function useMouseLowLevel(props: {
       viewport.state.zoom.y,
     ],
   )
-  const onMouseUp: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
+  const onMouseUp: R.MouseEventHandler = R.useCallback(
     e => {
       props.onMouseUp?.(e)
       input.input.buttons = 0
     },
     [input.input, props.onMouseUp],
   )
-  const onMouseEnter: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
+  const onMouseEnter: R.MouseEventHandler = R.useCallback(
     e => {
       input.input.focus = e.currentTarget
       if (plane.xaxis != null) input.input.xaxis = plane.xaxis
@@ -117,7 +117,7 @@ export function useMouseLowLevel(props: {
     },
     [input.input, plane.xaxis, plane.yaxis, props.onMouseEnter],
   )
-  const onMouseLeave: R.MouseEventHandler<SVGSVGElement> = R.useCallback(
+  const onMouseLeave: R.MouseEventHandler = R.useCallback(
     e => {
       props.onMouseLeave?.(e)
       input.input.buttons = 0
@@ -146,76 +146,101 @@ export function useMouseLowLevel(props: {
   ])
 }
 
+export type UseMouseClickHandler = (useMouseEvent: {
+  unit: Vector2.tvector2
+  rel: Vector2.tvector2
+  abs: Vector2.tvector2
+  xaxis: Axis.taxis
+  yaxis: Axis.taxis
+  event: React.MouseEvent
+}) => void
+
+export type UseMouseContextMenuHandler = (useMouseEvent: {
+  unit: Vector2.tvector2
+  rel: Vector2.tvector2
+  abs: Vector2.tvector2
+  xaxis: Axis.taxis
+  yaxis: Axis.taxis
+  event: React.MouseEvent
+}) => void
+
+export type UseMouseRectHandler = (useMouseEvent: {
+  unit: Rect.trect
+  rel: Rect.trect
+  abs: Rect.trect
+  xaxis: Axis.taxis
+  yaxis: Axis.taxis
+  event: React.MouseEvent
+}) => void
+
+export type UseMouseMoveHandler = (useMouseEvent: {
+  dx: number
+  dy: number
+  event: React.MouseEvent
+}) => void
+
+export type UseMouseWheelHandler = (useMouseEvent: {
+  dx: number
+  dy: number
+  event: WheelEvent
+}) => void
+
 export type UseMouseProps = {
-  onClick?: (
-    unit: Vector2.tvector2,
-    rel: Vector2.tvector2,
-    abs: Vector2.tvector2,
-    xaxis: Axis.taxis,
-    yaxis: Axis.taxis,
-  ) => void
-  onContextMenu?: (
-    unit: Vector2.tvector2,
-    rel: Vector2.tvector2,
-    abs: Vector2.tvector2,
-    xaxis: Axis.taxis,
-    yaxis: Axis.taxis,
-  ) => void
-  onRect?: (
-    unit: Rect.trect,
-    rel: Rect.trect,
-    abs: Rect.trect,
-    xaxis: Axis.taxis,
-    yaxis: Axis.taxis,
-  ) => void
-  onMove?: (dx: number, dy: number) => void
+  onClick?: UseMouseClickHandler
+  onContextMenu?: UseMouseContextMenuHandler
+  onRect?: UseMouseRectHandler
+  onMove?: UseMouseMoveHandler
+  onWheel?: UseMouseWheelHandler
 }
 
 export function useMouse(props: UseMouseProps) {
   const input = Input.useContext()
   const plane = Plane.useContext()
   return useMouseLowLevel({
-    onMouseMove: R.useCallback<R.MouseEventHandler<SVGSVGElement>>(
-      e => {
+    onMouseMove: R.useCallback<R.MouseEventHandler>(
+      event => {
         if (input.input.buttons & 1) {
-          const dx = e.movementX / e.currentTarget.clientWidth
-          const dy = e.movementY / e.currentTarget.clientHeight
-          props.onMove?.(dx, dy)
+          const dx = event.movementX / event.currentTarget.clientWidth
+          const dy = event.movementY / event.currentTarget.clientHeight
+          props.onMove?.({ dx, dy, event })
         }
       },
       [input.input, props.onMove],
     ),
-    onMouseUp: R.useCallback<R.MouseEventHandler<SVGSVGElement>>(
-      e => {
+    onMouseUp: R.useCallback<R.MouseEventHandler>(
+      event => {
         if (input.input.buttons & 1) {
           const mouseRect = Rect.fromPoints(
             input.mousedown.abs,
             input.mouseup.abs,
           )
           if (Rect.diagonal(mouseRect) < 0.01)
-            props.onClick?.(
-              input.unitUp,
-              input.mouseup.rel,
-              input.mouseup.abs,
-              plane.xaxis,
-              plane.yaxis,
-            )
+            props.onClick?.({
+              event,
+              unit: input.unitUp,
+              rel: input.mouseup.rel,
+              abs: input.mouseup.abs,
+              xaxis: plane.xaxis,
+              yaxis: plane.yaxis,
+            })
           else
-            props.onRect?.(
-              Rect.fromPoints(input.unitDown, input.unitUp),
-              Rect.fromPoints(input.mousedown.rel, input.mouseup.rel),
-              mouseRect,
-              plane.xaxis,
-              plane.yaxis,
-            )
+            props.onRect?.({
+              event,
+              unit: Rect.fromPoints(input.unitDown, input.unitUp),
+              rel: Rect.fromPoints(input.mousedown.rel, input.mouseup.rel),
+              abs: mouseRect,
+              xaxis: plane.xaxis,
+              yaxis: plane.yaxis,
+            })
         } else if (input.input.buttons & 2) {
-          props.onContextMenu?.(
-            input.unitUp,
-            input.mouseup.rel,
-            input.mouseup.abs,
-            plane.xaxis,
-            plane.yaxis,
-          )
+          props.onContextMenu?.({
+            event,
+            unit: input.unitUp,
+            rel: input.mouseup.rel,
+            abs: input.mouseup.abs,
+            xaxis: plane.xaxis,
+            yaxis: plane.yaxis,
+          })
         }
       },
       [
@@ -360,31 +385,34 @@ export function useMutableRect() {
   }, [])
 }
 
-// react uses passive event listeners by default
-// to stop propagation, use a non-passive listener
-// https://stackoverflow.com/a/67258046
-export function useWheel(ref: R.RefObject<SVGSVGElement>, direction: 1 | -1) {
-  const viewport = Viewport.useContext()
-  R.useEffect(() => {
-    function onWheel(e: WheelEvent) {
-      if (ref.current) {
-        e.preventDefault()
-        const dx = e.deltaX / ref.current.clientWidth
-        const dy = e.deltaY / ref.current.clientHeight
-        if (e.altKey) {
-          viewport.zoomScroll(dx * direction, dy * direction)
-        } else {
-          viewport.scroll(-dx * direction, -dy * direction)
-        }
+export type UseWheelProps = {
+  ref: R.RefObject<SVGElement>
+  onWheel?: UseMouseProps["onWheel"]
+}
+
+export function useWheel(props: UseWheelProps) {
+  const onWheel = R.useCallback(
+    (event: WheelEvent) => {
+      if (props.ref.current) {
+        event.preventDefault()
+        const dx = event.deltaX / props.ref.current.clientWidth
+        const dy = event.deltaY / props.ref.current.clientHeight
+        props.onWheel?.({ dx, dy, event })
       }
-    }
-    if (ref.current) {
-      ref.current.addEventListener("wheel", onWheel, { passive: false })
+    },
+    [props.onWheel, props.ref],
+  )
+  R.useEffect(() => {
+    if (props.ref.current) {
+      // react uses passive event listeners by default
+      // to stop propagation, use a non-passive listener
+      // https://stackoverflow.com/a/67258046
+      props.ref.current.addEventListener("wheel", onWheel, { passive: false })
     }
     return () => {
-      if (ref.current) {
-        ref.current.removeEventListener("wheel", onWheel)
+      if (props.ref.current) {
+        props.ref.current.removeEventListener("wheel", onWheel)
       }
     }
-  }, [ref, direction, viewport.scroll, viewport.zoomScroll])
+  }, [props.ref, onWheel])
 }

@@ -11,8 +11,7 @@ export type tcoord = {
 type tinput = {
   alt: boolean
   buttons: number
-  ctrl: boolean
-  focus: null | SVGSVGElement
+  focus: null | (EventTarget & Element)
   xaxis: null | Axis.taxis
   yaxis: null | Axis.taxis
 }
@@ -29,7 +28,6 @@ const defaultContext: Context = {
   input: {
     alt: false,
     buttons: 0,
-    ctrl: false,
     focus: null,
     xaxis: null,
     yaxis: null,
@@ -50,8 +48,7 @@ export function Provider(props: ProviderProps) {
   const input: Context["input"] = R.useMemo(() => {
     let buttons = 0
     let alt = false
-    let ctrl = false
-    let focus: null | SVGSVGElement = null
+    let focus: null | SVGElement = null
     let xaxis: null | Axis.taxis = null
     let yaxis: null | Axis.taxis = null
     return {
@@ -66,12 +63,6 @@ export function Provider(props: ProviderProps) {
       },
       set alt(v) {
         alt = v
-      },
-      get ctrl() {
-        return ctrl
-      },
-      set ctrl(v) {
-        ctrl = v
       },
       get focus() {
         return focus
@@ -112,15 +103,11 @@ export function Provider(props: ProviderProps) {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key == "Alt") {
         input.alt = true
-      } else if (e.key == "Control") {
-        input.ctrl = true
       }
     }
     function onKeyUp(e: KeyboardEvent) {
       if (e.key == "Alt") {
         input.alt = false
-      } else if (e.key == "Control") {
-        input.ctrl = false
       }
     }
     window.addEventListener("keydown", onKeyDown)

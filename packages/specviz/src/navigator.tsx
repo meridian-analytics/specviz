@@ -21,7 +21,7 @@ export default function Navigator(props: NavigatorProps) {
   const viewport = Viewport.useContext()
   const onMouse = Hooks.useMouse(tool.actions)
 
-  Hooks.useWheel(containerRef, 1)
+  Hooks.useWheel({ ref: containerRef, onWheel: tool.actions.onWheel })
   const dimensions = Hooks.useDimensions(containerRef)
   const maskPath = `
     M 0 0

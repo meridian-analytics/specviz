@@ -1,6 +1,13 @@
 // types
 export { type AnnotationProps } from "./annotation"
 export { type Axes, type taxis as Axis } from "./axis"
+export {
+  type UseMouseClickHandler,
+  type UseMouseContextMenuHandler,
+  type UseMouseMoveHandler,
+  type UseMouseRectHandler,
+  type UseMouseWheelHandler,
+} from "./hooks"
 export { type NavigatorProps } from "./navigator"
 export {
   type Region,

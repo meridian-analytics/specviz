@@ -1,6 +1,6 @@
 import * as R from "react"
 import * as Axis from "./axis"
-import * as Input from "./input"
+import * as Hooks from "./hooks"
 import * as Region from "./region"
 
 const min = (5 * Math.PI) / 4
@@ -12,29 +12,21 @@ function Encoder(props: {
   value: number
   unit: string
 }) {
-  const { input } = Input.useContext()
-  const svgRef = R.useRef<SVGSVGElement>(null)
+  const svgRef = R.useRef<null | SVGSVGElement>(null)
 
   const { x, y } = R.useMemo(() => {
     const rad = min - props.state * (min - max)
     return { x: (Math.cos(rad) * 4) / 5, y: (-Math.sin(rad) * 4) / 5 }
   }, [props.state])
 
-  R.useEffect(() => {
-    function onWheel(e: WheelEvent) {
-      e.preventDefault()
-      const dy = e.deltaY / (input.ctrl ? 10000 : 1000)
-      props.setState(dy)
-    }
-    if (svgRef.current) {
-      svgRef.current.addEventListener("wheel", onWheel, { passive: false })
-    }
-    return () => {
-      if (svgRef.current) {
-        svgRef.current.removeEventListener("wheel", onWheel)
-      }
-    }
-  }, [input, props.setState])
+  const onWheel: Hooks.UseMouseWheelHandler = R.useCallback(
+    ({ dy, event }) => {
+      props.setState(dy / (event.ctrlKey || event.metaKey ? 1000 : 100))
+    },
+    [props.setState],
+  )
+
+  Hooks.useWheel({ ref: svgRef, onWheel })
 
   return (
     <svg ref={svgRef} width="60" height="60" viewBox="-1.1 -1.1 2.2 2.2">

@@ -113,7 +113,7 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
   const viewport = Specviz.useViewport()
   const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
     tool => ({
-      onClick: (unit, rel, abs, xaxis, yaxis) => {
+      onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
         switch (tool) {
           case "annotate":
           case "select":
@@ -128,8 +128,15 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
             break
         }
       },
-      onMove: (dx, dy) => {
+      onMove: ({ dx, dy, event }) => {
         viewport.scroll(dx * viewport.state.zoom.x, dy * viewport.state.zoom.y)
+      },
+      onWheel: ({ dx, dy, event }) => {
+        if (event.altKey) {
+          viewport.zoomScroll(dx, dy)
+        } else {
+          viewport.scroll(-dx, -dy)
+        }
       },
     }),
     [
@@ -138,6 +145,7 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
       viewport.scrollTo,
       viewport.state.zoom.x,
       viewport.state.zoom.y,
+      viewport.zoomScroll,
     ],
   )
   return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
@@ -146,39 +154,52 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
 function VisualizationToolProvider(props: { children: React.ReactNode }) {
   const region = Specviz.useRegion()
   const viewport = Specviz.useViewport()
+  const onWheel: Specviz.UseMouseWheelHandler = React.useCallback(
+    ({ dx, dy, event }) => {
+      if (event.altKey) {
+        viewport.zoomScroll(-dx, -dy)
+      } else {
+        viewport.scroll(dx, dy)
+      }
+    },
+    [viewport.zoomScroll, viewport.scroll],
+  )
   const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
     tool => {
       switch (tool) {
         case "annotate":
           return {
-            onClick: (unit, rel, abs, xaxis, yaxis) => {
+            onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
               region.selectPoint(abs)
             },
-            onRect: (unit, rel, abs, xaxis, yaxis) => {
+            onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
               region.annotate(unit, xaxis, yaxis)
             },
+            onWheel,
           }
         case "select":
           return {
-            onClick: (unit, rel, abs, xaxis, yaxis) => {
+            onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
               region.selectPoint(abs)
             },
-            onRect: (unit, rel, abs, xaxis, yaxis) => {
+            onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
               region.selectArea(abs)
             },
+            onWheel,
           }
         case "zoom":
           return {
-            onClick: (unit, rel, abs, xaxis, yaxis) => {
+            onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
               viewport.zoomPoint(abs)
             },
-            onRect: (unit, rel, abs, xaxis, yaxis) => {
+            onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
               viewport.zoomArea(abs)
             },
+            onWheel,
           }
         case "pan":
           return {
-            onMove: (dx, dy) => {
+            onMove: ({ dx, dy, event }) => {
               if (region.selection.size == 0) {
                 viewport.scroll(-dx, -dy)
               } else {
@@ -188,10 +209,12 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
                 )
               }
             },
+            onWheel,
           }
       }
     },
     [
+      onWheel,
       region.annotate,
       region.moveSelection,
       region.selectArea,
@@ -232,7 +255,7 @@ function Visualizer(props: tsegment) {
   )
   const actions: Specviz.ToolContext.Actions = React.useMemo(
     () => ({
-      onContextMenu: (unit, rel, abs, xaxis, yaxis) => {
+      onContextMenu: ({ unit, rel, abs, xaxis, yaxis, event }) => {
         audio.transport.seek(unit.x)
       },
     }),

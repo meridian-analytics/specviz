@@ -66,7 +66,7 @@ export default function Visualization(props: VisualizationProps) {
 
   const onMouse = Hooks.useMouse(tool.actions)
 
-  Hooks.useWheel(svgRoot, -1)
+  Hooks.useWheel({ ref: svgRoot, onWheel: tool.actions.onWheel })
 
   const translate = `translate(${-viewport.state.scroll.x}, ${-viewport.state
     .scroll.y})`
