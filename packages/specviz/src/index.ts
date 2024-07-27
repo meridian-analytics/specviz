@@ -15,7 +15,9 @@ export {
   type SelectionState,
   SelectionMode, // enum
 } from "./region"
-export { type ZoomDirection } from "./viewport"
+export {
+  ZoomDirection, // enum
+} from "./viewport"
 export { type VisualizationProps } from "./visualization"
 
 // components

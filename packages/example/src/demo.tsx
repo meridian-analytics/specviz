@@ -190,7 +190,12 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
         case "zoom":
           return {
             onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-              viewport.zoomPoint(abs)
+              viewport.zoomPoint(
+                abs,
+                event.ctrlKey || event.metaKey
+                  ? Specviz.ZoomDirection.out
+                  : Specviz.ZoomDirection.in,
+              )
             },
             onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
               viewport.zoomArea(abs)
