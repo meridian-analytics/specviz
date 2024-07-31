@@ -12,6 +12,7 @@ export { type NavigatorProps } from "./navigator"
 export {
   type Region,
   type RegionState,
+  type RegionValue,
   type SelectionState,
   SelectionMode, // enum
 } from "./region"
