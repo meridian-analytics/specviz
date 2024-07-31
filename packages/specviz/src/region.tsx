@@ -78,6 +78,7 @@ export type Context = {
   transformedRegions: RegionState
   transformedSelection: SelectionState
   updateRegion: (id: string, region: Region) => void
+  updateSelectedRegions: (fn: (region: Region) => Region) => void
 }
 
 const defaultContext: Context = {
@@ -142,6 +143,9 @@ const defaultContext: Context = {
   transformedSelection: new Set(),
   updateRegion() {
     throw Error("updateRegion called outside of context")
+  },
+  updateSelectedRegions() {
+    throw Error("updateSelectedRegions called outside of context")
   },
 }
 
@@ -434,6 +438,22 @@ export function Provider(props: ProviderProps) {
     [canUpdate],
   )
 
+  const updateSelectedRegions: Context["updateSelectedRegions"] = R.useCallback(
+    updateFn => {
+      setRegions(
+        prev =>
+          new Map(
+            Array.from(prev, ([id, region]) => {
+              if (!transformedSelection.has(id) || !canUpdate(region))
+                return [id, region]
+              return [id, updateFn(region)]
+            }),
+          ),
+      )
+    },
+    [canUpdate, transformedSelection],
+  )
+
   // computed context
   const value: Context = R.useMemo(
     () => ({
@@ -461,6 +481,7 @@ export function Provider(props: ProviderProps) {
       transformedRegions,
       transformedSelection,
       updateRegion,
+      updateSelectedRegions,
     }),
     [
       annotate,
@@ -483,6 +504,7 @@ export function Provider(props: ProviderProps) {
       setRectY1,
       setRectY2,
       updateRegion,
+      updateSelectedRegions,
       transformedRegions,
       transformedSelection,
     ],
