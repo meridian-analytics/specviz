@@ -1,5 +1,6 @@
 import * as R from "react"
 import * as Axis from "./axis"
+import * as Plane from "./plane"
 import * as Rect from "./rect"
 import type * as Region from "./region"
 import type * as Vector2 from "./vector2"
@@ -9,21 +10,20 @@ export type AnnotationProps = {
   children?: typeof Annotation
   region: Region.Region
   dimensions: Vector2.tvector2
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
   selected?: boolean
 }
 
 function Annotation(props: AnnotationProps) {
+  const plane = Plane.useContext()
   const viewport = Viewport.useContext()
   // compute logical rect
   const lrect: Rect.trect = R.useMemo(() => {
     return Rect.logical(
-      Axis.computeRectInverse(props.xaxis, props.yaxis, props.region),
-      props.xaxis.unit == props.region.xunit,
-      props.yaxis.unit == props.region.yunit,
+      Axis.computeRectInverse(plane.xaxis, plane.yaxis, props.region),
+      plane.xaxis.unit == props.region.xunit,
+      plane.yaxis.unit == props.region.yunit,
     )
-  }, [props.region, props.xaxis, props.yaxis])
+  }, [plane.xaxis, plane.yaxis, props.region])
   // rect out of bounds (not on axis)
   if (Number.isNaN(lrect.x)) return <R.Fragment />
   if (Number.isNaN(lrect.y)) return <R.Fragment />

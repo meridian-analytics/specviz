@@ -126,8 +126,6 @@ export default function Visualization(props: VisualizationProps) {
                     ? region.selection
                     : region.transformedSelection
                   ).has(r.id)}
-                  xaxis={plane.xaxis}
-                  yaxis={plane.yaxis}
                 />
               ),
             )}

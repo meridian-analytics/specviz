@@ -1,7 +1,6 @@
 import * as R from "react"
 import Annotation from "./annotation"
 import * as Hooks from "./hooks"
-import * as Plane from "./plane"
 import Playhead from "./playhead"
 import * as Region from "./region"
 import * as Tool from "./tool"
@@ -13,7 +12,6 @@ export type NavigatorProps = {
 }
 
 export default function Navigator(props: NavigatorProps) {
-  const plane = Plane.useContext()
   const region = Region.useContext()
   const tool = Tool.useContext()
   const containerRef = R.useRef<SVGSVGElement>(null)
@@ -63,8 +61,6 @@ export default function Navigator(props: NavigatorProps) {
               dimensions={dimensions}
               key={region.id}
               region={region}
-              xaxis={plane.xaxis}
-              yaxis={plane.yaxis}
             />
           ),
         )}
