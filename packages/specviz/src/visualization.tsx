@@ -20,52 +20,12 @@ export type VisualizationProps = {
 
 export default function Visualization(props: VisualizationProps) {
   const svgRoot = R.useRef<SVGSVGElement>(null)
-  const svgSelection = R.useRef<SVGRectElement>(null)
-  const input = Input.useContext()
   const plane = Plane.useContext()
   const region = Region.useContext()
   const tool = Tool.useContext()
   const viewport = Viewport.useContext()
   const dimensions = Hooks.useDimensions(svgRoot)
-
-  Hooks.useAnimationFrame(
-    R.useCallback(() => {
-      if (svgSelection.current) {
-        switch (tool.tool) {
-          case "annotate":
-          case "select":
-          case "zoom":
-            if (input.input.buttons & 1) {
-              Svg.show(svgSelection.current)
-              Svg.setRect(
-                svgSelection.current,
-                Rect.logical(
-                  Rect.fromPoints(input.mousedown.abs, input.mouseup.abs), // input.mouseRect,
-                  plane.xaxis === input.input.xaxis,
-                  plane.yaxis === input.input.yaxis,
-                ),
-              )
-            } else {
-              Svg.hide(svgSelection.current)
-            }
-            break
-          case "pan":
-            Svg.hide(svgSelection.current)
-            break
-        }
-      }
-    }, [
-      tool.tool,
-      plane.xaxis,
-      plane.yaxis,
-      input.input,
-      input.mousedown,
-      input.mouseup,
-    ]),
-  )
-
   const onMouse = Hooks.useMouse(tool.actions)
-
   Hooks.useWheel({ ref: svgRoot, onWheel: tool.actions.onWheel })
 
   const translate = `translate(${-viewport.state.scroll.x}, ${-viewport.state
@@ -129,14 +89,7 @@ export default function Visualization(props: VisualizationProps) {
                 />
               ),
             )}
-            <rect
-              ref={svgSelection}
-              className="selection"
-              x="0"
-              y="0"
-              width="0"
-              height="0"
-            />
+            <Selection />
             <Playhead />
           </g>
           <g transform={axisTransform}>
@@ -146,5 +99,50 @@ export default function Visualization(props: VisualizationProps) {
         <Cursor parent={svgRoot} />
       </svg>
     </div>
+  )
+}
+
+function Selection() {
+  const svgRef = R.useRef<SVGRectElement>(null)
+  const input = Input.useContext()
+  const plane = Plane.useContext()
+  const tool = Tool.useContext()
+  Hooks.useAnimationFrame(
+    R.useCallback(() => {
+      if (svgRef.current) {
+        switch (tool.tool) {
+          case "annotate":
+          case "select":
+          case "zoom":
+            if (input.input.buttons & 1) {
+              Svg.show(svgRef.current)
+              Svg.setRect(
+                svgRef.current,
+                Rect.logical(
+                  Rect.fromPoints(input.mousedown.abs, input.mouseup.abs), // input.mouseRect,
+                  plane.xaxis === input.input.xaxis,
+                  plane.yaxis === input.input.yaxis,
+                ),
+              )
+            } else {
+              Svg.hide(svgRef.current)
+            }
+            break
+          case "pan":
+            Svg.hide(svgRef.current)
+            break
+        }
+      }
+    }, [
+      tool.tool,
+      plane.xaxis,
+      plane.yaxis,
+      input.input,
+      input.mousedown,
+      input.mouseup,
+    ]),
+  )
+  return (
+    <rect ref={svgRef} className="selection" x="0" y="0" width="0" height="0" />
   )
 }
