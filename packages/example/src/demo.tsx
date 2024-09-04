@@ -235,6 +235,40 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
   return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
 }
 
+function HorizontalAxisToolProvider(props: { children: React.ReactNode }) {
+  const viewport = Specviz.useViewport()
+  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
+    tool => ({
+      onWheel: ({ dx, dy, event }) => {
+        if (event.altKey) {
+          viewport.zoomScroll(dy, 0)
+        } else {
+          viewport.zoomScroll(-dy, 0)
+        }
+      },
+    }),
+    [viewport.zoomScroll],
+  )
+  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
+}
+
+function VerticalAxisToolProvider(props: { children: React.ReactNode }) {
+  const viewport = Specviz.useViewport()
+  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
+    tool => ({
+      onWheel: ({ dx, dy, event }) => {
+        if (event.altKey) {
+          viewport.zoomScroll(0, dy)
+        } else {
+          viewport.zoomScroll(0, -dy)
+        }
+      },
+    }),
+    [viewport.zoomScroll],
+  )
+  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
+}
+
 function Visualizer(props: tsegment) {
   const audio = Audio.useContext()
   const axes: Specviz.Axes = React.useMemo(
