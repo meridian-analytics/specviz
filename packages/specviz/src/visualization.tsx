@@ -1,6 +1,5 @@
 import * as R from "react"
 import Annotation from "./annotation"
-import * as Axis from "./axis"
 import Cursor from "./cursor"
 import * as Hooks from "./hooks"
 import * as Input from "./input"
@@ -20,7 +19,6 @@ export type VisualizationProps = {
 
 export default function Visualization(props: VisualizationProps) {
   const svgRoot = R.useRef<SVGSVGElement>(null)
-  const plane = Plane.useContext()
   const region = Region.useContext()
   const tool = Tool.useContext()
   const viewport = Viewport.useContext()
@@ -32,11 +30,6 @@ export default function Visualization(props: VisualizationProps) {
     .scroll.y})`
   const scale = `scale(${viewport.state.zoom.x}, ${viewport.state.zoom.y})`
   const transform = `${translate} ${scale}`
-
-  const axisTranslate = `translate(${-viewport.state.scroll.x}, 0)`
-  const axisScale = `scale(${viewport.state.zoom.x}, 1)`
-  const axisTransform = `${axisTranslate} ${axisScale}`
-
   return (
     <div className={`visualization ${tool.tool}`}>
       <svg ref={svgRoot} width="100%" height="100%" {...onMouse}>
@@ -91,9 +84,6 @@ export default function Visualization(props: VisualizationProps) {
             )}
             <Selection />
             <Playhead />
-          </g>
-          <g transform={axisTransform}>
-            <Axis.Horizontal axis={plane.xaxis} dimensions={dimensions} />
           </g>
         </svg>
         <Cursor parent={svgRoot} />
