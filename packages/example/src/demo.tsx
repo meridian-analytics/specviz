@@ -331,35 +331,69 @@ function Visualizer(props: tsegment) {
 }
 
 function Spectrogram(props: { src: string }) {
+  const tool = Specviz.useTool()
   return (
-    <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
-      <NavigatorToolProvider>
-        <Specviz.Navigator src={props.src} />
-      </NavigatorToolProvider>
-      <VisualizationToolProvider>
-        <Specviz.Visualization children={AnnotationSvg} src={props.src} />
-      </VisualizationToolProvider>
-    </Specviz.PlaneProvider>
+    <div className={`spectrogram tool-${tool.tool}`}>
+      <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
+        <div className="axis axis-x">
+          <HorizontalAxisToolProvider>
+            <Specviz.AxisContext.Horizontal />
+          </HorizontalAxisToolProvider>
+        </div>
+        <div className="axis axis-y">
+          <VerticalAxisToolProvider>
+            <Specviz.AxisContext.Vertical />
+          </VerticalAxisToolProvider>
+        </div>
+        <div className="navigator">
+          <NavigatorToolProvider>
+            <Specviz.Navigator src={props.src} />
+          </NavigatorToolProvider>
+        </div>
+        <div className="visualization">
+          <VisualizationToolProvider>
+            <Specviz.Visualization children={AnnotationSvg} src={props.src} />
+          </VisualizationToolProvider>
+        </div>
+      </Specviz.PlaneProvider>
+    </div>
   )
 }
 
 function Waveform(props: { src: string }) {
+  const tool = Specviz.useTool()
   return (
-    <Specviz.ViewportContext.Transform
-      fn={state => ({
-        scroll: { x: state.scroll.x, y: 0 },
-        zoom: { x: state.zoom.x, y: 1 },
-      })}
-    >
-      <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
-        <VisualizationToolProvider>
-          <Specviz.Visualization children={AnnotationSvg} src={props.src} />
-        </VisualizationToolProvider>
-        <NavigatorToolProvider>
-          <Specviz.Navigator src={props.src} />
-        </NavigatorToolProvider>
-      </Specviz.PlaneProvider>
-    </Specviz.ViewportContext.Transform>
+    <div className={`waveform tool-${tool.tool}`}>
+      <Specviz.ViewportContext.Transform
+        fn={state => ({
+          scroll: { x: state.scroll.x, y: 0 },
+          zoom: { x: state.zoom.x, y: 1 },
+        })}
+      >
+        <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
+          <div className="axis axis-x">
+            <HorizontalAxisToolProvider>
+              <Specviz.AxisContext.Horizontal />
+            </HorizontalAxisToolProvider>
+          </div>
+          <div className="axis axis-y">
+            <VerticalAxisToolProvider>
+              <Specviz.AxisContext.Vertical />
+            </VerticalAxisToolProvider>
+          </div>
+          <div className="navigator">
+            <NavigatorToolProvider>
+              <Specviz.Navigator src={props.src} />
+            </NavigatorToolProvider>
+          </div>
+          <div className="visualization">
+            <VisualizationToolProvider>
+              <Specviz.Visualization children={AnnotationSvg} src={props.src} />
+            </VisualizationToolProvider>
+          </div>
+        </Specviz.PlaneProvider>
+      </Specviz.ViewportContext.Transform>
+    </div>
   )
 }
 

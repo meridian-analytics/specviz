@@ -36,37 +36,31 @@ export default function Navigator(props: NavigatorProps) {
     z
   `
   return (
-    <div className={`navigator ${tool.tool}`}>
-      <svg
-        ref={containerRef}
+    <svg
+      ref={containerRef}
+      width="100%"
+      height="100%"
+      viewBox="0 0 1 1"
+      preserveAspectRatio="none"
+      {...onMouse}
+    >
+      <image
+        href={props.src}
         width="100%"
         height="100%"
-        viewBox="0 0 1 1"
         preserveAspectRatio="none"
-        {...onMouse}
-      >
-        <image
-          href={props.src}
-          width="100%"
-          height="100%"
-          preserveAspectRatio="none"
-        />
-        {Array.from(
-          (props.ignoreRegionTransform
-            ? region.regions
-            : region.transformedRegions
-          ).values(),
-          region => (
-            <Annotation
-              dimensions={dimensions}
-              key={region.id}
-              region={region}
-            />
-          ),
-        )}
-        <path ref={maskRef} className="mask" d={maskPath} />
-        <Playhead />
-      </svg>
-    </div>
+      />
+      {Array.from(
+        (props.ignoreRegionTransform
+          ? region.regions
+          : region.transformedRegions
+        ).values(),
+        region => (
+          <Annotation dimensions={dimensions} key={region.id} region={region} />
+        ),
+      )}
+      <path ref={maskRef} className="mask" d={maskPath} />
+      <Playhead />
+    </svg>
   )
 }

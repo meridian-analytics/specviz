@@ -31,64 +31,62 @@ export default function Visualization(props: VisualizationProps) {
   const scale = `scale(${viewport.state.zoom.x}, ${viewport.state.zoom.y})`
   const transform = `${translate} ${scale}`
   return (
-    <div className={`visualization ${tool.tool}`}>
-      <svg ref={svgRoot} width="100%" height="100%" {...onMouse}>
-        <defs>
-          <pattern
-            id="dotted-grid"
-            x="5"
-            y="5"
-            width="10"
-            height="10"
-            patternUnits="userSpaceOnUse"
-          >
-            <circle cx="0" cy="0" r="1" fill="black" />
-          </pattern>
-        </defs>
-        <rect
-          className="dotted-grid"
-          width="100%"
-          height="100%"
-          fill="url(#dotted-grid)"
-        />
-        <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 1 1"
-          preserveAspectRatio="none"
+    <svg ref={svgRoot} width="100%" height="100%" {...onMouse}>
+      <defs>
+        <pattern
+          id="dotted-grid"
+          x="5"
+          y="5"
+          width="10"
+          height="10"
+          patternUnits="userSpaceOnUse"
         >
-          <g transform={transform}>
-            <image
-              preserveAspectRatio="none"
-              href={props.src}
-              width="100%"
-              height="100%"
-            />
-            {Array.from(
-              (props.ignoreRegionTransform
-                ? region.regions
-                : region.transformedRegions
-              ).values(),
-              r => (
-                <Annotation
-                  key={r.id}
-                  children={props.children}
-                  dimensions={dimensions}
-                  region={r}
-                  selected={(props.ignoreRegionTransform
-                    ? region.selection
-                    : region.transformedSelection
-                  ).has(r.id)}
-                />
-              ),
-            )}
-            <Selection />
-            <Playhead />
-          </g>
-        </svg>
-        <Cursor parent={svgRoot} />
+          <circle cx="0" cy="0" r="1" fill="black" />
+        </pattern>
+      </defs>
+      <rect
+        className="dotted-grid"
+        width="100%"
+        height="100%"
+        fill="url(#dotted-grid)"
+      />
+      <svg
+        width="100%"
+        height="100%"
+        viewBox="0 0 1 1"
+        preserveAspectRatio="none"
+      >
+        <g transform={transform}>
+          <image
+            preserveAspectRatio="none"
+            href={props.src}
+            width="100%"
+            height="100%"
+          />
+          {Array.from(
+            (props.ignoreRegionTransform
+              ? region.regions
+              : region.transformedRegions
+            ).values(),
+            r => (
+              <Annotation
+                key={r.id}
+                children={props.children}
+                dimensions={dimensions}
+                region={r}
+                selected={(props.ignoreRegionTransform
+                  ? region.selection
+                  : region.transformedSelection
+                ).has(r.id)}
+              />
+            ),
+          )}
+          <Selection />
+          <Playhead />
+        </g>
       </svg>
-    </div>
+      <Cursor parent={svgRoot} />
+    </svg>
   )
 }
 

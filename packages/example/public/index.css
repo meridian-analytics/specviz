@@ -12,10 +12,6 @@ body {
   flex-grow: 1;
 }
 
-#app main div~div {
-  margin-top: 1rem;
-}
-
 #app aside {
   width: 38%;
   margin-left: 1rem;
@@ -23,7 +19,6 @@ body {
 
 .annotation-form {
   border: 1px solid black;
-  border-radius: 0.25rem;
   margin-bottom: 1rem;
 }
 
@@ -49,30 +44,18 @@ body {
   display: block;
 }
 
+.spectrogram ~ .waveform {
+  margin-top: 8px;
+}
+
 /* specviz defaults */
+svg {
+  overflow: visible;
+}
+
 .visualization {
-  height: 300px;
   background-color: #FBF1A9;
-  border-radius: 0.25rem;
-  border: 1px solid #000;
   overflow: hidden;
-  margin: 0.25rem 0;
-}
-
-.visualization.annotate {
-  cursor: crosshair;
-}
-
-.visualization.select {
-  cursor: context-menu;
-}
-
-.visualization.zoom {
-  cursor: zoom-in;
-}
-
-.visualization.pan {
-  cursor: move;
 }
 
 .visualization .playhead {
@@ -101,16 +84,8 @@ body {
 }
 
 .navigator {
-  height: 30px;
   cursor: crosshair;
   background-color: #FBF1A9;
-  border-radius: 0.25rem;
-  border: 1px solid #000;
-  overflow: hidden;
-}
-
-.navigator.zoom {
-  cursor: zoom-out;
 }
 
 .navigator .playhead {
@@ -129,6 +104,11 @@ body {
 
 .annotation {
   mix-blend-mode: difference;
+  overflow: hidden;
+}
+
+.annotation:hover {
+  overflow: visible;
 }
 
 .annotation rect {
@@ -153,18 +133,63 @@ body {
   fill: rgba(200, 200, 200, 1)
 }
 
+.spectrogram {
+  background-color: cornsilk;
+  border: 1px solid black;
+  display: grid;
+  grid-gap: 8px;
+  grid-template-areas:
+    ". navigator"
+    "axis-y visualization"
+    ". axis-x";
+  grid-template-columns: 80px 1fr;
+  grid-template-rows: 40px 400px 40px;
+  padding: 8px;
+}
+
+.waveform {
+  background-color: cornsilk;
+  border: 1px solid black;
+  display: grid;
+  grid-gap: 8px;
+  grid-template-areas:
+    ". axis-x"
+    "axis-y visualization"
+    ". navigator";
+  grid-template-columns: 80px 1fr;
+  grid-template-rows: 40px 400px 40px;
+  padding: 8px;
+}
+
+.axis-x {
+  grid-area: axis-x;
+  overflow: hidden;
+}
+
+.axis-y {
+  grid-area: axis-y;
+  justify-self: end;
+  overflow: hidden;
+}
+
+.navigator {
+  grid-area: navigator;
+}
+
+.visualization {
+  grid-area: visualization;
+}
+
 .axis-tick line {
-  stroke: rgba(200, 200, 200, 1);
-  stroke-width: 2px;
-  mix-blend-mode: difference;
+  stroke: rgba(33, 33, 33, 1);
+  stroke-width: 1px;
 }
 
 .axis-tick text {
   alignment-baseline: hanging;
-  fill: rgba(200, 200, 200, 1);
+  fill: rgba(33, 33, 33, 1);
   font-family: monospace;
   font-size: 8pt;
-  mix-blend-mode: difference;
   text-anchor: start;
 }
 
@@ -185,4 +210,23 @@ button.active {
 .encoder-text {
   font-size: 0.3pt;
   text-align: center;
+}
+
+.tool-annotate .visualization{
+  cursor: crosshair;
+}
+.tool-pan .visualizations {
+  cursor: move;
+}
+
+.tool-select .visualization {
+  cursor: context-menu;
+}
+
+.tool-zoom .navigator {
+  cursor: zoom-out;
+}
+
+.tool-zoom .visualization {
+  cursor: zoom-in;
 }
