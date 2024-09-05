@@ -462,7 +462,10 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
         case "annotate":
           return {
             onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-              region.selectPoint(abs)
+              region.selectPoint(
+                abs,
+                Specviz.RegionContext.selectionMode(event),
+              )
             },
             onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
               region.annotate(unit, xaxis, yaxis)
@@ -472,10 +475,13 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
         case "select":
           return {
             onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-              region.selectPoint(abs)
+              region.selectPoint(
+                abs,
+                Specviz.RegionContext.selectionMode(event),
+              )
             },
             onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-              region.selectArea(abs)
+              region.selectArea(abs, Specviz.RegionContext.selectionMode(event))
             },
             onWheel,
           }

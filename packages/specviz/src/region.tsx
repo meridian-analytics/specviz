@@ -525,6 +525,19 @@ export function computeRectInverse(region: Region, axes: Axis.Context) {
   return Axis.computeRectInverse(x, y, region)
 }
 
+export function selectionMode(event: R.MouseEvent): SelectionMode {
+  switch (true) {
+    case event.ctrlKey || event.metaKey:
+      return SelectionMode.invert
+    case event.shiftKey:
+      return SelectionMode.add
+    case event.altKey:
+      return SelectionMode.subtract
+    default:
+      return SelectionMode.replace
+  }
+}
+
 export type TransformFn = (regionState: RegionState) => RegionState
 
 export type TransformProps = {
