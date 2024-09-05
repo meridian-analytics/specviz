@@ -19,13 +19,6 @@ const segment1: tsegment = {
   offset: 0,
 }
 
-const segment2: tsegment = {
-  audio: "./audio2.wav",
-  spectrogram: "./spectrogram.png",
-  waveform: "./waveform.png",
-  offset: 0,
-}
-
 const initRegions: Specviz.RegionState = new Map([
   [
     "df10e63bc928a9850b6f",
@@ -73,45 +66,342 @@ const initRegions: Specviz.RegionState = new Map([
   ],
 ])
 
+export default function App() {
+  const [data, setData] = React.useState(segment1)
+  return (
+    <div id="app">
+      <Audio.Provider url={data.audio}>
+        <Specviz.InputProvider>
+          <AxisProvider segment={data}>
+            <Specviz.RegionProvider
+              initRegions={initRegions}
+              initSelection={() => new Set(initRegions.keys())}
+            >
+              <Specviz.FocusProvider>
+                <Specviz.ViewportProvider>
+                  <BaseToolProvider>
+                    <AnnotationTool
+                      spectrogram={data.spectrogram}
+                      waveform={data.waveform}
+                    />
+                    <Annotations />
+                    <Controls />
+                    <Keybinds />
+                  </BaseToolProvider>
+                </Specviz.ViewportProvider>
+              </Specviz.FocusProvider>
+            </Specviz.RegionProvider>
+          </AxisProvider>
+        </Specviz.InputProvider>
+      </Audio.Provider>
+    </div>
+  )
+}
+
+function AnnotationTool(props: { spectrogram: string; waveform: string }) {
+  const tool = Specviz.useTool()
+  return (
+    <div className={`annotation-tool tool-${tool.tool}`}>
+      <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
+        <div className="axis-x">
+          <HorizontalAxisToolProvider>
+            <Specviz.AxisContext.Horizontal />
+          </HorizontalAxisToolProvider>
+        </div>
+        <div className="spectrogram axis-y">
+          <VerticalAxisToolProvider>
+            <Specviz.AxisContext.Vertical />
+          </VerticalAxisToolProvider>
+        </div>
+        <div className="spectrogram navigator">
+          <NavigatorToolProvider>
+            <Specviz.Navigator src={props.spectrogram} />
+          </NavigatorToolProvider>
+        </div>
+        <div className="spectrogram visualization">
+          <VisualizationToolProvider>
+            <Specviz.Visualization
+              children={AnnotationSvg}
+              src={props.spectrogram}
+            />
+          </VisualizationToolProvider>
+        </div>
+      </Specviz.PlaneProvider>
+      <Specviz.ViewportContext.Transform
+        fn={state => ({
+          scroll: { x: state.scroll.x, y: 0 },
+          zoom: { x: state.zoom.x, y: 1 },
+        })}
+      >
+        <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
+          <div className="waveform axis-y">
+            <VerticalAxisToolProvider>
+              <Specviz.AxisContext.Vertical />
+            </VerticalAxisToolProvider>
+          </div>
+          <div className="waveform navigator">
+            <NavigatorToolProvider>
+              <Specviz.Navigator src={props.waveform} />
+            </NavigatorToolProvider>
+          </div>
+          <div className="waveform visualization">
+            <VisualizationToolProvider>
+              <Specviz.Visualization
+                children={AnnotationSvg}
+                src={props.waveform}
+              />
+            </VisualizationToolProvider>
+          </div>
+        </Specviz.PlaneProvider>
+      </Specviz.ViewportContext.Transform>
+    </div>
+  )
+}
+
+function Annotations() {
+  const region = Specviz.useRegion()
+  return (
+    <div className="annotations">
+      {Array.from(region.selection).map(id => {
+        const r = region.regions.get(id)
+        if (r == null) return <AnnotationFormStaleSelection id={id} />
+        return <AnnotationForm key={id} {...r} />
+      })}
+    </div>
+  )
+}
+
+function AnnotationFormStaleSelection(props: { id: string }) {
+  return (
+    <div className="annotation-form">
+      <div className="title">
+        {props.id} is selected but not found in the region context
+      </div>
+    </div>
+  )
+}
+
+function AnnotationForm(region: Specviz.Region) {
+  const audio = Audio.useContext()
+  const focus = Specviz.useFocus()
+  return (
+    <div className="annotation-form">
+      <div className="title">
+        <h3>{region.id}</h3>
+        {focus.region &&
+        !audio.transport.state.pause &&
+        region.id == focus.region.id ? (
+          <button
+            type="button"
+            onClick={() => {
+              audio.transport.stop()
+              focus.setFocus(null)
+            }}
+            children="stop"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              focus.setFocus(region.id)
+              audio.transport.play()
+            }}
+            children="play"
+          />
+        )}
+      </div>
+      <div className="encoders">
+        <div>
+          <Specviz.Encoder.X {...region} />
+          Offset
+        </div>
+        <div>
+          <Specviz.Encoder.X2 {...region} />
+          Duration
+        </div>
+        <div>
+          <Specviz.Encoder.Y1 {...region} />
+          LPF
+        </div>
+        <div>
+          <Specviz.Encoder.Y2 {...region} />
+          HPF
+        </div>
+      </div>
+      <pre>{JSON.stringify(region, null, 2)}</pre>
+    </div>
+  )
+}
+
+function Controls() {
+  return (
+    <div className="controls">
+      <AudioControls />
+      <Duration />
+      <ToolControls />
+    </div>
+  )
+}
+
+function AudioControls() {
+  const audio = Audio.useContext()
+  const focus = Specviz.useFocus()
+  return (
+    <div className="audio-controls">
+      <button
+        type="button"
+        onClick={_ => audio.transport.seek(0)}
+        children="Rewind"
+      />
+      <button
+        title="Z"
+        type="button"
+        onClick={_ => audio.transport.play()}
+        className={!audio.transport.state.pause ? "active" : ""}
+        children="Play"
+      />
+      <button
+        title="X"
+        type="button"
+        onClick={_ => {
+          audio.transport.stop()
+          focus.setFocus(null)
+        }}
+        className={audio.transport.state.pause ? "active" : ""}
+        children="Stop"
+      />
+    </div>
+  )
+}
+
+function ToolControls() {
+  const tool = Specviz.useTool()
+  return (
+    <div className="tool-controls">
+      <button
+        title="A"
+        type="button"
+        onClick={_ => tool.setTool("annotate")}
+        className={tool.tool === "annotate" ? "active" : ""}
+        children="Annotate"
+      />
+      <button
+        title="S"
+        type="button"
+        onClick={_ => tool.setTool("select")}
+        className={tool.tool === "select" ? "active" : ""}
+        children="Select"
+      />
+      <button
+        title="D"
+        type="button"
+        onClick={_ => tool.setTool("zoom")}
+        className={tool.tool === "zoom" ? "active" : ""}
+        children="Zoom"
+      />
+      <button
+        title="F"
+        type="button"
+        onClick={_ => tool.setTool("pan")}
+        className={tool.tool === "pan" ? "active" : ""}
+        children="Pan"
+      />
+    </div>
+  )
+}
+
 function Duration() {
   const audio = Audio.useContext()
+  const ref = React.useRef<null | HTMLElement>(null)
+  Specviz.useAnimationFrame(
+    React.useCallback(() => {
+      if (ref.current) {
+        ref.current.textContent = Format.timestamp(
+          audio.transport.getSeek(audio.transport.state),
+        )
+      }
+    }, [audio.transport.getSeek, audio.transport.state]),
+  )
+  return (
+    <div className="audio-duration">
+      <span ref={ref}>{Format.timestamp(0)}</span>
+      <span>/</span>
+      <span>{Format.timestamp(audio.buffer.duration)}</span>
+    </div>
+  )
+}
+
+function AnnotationSvg(props: Specviz.AnnotationProps) {
+  const lines = props.selected
+    ? [
+        props.region.id,
+        `${Format.timestamp(props.region.x)} - ${Format.timestamp(
+          props.region.x + props.region.width,
+        )}`,
+        props.region.yunit == "hertz"
+          ? `${Format.hz(props.region.y)} - ${Format.hz(
+              props.region.y + props.region.height,
+            )}`
+          : "",
+      ]
+    : [`${props.region.id.substring(0, 4)}...`]
   return (
     <React.Fragment>
-      ({audio.buffer.duration.toFixed(2)} seconds)
+      {lines.map((line, lineno) => (
+        <text
+          key={String(lineno)}
+          x="4"
+          y={String(4 + 24 * lineno)}
+          children={line}
+        />
+      ))}
     </React.Fragment>
   )
 }
 
-export default function App() {
-  const [data, setData] = React.useState(segment1)
-  return (
-    <Audio.Provider url={data.audio}>
-      <div style={{ padding: 20, backgroundColor: "#E8FDF5" }}>
-        <h3>specviz-react (version {Specviz.version})</h3>
-        <div className="segments">
-          <button
-            type="button"
-            onClick={_ => setData(segment1)}
-            children={segment1.audio}
-          />
-          <button
-            type="button"
-            onClick={_ => setData(segment2)}
-            children={segment2.audio}
-          />
-          <p>
-            {data.audio} <Duration />
-          </p>
-        </div>
-        <Visualizer {...data} />
-      </div>
-    </Audio.Provider>
+function AxisProvider(props: { segment: tsegment; children: React.ReactNode }) {
+  const audio = Audio.useContext()
+  const axes: Specviz.Axes = React.useMemo(
+    () => ({
+      seconds: Specviz.AxisContext.linear(
+        props.segment.offset + 0,
+        props.segment.offset + audio.buffer.duration,
+        "seconds",
+        Format.timestamp,
+      ),
+      hertz: Specviz.AxisContext.linear(20000, 0, "hertz", Format.hz),
+      percent: Specviz.AxisContext.nonlinear(
+        [
+          [0, 1],
+          [0.5, 0],
+          [1, -1],
+        ],
+        "percent",
+        Format.percent,
+      ),
+    }),
+    [audio.buffer.duration, props.segment.offset],
   )
+  return <Specviz.AxisProvider value={axes} children={props.children} />
+}
+
+function BaseToolProvider(props: { children: React.ReactNode }) {
+  const audio = Audio.useContext()
+  const actions: Specviz.ToolContext.Actions = React.useMemo(
+    () => ({
+      onContextMenu: ({ unit, rel, abs, xaxis, yaxis, event }) => {
+        // todo: bug if zoomed, when clicking in navigator, gives relative time
+        audio.transport.seek(unit.x)
+      },
+    }),
+    [audio.transport.seek],
+  )
+  return <Specviz.ToolProvider actions={actions} children={props.children} />
 }
 
 function NavigatorToolProvider(props: { children: React.ReactNode }) {
   const viewport = Specviz.useViewport()
-  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
+  const fn: Specviz.ToolContext.ActionsProvider["fn"] = React.useCallback(
     tool => ({
       onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
         switch (tool) {
@@ -148,7 +438,9 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
       viewport.zoomScroll,
     ],
   )
-  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
+  return (
+    <Specviz.ToolContext.ActionsProvider children={props.children} fn={fn} />
+  )
 }
 
 function VisualizationToolProvider(props: { children: React.ReactNode }) {
@@ -164,7 +456,7 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
     },
     [viewport.zoomScroll, viewport.scroll],
   )
-  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
+  const fn: Specviz.ToolContext.ActionsProvider["fn"] = React.useCallback(
     tool => {
       switch (tool) {
         case "annotate":
@@ -232,12 +524,14 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
       viewport.zoomPoint,
     ],
   )
-  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
+  return (
+    <Specviz.ToolContext.ActionsProvider children={props.children} fn={fn} />
+  )
 }
 
 function HorizontalAxisToolProvider(props: { children: React.ReactNode }) {
   const viewport = Specviz.useViewport()
-  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
+  const fn: Specviz.ToolContext.ActionsProvider["fn"] = React.useCallback(
     tool => ({
       onWheel: ({ dx, dy, event }) => {
         if (event.altKey) {
@@ -249,12 +543,14 @@ function HorizontalAxisToolProvider(props: { children: React.ReactNode }) {
     }),
     [viewport.zoomScroll],
   )
-  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
+  return (
+    <Specviz.ToolContext.ActionsProvider children={props.children} fn={fn} />
+  )
 }
 
 function VerticalAxisToolProvider(props: { children: React.ReactNode }) {
   const viewport = Specviz.useViewport()
-  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
+  const fn: Specviz.ToolContext.ActionsProvider["fn"] = React.useCallback(
     tool => ({
       onWheel: ({ dx, dy, event }) => {
         if (event.altKey) {
@@ -266,218 +562,8 @@ function VerticalAxisToolProvider(props: { children: React.ReactNode }) {
     }),
     [viewport.zoomScroll],
   )
-  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
-}
-
-function Visualizer(props: tsegment) {
-  const audio = Audio.useContext()
-  const axes: Specviz.Axes = React.useMemo(
-    () => ({
-      seconds: Specviz.AxisContext.linear(
-        props.offset + 0,
-        props.offset + audio.buffer.duration,
-        "seconds",
-        Format.timestamp,
-      ),
-      hertz: Specviz.AxisContext.linear(20000, 0, "hertz", Format.hz),
-      percent: Specviz.AxisContext.nonlinear(
-        [
-          [0, 1],
-          [0.5, 0],
-          [1, -1],
-        ],
-        "percent",
-        Format.percent,
-      ),
-    }),
-    [audio.buffer.duration, props.offset],
-  )
-  const actions: Specviz.ToolContext.Actions = React.useMemo(
-    () => ({
-      onContextMenu: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-        audio.transport.seek(unit.x)
-      },
-    }),
-    [audio.transport.seek],
-  )
   return (
-    <Specviz.InputProvider>
-      <Specviz.AxisProvider value={axes}>
-        <Specviz.RegionProvider
-          initRegions={initRegions}
-          initSelection={() => new Set(initRegions.keys())}
-        >
-          <Specviz.FocusProvider>
-            <Specviz.ViewportProvider>
-              <Specviz.ToolProvider actions={actions}>
-                <div id="app">
-                  <main>
-                    <Spectrogram src={props.spectrogram} />
-                    <Waveform src={props.waveform} />
-                    <AudioControls />
-                  </main>
-                  <aside>
-                    <Annotations />
-                  </aside>
-                </div>
-                <Keybinds />
-              </Specviz.ToolProvider>
-            </Specviz.ViewportProvider>
-          </Specviz.FocusProvider>
-        </Specviz.RegionProvider>
-      </Specviz.AxisProvider>
-    </Specviz.InputProvider>
-  )
-}
-
-function Spectrogram(props: { src: string }) {
-  const tool = Specviz.useTool()
-  return (
-    <div className={`spectrogram tool-${tool.tool}`}>
-      <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
-        <div className="axis axis-x">
-          <HorizontalAxisToolProvider>
-            <Specviz.AxisContext.Horizontal />
-          </HorizontalAxisToolProvider>
-        </div>
-        <div className="axis axis-y">
-          <VerticalAxisToolProvider>
-            <Specviz.AxisContext.Vertical />
-          </VerticalAxisToolProvider>
-        </div>
-        <div className="navigator">
-          <NavigatorToolProvider>
-            <Specviz.Navigator src={props.src} />
-          </NavigatorToolProvider>
-        </div>
-        <div className="visualization">
-          <VisualizationToolProvider>
-            <Specviz.Visualization children={AnnotationSvg} src={props.src} />
-          </VisualizationToolProvider>
-        </div>
-      </Specviz.PlaneProvider>
-    </div>
-  )
-}
-
-function Waveform(props: { src: string }) {
-  const tool = Specviz.useTool()
-  return (
-    <div className={`waveform tool-${tool.tool}`}>
-      <Specviz.ViewportContext.Transform
-        fn={state => ({
-          scroll: { x: state.scroll.x, y: 0 },
-          zoom: { x: state.zoom.x, y: 1 },
-        })}
-      >
-        <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
-          <div className="axis axis-x">
-            <HorizontalAxisToolProvider>
-              <Specviz.AxisContext.Horizontal />
-            </HorizontalAxisToolProvider>
-          </div>
-          <div className="axis axis-y">
-            <VerticalAxisToolProvider>
-              <Specviz.AxisContext.Vertical />
-            </VerticalAxisToolProvider>
-          </div>
-          <div className="navigator">
-            <NavigatorToolProvider>
-              <Specviz.Navigator src={props.src} />
-            </NavigatorToolProvider>
-          </div>
-          <div className="visualization">
-            <VisualizationToolProvider>
-              <Specviz.Visualization children={AnnotationSvg} src={props.src} />
-            </VisualizationToolProvider>
-          </div>
-        </Specviz.PlaneProvider>
-      </Specviz.ViewportContext.Transform>
-    </div>
-  )
-}
-
-function AnnotationSvg(props: Specviz.AnnotationProps) {
-  const lines = props.selected
-    ? [
-        props.region.id,
-        `${Format.timestamp(props.region.x)} - ${Format.timestamp(
-          props.region.x + props.region.width,
-        )}`,
-        props.region.yunit == "hertz"
-          ? `${Format.hz(props.region.y)} - ${Format.hz(
-              props.region.y + props.region.height,
-            )}`
-          : "",
-      ]
-    : [`${props.region.id.substring(0, 4)}...`]
-  return (
-    <React.Fragment>
-      {lines.map((line, lineno) => (
-        <text
-          key={String(lineno)}
-          x="4"
-          y={String(4 + 24 * lineno)}
-          children={line}
-        />
-      ))}
-    </React.Fragment>
-  )
-}
-
-function AudioControls() {
-  const audio = Audio.useContext()
-  const focus = Specviz.useFocus()
-  const tool = Specviz.useTool()
-  return (
-    <p>
-      <button
-        title="A"
-        type="button"
-        onClick={_ => tool.setTool("annotate")}
-        className={tool.tool === "annotate" ? "active" : ""}
-        children="Annotate"
-      />
-      <button
-        title="S"
-        type="button"
-        onClick={_ => tool.setTool("select")}
-        className={tool.tool === "select" ? "active" : ""}
-        children="Select"
-      />
-      <button
-        title="D"
-        type="button"
-        onClick={_ => tool.setTool("zoom")}
-        className={tool.tool === "zoom" ? "active" : ""}
-        children="Zoom"
-      />
-      <button
-        title="F"
-        type="button"
-        onClick={_ => tool.setTool("pan")}
-        className={tool.tool === "pan" ? "active" : ""}
-        children="Pan"
-      />
-      <br />
-      <button
-        title="Z"
-        type="button"
-        onClick={_ => audio.transport.play()}
-        className={!audio.transport.state.pause ? "active" : ""}
-        children="Play"
-      />
-      <button
-        title="X"
-        type="button"
-        onClick={_ => {
-          audio.transport.stop()
-          focus.setFocus(null)
-        }}
-        className={audio.transport.state.pause ? "active" : ""}
-        children="Stop"
-      />
-    </p>
+    <Specviz.ToolContext.ActionsProvider children={props.children} fn={fn} />
   )
 }
 
@@ -531,81 +617,6 @@ function Keybinds() {
         }}
       />
     </Specviz.Bindings>
-  )
-}
-
-function Annotations() {
-  const region = Specviz.useRegion()
-  return (
-    <>
-      {Array.from(region.selection).map(id => {
-        const r = region.regions.get(id)
-        if (r == null) return <AnnotationFormStaleSelection id={id} />
-        return <AnnotationForm key={id} {...r} />
-      })}
-    </>
-  )
-}
-
-function AnnotationFormStaleSelection(props: { id: string }) {
-  return (
-    <div className="annotation-form">
-      <div className="title">
-        {props.id} is selected but not found in the region context
-      </div>
-    </div>
-  )
-}
-
-function AnnotationForm(region: Specviz.Region) {
-  const audio = Audio.useContext()
-  const focus = Specviz.useFocus()
-  return (
-    <div className="annotation-form">
-      <div className="title">
-        <div>{region.id}</div>
-        {focus.region &&
-        !audio.transport.state.pause &&
-        region.id == focus.region.id ? (
-          <button
-            type="button"
-            onClick={() => {
-              audio.transport.stop()
-              focus.setFocus(null)
-            }}
-            children="stop"
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              focus.setFocus(region.id)
-              audio.transport.play()
-            }}
-            children="play"
-          />
-        )}
-      </div>
-      <div className="encoders">
-        <div>
-          <Specviz.Encoder.X {...region} />
-          Offset
-        </div>
-        <div>
-          <Specviz.Encoder.X2 {...region} />
-          Duration
-        </div>
-        <div>
-          <Specviz.Encoder.Y1 {...region} />
-          LPF
-        </div>
-        <div>
-          <Specviz.Encoder.Y2 {...region} />
-          HPF
-        </div>
-      </div>
-      <pre>{JSON.stringify(region, null, 2)}</pre>
-    </div>
   )
 }
 

@@ -1,42 +1,68 @@
 /* user styles */
 body {
   background-color: #eee;
+  font-family: monospace; 
+  color: #333;
+  margin: 0;
+}
+
+button {
+  font-family: monospace;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 0;
 }
 
 #app {
-  display: flex;
-  justify-content: space-between;
+  background-color: mintcream;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 60px auto;
+  grid-template-areas:
+    "controls controls ."
+    "annotation-tool annotation-tool annotations";
+  grid-gap: 1rem;
+  padding: 1rem;
 }
 
-#app main {
-  flex-grow: 1;
-}
-
-#app aside {
-  width: 38%;
-  margin-left: 1rem;
+.active {
+  color: orchid;
 }
 
 .annotation-form {
-  border: 1px solid black;
+  background-color:lavenderblush;
+  border: 1px solid burlywood;
   margin-bottom: 1rem;
 }
 
-.annotation-form .title {
-  background-color: black;
-  color: white;
-  display: flex;
-  padding: 0.5rem;
+.annotation-form button {
+  padding: 0.25rem;
 }
 
-.annotation-form .title div {
+.annotation-form h3 {
   flex-grow: 1;
 }
 
-.annotation-form .encoders {
+.annotation-form pre { 
+  margin: 0;
+  padding: 1rem;
+}
+
+.annotation-form .title {
+  align-items: center;
+  background-color: thistle;
+  display: flex;
   padding: 0.5rem;
+}
+
+.annotation-form .encoders {
   display: flex;
   justify-content: space-between;
+  padding: 0.75rem;
   text-align: center;
 }
 
@@ -44,67 +70,122 @@ body {
   display: block;
 }
 
-.spectrogram ~ .waveform {
-  margin-top: 8px;
+.annotation-tool {
+  background-color: cornsilk;
+  border: 1px solid burlywood;
+  display: grid;
+  grid-area: annotation-tool;
+  grid-gap: 0.5rem;
+  grid-template-areas:
+    ". n1"
+    "y1 v1"
+    ". x1"
+    "y2 v2"
+    ". n2";
+  grid-template-columns: 80px 1fr;
+  grid-template-rows: 40px 400px 20px 400px 40px;
+  padding: 0.5rem;
 }
 
-/* specviz defaults */
-svg {
-  overflow: visible;
+.annotations {
+  grid-area: annotations;
 }
 
-.visualization {
-  background-color: #FBF1A9;
-  overflow: hidden;
+.audio-controls {
+  display: flex;
+  flex-direction: row;
+  justify-self: end;
 }
 
-.visualization .playhead {
-  stroke: white;
-  stroke-width: 0.2%;
-  mix-blend-mode: difference;
-}
-
-.visualization .selection {
-  fill: rgba(200, 200, 200, 1);
-  mix-blend-mode: difference;
-}
-
-.cursor-x,
-.cursor-y {
-  stroke: white;
-  stroke-width: .2%;
-  mix-blend-mode: difference;
-}
-
-.cursor-text {
-  fill: white;
-  font-size: 12pt;
+.audio-duration {
+  background-color: cornsilk;
+  border: 1px solid burlywood;
+  display: flex;
+  flex-direction: row;
   font-family: monospace;
-  mix-blend-mode: difference;
+  font-size: 1.25rem;
+  justify-content: space-between; 
+  padding: 0.5rem;
+}
+
+.axis-x {
+  grid-area: x1;
+}
+
+.controls {
+  align-items: center;
+  display: grid;
+  grid-area: controls;
+  grid-gap: 1rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-content: center;
+}
+
+.controls button ~ button {
+  margin-left: 0.5rem;
 }
 
 .navigator {
   cursor: crosshair;
-  background-color: #FBF1A9;
+  background-color:navajowhite;
 }
 
-.navigator .playhead {
-  stroke: white;
-  stroke-width: 0.2%;
-  mix-blend-mode: difference;
+.spectrogram.axis-y {
+  grid-area: y1;
 }
 
-.navigator .playhead-text {
-  display: none;
+.spectrogram.navigator {
+  grid-area: n1;
 }
 
-.navigator .mask {
-  fill: rgba(0, 0, 0, 0.5);
+.spectrogram.visualization {
+  grid-area: v1;
 }
 
+.tool-controls {
+  display: flex;
+  flex-direction: row;
+}
+
+.tool-annotate .visualization {
+  cursor: crosshair;
+}
+
+.tool-pan .visualization {
+  cursor: move;
+}
+
+.tool-select .visualization {
+  cursor: context-menu;
+}
+
+.tool-zoom .navigator {
+  cursor: zoom-out;
+}
+
+.tool-zoom .visualization {
+  cursor: zoom-in;
+}
+
+.visualization {
+  background-color: navajowhite;
+}
+
+.waveform.axis-y {
+  grid-area: y2;
+}
+
+.waveform.navigator {
+  grid-area: n2;
+}
+
+.waveform.visualization {
+  grid-area: v2;
+}
+
+/* specviz defaults */
 .annotation {
   mix-blend-mode: difference;
-  overflow: hidden;
 }
 
 .annotation:hover {
@@ -133,53 +214,6 @@ svg {
   fill: rgba(200, 200, 200, 1)
 }
 
-.spectrogram {
-  background-color: cornsilk;
-  border: 1px solid black;
-  display: grid;
-  grid-gap: 8px;
-  grid-template-areas:
-    ". navigator"
-    "axis-y visualization"
-    ". axis-x";
-  grid-template-columns: 80px 1fr;
-  grid-template-rows: 40px 400px 40px;
-  padding: 8px;
-}
-
-.waveform {
-  background-color: cornsilk;
-  border: 1px solid black;
-  display: grid;
-  grid-gap: 8px;
-  grid-template-areas:
-    ". axis-x"
-    "axis-y visualization"
-    ". navigator";
-  grid-template-columns: 80px 1fr;
-  grid-template-rows: 40px 400px 40px;
-  padding: 8px;
-}
-
-.axis-x {
-  grid-area: axis-x;
-  overflow: hidden;
-}
-
-.axis-y {
-  grid-area: axis-y;
-  justify-self: end;
-  overflow: hidden;
-}
-
-.navigator {
-  grid-area: navigator;
-}
-
-.visualization {
-  grid-area: visualization;
-}
-
 .axis-tick line {
   stroke: rgba(33, 33, 33, 1);
   stroke-width: 1px;
@@ -193,8 +227,22 @@ svg {
   text-anchor: start;
 }
 
-button.active {
-  color: #D5008F;
+.axis-x, .axis-y {
+  overflow: hidden;
+}
+
+.cursor-x,
+.cursor-y {
+  stroke: white;
+  stroke-width: 0.2%;
+  mix-blend-mode: difference;
+}
+
+.cursor-text {
+  fill: white;
+  font-size: 12pt;
+  font-family: monospace;
+  mix-blend-mode: difference;
 }
 
 .encoder {
@@ -212,21 +260,17 @@ button.active {
   text-align: center;
 }
 
-.tool-annotate .visualization{
-  cursor: crosshair;
-}
-.tool-pan .visualizations {
-  cursor: move;
+.mask {
+  fill: rgba(0, 0, 0, 0.5);
 }
 
-.tool-select .visualization {
-  cursor: context-menu;
+.playhead {
+  stroke: white;
+  stroke-width: 0.2%;
+  mix-blend-mode: difference;
 }
 
-.tool-zoom .navigator {
-  cursor: zoom-out;
-}
-
-.tool-zoom .visualization {
-  cursor: zoom-in;
+.selection {
+  fill: rgba(200, 200, 200, 1);
+  mix-blend-mode: difference;
 }
