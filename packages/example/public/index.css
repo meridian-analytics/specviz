@@ -193,12 +193,12 @@ h3 {
 }
 
 .annotation rect {
-  fill: rgba(66, 66, 66, 0.66);
+  fill: rgba(99, 99, 99, 0.33);
   stroke: rgba(200, 200, 200, 0.66);
 }
 
 .annotation text {
-  fill: rgba(200, 200, 200, 0.66);
+  fill: rgba(200, 200, 200, 1);
   font-size: 10pt;
   text-anchor: start;
   alignment-baseline: hanging;
@@ -271,6 +271,6 @@ h3 {
 }
 
 .selection {
-  fill: rgba(200, 200, 200, 1);
+  fill: rgba(255, 255, 255, 1);
   mix-blend-mode: difference;
 }
