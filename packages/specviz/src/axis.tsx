@@ -210,6 +210,7 @@ function Horizontal(props: AxisProps) {
       height="100%"
       viewBox="0 0 1 1"
       preserveAspectRatio="none"
+      overflow="visible"
     >
       <g transform={axisTransform} children={ticks} />
     </svg>
@@ -266,6 +267,7 @@ function Vertical(props: AxisProps) {
       height="100%"
       viewBox="0 0 1 1"
       preserveAspectRatio="none"
+      overflow="visible"
     >
       <g transform={axisTransform} children={ticks} />
     </svg>
