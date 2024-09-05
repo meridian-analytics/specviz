@@ -147,29 +147,29 @@ export function useMouseLowLevel(props: {
 }
 
 export type UseMouseClickHandler = (useMouseEvent: {
-  unit: Vector2.tvector2
-  rel: Vector2.tvector2
-  abs: Vector2.tvector2
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
+  unit: Vector2.Vector2
+  rel: Vector2.Vector2
+  abs: Vector2.Vector2
+  xaxis: Axis.Axis
+  yaxis: Axis.Axis
   event: React.MouseEvent
 }) => void
 
 export type UseMouseContextMenuHandler = (useMouseEvent: {
-  unit: Vector2.tvector2
-  rel: Vector2.tvector2
-  abs: Vector2.tvector2
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
+  unit: Vector2.Vector2
+  rel: Vector2.Vector2
+  abs: Vector2.Vector2
+  xaxis: Axis.Axis
+  yaxis: Axis.Axis
   event: React.MouseEvent
 }) => void
 
 export type UseMouseRectHandler = (useMouseEvent: {
-  unit: Rect.trect
-  rel: Rect.trect
-  abs: Rect.trect
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
+  unit: Rect.Rect
+  rel: Rect.Rect
+  abs: Rect.Rect
+  xaxis: Axis.Axis
+  yaxis: Axis.Axis
   event: React.MouseEvent
 }) => void
 
@@ -291,7 +291,7 @@ export function useDimensions(ref: R.RefObject<HTMLElement | SVGElement>) {
 }
 
 export function useMutableVector2() {
-  return R.useMemo<Vector2.tvector2>(() => {
+  return R.useMemo<Vector2.Vector2>(() => {
     let x = 0
     let y = 0
     return {
@@ -312,7 +312,7 @@ export function useMutableVector2() {
 }
 
 export function useMutableCoord() {
-  return R.useMemo<Input.tcoord>(() => {
+  return R.useMemo<Input.Coord>(() => {
     let absx = 0
     let absy = 0
     let relx = 0
@@ -351,7 +351,7 @@ export function useMutableCoord() {
 }
 
 export function useMutableRect() {
-  return R.useMemo<Rect.trect>(() => {
+  return R.useMemo<Rect.Rect>(() => {
     let x = 0
     let y = 0
     let width = 0

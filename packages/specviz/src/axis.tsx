@@ -5,11 +5,11 @@ import * as Rect from "./rect"
 import * as Tool from "./tool"
 import * as Viewport from "./viewport"
 
-type taxisformat = (x: number) => string
+type FormatFn = (x: number) => string
 
-export type taxis = {
+export type Axis = {
   unit: string
-  format: taxisformat
+  format: FormatFn
   intervals: Array<[number, number]>
 }
 
@@ -17,7 +17,7 @@ export type taxis = {
  * computeUnit
  * map value from unit space to user space
  */
-export function computeUnit(t: taxis, q: number) {
+export function computeUnit(t: Axis, q: number) {
   if (t == null) return Number.NEGATIVE_INFINITY
   const { intervals: s } = t
   if (s.length < 2) return Number.NEGATIVE_INFINITY
@@ -41,7 +41,7 @@ export function computeUnit(t: taxis, q: number) {
  * computeUnitInverse
  * map value from user space to unit space
  */
-export function computeUnitInverse(t: taxis, q: number): number {
+export function computeUnitInverse(t: Axis, q: number): number {
   if (t == null) return Number.NEGATIVE_INFINITY
   const s = [...t.intervals].sort(([ax, ay], [bx, by]) => ay - by) // todo: memoize
   if (s.length < 2) return Number.NEGATIVE_INFINITY
@@ -65,8 +65,8 @@ export function computeUnitInverse(t: taxis, q: number): number {
  * computeRectAux
  * map rect from space to space
  */
-function computeRectAux(func: (t: taxis, q: number) => number) {
-  return (tx: taxis, ty: taxis, rect: Rect.trect) => {
+function computeRectAux(func: (t: Axis, q: number) => number) {
+  return (tx: Axis, ty: Axis, rect: Rect.Rect) => {
     const x = func(tx, rect.x)
     const y = func(ty, rect.y)
     return Rect.normalize({
@@ -95,7 +95,7 @@ export const computeRectInverse = computeRectAux(computeUnitInverse)
  * compute the tick marks for the axis
  * returns [unit, uservalue] pairs
  */
-function computeTicks(axis: taxis, count: number): [number, number][] {
+function computeTicks(axis: Axis, count: number): [number, number][] {
   const r: [number, number][] = []
   if (count <= 0) return r
   const a = axis.intervals.at(0)
@@ -116,7 +116,7 @@ function computeTicks(axis: taxis, count: number): [number, number][] {
   return r
 }
 
-export function formatUnit(t: taxis, q: number) {
+export function formatUnit(t: Axis, q: number) {
   return t.format(q)
 }
 
@@ -124,8 +124,8 @@ export function linear(
   min: number,
   max: number,
   unit?: string,
-  format?: taxisformat,
-): taxis {
+  format?: FormatFn,
+): Axis {
   return {
     unit: unit ?? "units",
     format: format ?? String,
@@ -139,8 +139,8 @@ export function linear(
 export function nonlinear(
   intervals: Array<[number, number]>,
   unit?: string,
-  format?: taxisformat,
-): taxis {
+  format?: FormatFn,
+): Axis {
   return {
     unit: unit ?? "units",
     format: format ?? String,
@@ -274,7 +274,7 @@ export function Vertical(props: AxisProps) {
   )
 }
 
-export type Context = Record<string, undefined | taxis>
+export type Context = Record<string, undefined | Axis>
 
 const defaultContext: Context = {}
 

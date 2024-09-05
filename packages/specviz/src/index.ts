@@ -1,6 +1,6 @@
 // types
 export { type AnnotationProps } from "./annotation"
-export { type taxis as Axis, type Context as Axes } from "./axis"
+export { type Axis, type Context as Axes } from "./axis"
 export {
   type UseMouseClickHandler,
   type UseMouseContextMenuHandler,

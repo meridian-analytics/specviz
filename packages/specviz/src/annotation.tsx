@@ -9,7 +9,7 @@ import * as Viewport from "./viewport"
 export type AnnotationProps = {
   children?: typeof Annotation
   region: Region.Region
-  dimensions: Vector2.tvector2
+  dimensions: Vector2.Vector2
   selected?: boolean
 }
 
@@ -17,7 +17,7 @@ function Annotation(props: AnnotationProps) {
   const plane = Plane.useContext()
   const viewport = Viewport.useContext()
   // compute logical rect
-  const lrect: Rect.trect = R.useMemo(() => {
+  const lrect: Rect.Rect = R.useMemo(() => {
     return Rect.logical(
       Axis.computeRectInverse(plane.xaxis, plane.yaxis, props.region),
       plane.xaxis.unit == props.region.xunit,

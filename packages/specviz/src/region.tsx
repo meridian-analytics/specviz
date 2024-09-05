@@ -50,9 +50,9 @@ function concatSelection(
 
 export type Context = {
   annotate: (
-    rect: Rect.trect,
-    xaxis: Axis.taxis,
-    yaxis: Axis.taxis,
+    rect: Rect.Rect,
+    xaxis: Axis.Axis,
+    yaxis: Axis.Axis,
     userData?: UserData,
   ) => void
   canCreate: boolean
@@ -63,9 +63,9 @@ export type Context = {
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
   regions: RegionState
-  selectArea: (rect: Rect.trect, selectionMode?: SelectionMode) => void
+  selectArea: (rect: Rect.Rect, selectionMode?: SelectionMode) => void
   selection: SelectionState
-  selectPoint: (pt: Vector2.tvector2, selectionMode?: SelectionMode) => void
+  selectPoint: (pt: Vector2.Vector2, selectionMode?: SelectionMode) => void
   selectId: (id: string, selectionMode?: SelectionMode) => void
   setRectX: (region: Region, dx: number) => void
   setRectX1: (region: Region, dx: number) => void
@@ -198,10 +198,7 @@ export function Provider(props: ProviderProps) {
 
   // helpers
   const selectHelper = R.useCallback(
-    (
-      selectFn: (rect: Rect.trect) => boolean,
-      selectionMode?: SelectionMode,
-    ) => {
+    (selectFn: (rect: Rect.Rect) => boolean, selectionMode?: SelectionMode) => {
       setSelection(prev => {
         const next: SelectionState = new Set()
         for (const r of regions.values()) {
@@ -229,7 +226,7 @@ export function Provider(props: ProviderProps) {
   )
 
   const updateRegionRect = R.useCallback(
-    (p: Region, func: (prev: Rect.trect) => Rect.trect) => {
+    (p: Region, func: (prev: Rect.Rect) => Rect.Rect) => {
       const x = axis[p.xunit]
       const y = axis[p.yunit]
       if (x == null) throw Error(`axis not found: ${p.xunit}`)

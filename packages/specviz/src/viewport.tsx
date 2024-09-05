@@ -10,8 +10,8 @@ export type Context = {
   scroll: (dx: number, dy: number) => void
   scrollTo: (scroll: Scroll) => void
   zoom: (dx: number, dy: number) => void
-  zoomArea: (rect: Rect.trect) => void
-  zoomPoint: (point: Vector2.tvector2, zoomDirection?: ZoomDirection) => void
+  zoomArea: (rect: Rect.Rect) => void
+  zoomPoint: (point: Vector2.Vector2, zoomDirection?: ZoomDirection) => void
   zoomScroll: (dx: number, dy: number) => void
 }
 
@@ -20,9 +20,9 @@ type State = {
   zoom: Zoom
 }
 
-type Scroll = Vector2.tvector2
+type Scroll = Vector2.Vector2
 
-type Zoom = Vector2.tvector2
+type Zoom = Vector2.Vector2
 
 export enum ZoomDirection {
   in = "in",

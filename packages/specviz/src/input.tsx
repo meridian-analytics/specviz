@@ -3,25 +3,25 @@ import type * as Axis from "./axis"
 import * as Hooks from "./hooks"
 import * as Vector2 from "./vector2"
 
-export type tcoord = {
-  abs: Vector2.tvector2
-  rel: Vector2.tvector2
+export type Coord = {
+  abs: Vector2.Vector2
+  rel: Vector2.Vector2
 }
 
-type tinput = {
+type InputState = {
   alt: boolean
   buttons: number
   focus: null | (EventTarget & Element)
-  xaxis: null | Axis.taxis
-  yaxis: null | Axis.taxis
+  xaxis: null | Axis.Axis
+  yaxis: null | Axis.Axis
 }
 
 type Context = {
-  input: tinput
-  mousedown: tcoord
-  mouseup: tcoord
-  unitDown: Vector2.tvector2
-  unitUp: Vector2.tvector2
+  input: InputState
+  mousedown: Coord
+  mouseup: Coord
+  unitDown: Vector2.Vector2
+  unitUp: Vector2.Vector2
 }
 
 const defaultContext: Context = {
@@ -49,8 +49,8 @@ export function Provider(props: ProviderProps) {
     let buttons = 0
     let alt = false
     let focus: null | SVGElement = null
-    let xaxis: null | Axis.taxis = null
-    let yaxis: null | Axis.taxis = null
+    let xaxis: null | Axis.Axis = null
+    let yaxis: null | Axis.Axis = null
     return {
       get buttons() {
         return buttons

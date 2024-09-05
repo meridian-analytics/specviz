@@ -3,8 +3,8 @@ import * as R from "react"
 import * as Axis from "./axis"
 
 type Context = {
-  xaxis: Axis.taxis
-  yaxis: Axis.taxis
+  xaxis: Axis.Axis
+  yaxis: Axis.Axis
 }
 
 const defaultContext: Context = {

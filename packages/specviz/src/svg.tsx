@@ -1,9 +1,9 @@
 import type * as Rect from "./rect"
 import type * as Vector2 from "./vector2"
 
-type tpositional = SVGLineElement | SVGRectElement | SVGTextElement
+type FormatFn = (q: number) => string
 
-type tformat = (q: number) => string
+type PositionableSVG = SVGLineElement | SVGRectElement | SVGTextElement
 
 export function hide(svg: SVGElement) {
   svg.setAttribute("display", "none")
@@ -15,8 +15,8 @@ export function show(svg: SVGElement) {
 
 export function setAnchor(
   svg: SVGTextElement,
-  anchor: Vector2.tvector2,
-  format: tformat = String,
+  anchor: Vector2.Vector2,
+  format: FormatFn = String,
 ) {
   if (anchor.x < 0.5) {
     setX(svg, anchor.x, undefined, format)
@@ -41,8 +41,8 @@ export function setPath(svg: SVGPathElement, path: string) {
 
 export function setRect(
   svg: SVGRectElement,
-  rect: Rect.trect,
-  format: tformat = String,
+  rect: Rect.Rect,
+  format: FormatFn = String,
 ) {
   svg.setAttribute("x", format(rect.x))
   svg.setAttribute("y", format(rect.y))
@@ -57,8 +57,8 @@ export function setText(svg: SVGTextElement, text: string) {
 /** todo: unused */
 export function setTransform(
   svg: SVGElement,
-  translate: Vector2.tvector2,
-  scale: Vector2.tvector2,
+  translate: Vector2.Vector2,
+  scale: Vector2.Vector2,
 ) {
   svg.setAttribute(
     "transform",
@@ -67,10 +67,10 @@ export function setTransform(
 }
 
 export function setX(
-  svg: tpositional,
+  svg: PositionableSVG,
   x1: number,
   x2: number = x1,
-  format: tformat = String,
+  format: FormatFn = String,
 ) {
   switch (svg.constructor) {
     case SVGTextElement:
@@ -88,10 +88,10 @@ export function setX(
 }
 
 export function setY(
-  svg: tpositional,
+  svg: PositionableSVG,
   y1: number,
   y2: number = y1,
-  format: tformat = String,
+  format: FormatFn = String,
 ) {
   switch (svg.constructor) {
     case SVGTextElement:
