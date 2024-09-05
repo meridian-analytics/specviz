@@ -5,14 +5,14 @@ import * as React from "react"
 import * as ReactDOM from "react-dom/client"
 import * as Reb from "react-error-boundary"
 
-type tsegment = {
+type Sample = {
   audio: string
   spectrogram: string
   waveform: string
   offset: number
 }
 
-const segment1: tsegment = {
+const sample1: Sample = {
   audio: "./audio.wav",
   spectrogram: "./spectrogram.png",
   waveform: "./waveform.png",
@@ -66,40 +66,73 @@ const initRegions: Specviz.RegionState = new Map([
   ],
 ])
 
-export default function App() {
-  const [data, setData] = React.useState(segment1)
+type AppContext = {
+  focus: null | string
+  sample: null | Sample
+  setFocus: (regionId: null | string) => void
+}
+
+const defaultContext: AppContext = {
+  focus: null,
+  sample: null,
+  setFocus() {
+    throw Error("setFocus called outside of context")
+  },
+}
+
+const Context = React.createContext(defaultContext)
+
+export function AppProvider(props: { children: React.ReactNode }) {
+  const [sample, setSample] = React.useState(sample1)
+  const [focus, _setFocus] = React.useState<null | string>(null)
+  const context: AppContext = React.useMemo(
+    () => ({
+      focus,
+      sample,
+      setFocus: (regionId: null | string) => {
+        _setFocus(prev => (prev == regionId ? null : regionId))
+      },
+    }),
+    [focus, sample],
+  )
   return (
-    <div id="app">
-      <Audio.Provider url={data.audio}>
+    <Context.Provider value={context}>
+      <Audio.Provider url={sample.audio}>
         <Specviz.InputProvider>
-          <AxisProvider segment={data}>
+          <AxisProvider segment={sample}>
             <Specviz.RegionProvider
               initRegions={initRegions}
               initSelection={() => new Set(initRegions.keys())}
             >
-              <Specviz.FocusProvider>
-                <Specviz.ViewportProvider>
-                  <BaseToolProvider>
-                    <AnnotationTool
-                      spectrogram={data.spectrogram}
-                      waveform={data.waveform}
-                    />
-                    <Annotations />
-                    <Controls />
-                    <Keybinds />
-                  </BaseToolProvider>
-                </Specviz.ViewportProvider>
-              </Specviz.FocusProvider>
+              <FxProvider>
+                <BaseToolProvider>
+                  <Specviz.ViewportProvider children={props.children} />
+                </BaseToolProvider>
+              </FxProvider>
             </Specviz.RegionProvider>
           </AxisProvider>
         </Specviz.InputProvider>
       </Audio.Provider>
+    </Context.Provider>
+  )
+}
+
+export function App() {
+  return (
+    <div id="app">
+      <AnnotationTool />
+      <Annotations />
+      <Controls />
+      <Keybinds />
+      <Audio.AudioEffect />
     </div>
   )
 }
 
-function AnnotationTool(props: { spectrogram: string; waveform: string }) {
+export function AnnotationTool() {
+  const app = React.useContext(Context)
   const tool = Specviz.useTool()
+  if (app.sample == null) throw Error("sample is null")
   return (
     <div className={`annotation-tool tool-${tool.tool}`}>
       <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
@@ -115,14 +148,14 @@ function AnnotationTool(props: { spectrogram: string; waveform: string }) {
         </div>
         <div className="spectrogram navigator">
           <NavigatorToolProvider>
-            <Specviz.Navigator src={props.spectrogram} />
+            <Specviz.Navigator src={app.sample.spectrogram} />
           </NavigatorToolProvider>
         </div>
         <div className="spectrogram visualization">
           <VisualizationToolProvider>
             <Specviz.Visualization
               children={AnnotationSvg}
-              src={props.spectrogram}
+              src={app.sample.spectrogram}
             />
           </VisualizationToolProvider>
         </div>
@@ -141,14 +174,14 @@ function AnnotationTool(props: { spectrogram: string; waveform: string }) {
           </div>
           <div className="waveform navigator">
             <NavigatorToolProvider>
-              <Specviz.Navigator src={props.waveform} />
+              <Specviz.Navigator src={app.sample.waveform} />
             </NavigatorToolProvider>
           </div>
           <div className="waveform visualization">
             <VisualizationToolProvider>
               <Specviz.Visualization
                 children={AnnotationSvg}
-                src={props.waveform}
+                src={app.sample.waveform}
               />
             </VisualizationToolProvider>
           </div>
@@ -182,20 +215,18 @@ function AnnotationFormStaleSelection(props: { id: string }) {
 }
 
 function AnnotationForm(region: Specviz.Region) {
+  const app = React.useContext(Context)
   const audio = Audio.useContext()
-  const focus = Specviz.useFocus()
   return (
     <div className="annotation-form">
       <div className="title">
         <h3>{region.id}</h3>
-        {focus.region &&
-        !audio.transport.state.pause &&
-        region.id == focus.region.id ? (
+        {!audio.transport.state.pause && app.focus && app.focus == region.id ? (
           <button
             type="button"
             onClick={() => {
               audio.transport.stop()
-              focus.setFocus(null)
+              app.setFocus(null)
             }}
             children="stop"
           />
@@ -203,7 +234,7 @@ function AnnotationForm(region: Specviz.Region) {
           <button
             type="button"
             onClick={() => {
-              focus.setFocus(region.id)
+              app.setFocus(region.id)
               audio.transport.play()
             }}
             children="play"
@@ -244,8 +275,8 @@ function Controls() {
 }
 
 function AudioControls() {
+  const app = React.useContext(Context)
   const audio = Audio.useContext()
-  const focus = Specviz.useFocus()
   return (
     <div className="audio-controls">
       <button
@@ -265,7 +296,7 @@ function AudioControls() {
         type="button"
         onClick={_ => {
           audio.transport.stop()
-          focus.setFocus(null)
+          app.setFocus(null)
         }}
         className={audio.transport.state.pause ? "active" : ""}
         children="Stop"
@@ -359,7 +390,7 @@ function AnnotationSvg(props: Specviz.AnnotationProps) {
   )
 }
 
-function AxisProvider(props: { segment: tsegment; children: React.ReactNode }) {
+function AxisProvider(props: { segment: Sample; children: React.ReactNode }) {
   const audio = Audio.useContext()
   const axes: Specviz.Axes = React.useMemo(
     () => ({
@@ -397,6 +428,28 @@ function BaseToolProvider(props: { children: React.ReactNode }) {
     [audio.transport.seek],
   )
   return <Specviz.ToolProvider actions={actions} children={props.children} />
+}
+
+function FxProvider(props: {
+  children: React.ReactNode
+}) {
+  const app = React.useContext(Context)
+  const region = Specviz.useRegion()
+  const fn: Audio.FxContext.TransformProps["fn"] = React.useCallback(
+    fxContext => {
+      const target = app.focus ? region.regions.get(app.focus) ?? null : null
+      return target == null
+        ? fxContext
+        : {
+            hpf: target.yunit === "hertz" ? target.y : undefined,
+            lpf:
+              target.yunit === "hertz" ? target.y + target.height : undefined,
+            loop: [target.x, target.x + target.width],
+          }
+    },
+    [app.focus, region.regions],
+  )
+  return <Audio.FxContext.Transform children={props.children} fn={fn} />
 }
 
 function NavigatorToolProvider(props: { children: React.ReactNode }) {
@@ -566,8 +619,8 @@ function VerticalAxisToolProvider(props: { children: React.ReactNode }) {
 }
 
 function Keybinds() {
+  const app = React.useContext(Context)
   const audio = Audio.useContext()
-  const focus = Specviz.useFocus()
   const region = Specviz.useRegion()
   const tool = Specviz.useTool()
   return (
@@ -611,7 +664,7 @@ function Keybinds() {
         bind="x"
         onKeyDown={() => {
           audio.transport.stop()
-          focus.setFocus(null)
+          app.setFocus(null)
         }}
       />
     </Specviz.Bindings>
@@ -635,7 +688,9 @@ function Fallback(props: Reb.FallbackProps) {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Reb.ErrorBoundary FallbackComponent={Fallback}>
-      <App />
+      <AppProvider>
+        <App />
+      </AppProvider>
     </Reb.ErrorBoundary>
   </React.StrictMode>,
 )
