@@ -47,29 +47,18 @@ export function useContext() {
 }
 
 export type TransformProps = {
-  fn: (context: Context) => Context
+  fn: (tool: Tool) => Actions
   children: React.ReactNode
 }
 
 export function Transform(props: TransformProps) {
   const prev = useContext()
-  const next = props.fn(prev)
-  return <Context.Provider children={props.children} value={next} />
-}
-
-export type ActionsProvider = {
-  fn: (tool: Tool) => Actions
-  children: React.ReactNode
-}
-
-export function ActionsProvider(props: ActionsProvider) {
-  return (
-    <Transform
-      fn={prev => ({
-        ...prev,
-        actions: { ...prev.actions, ...props.fn(prev.tool) },
-      })}
-      children={props.children}
-    />
+  const next: Context = React.useMemo(
+    () => ({
+      ...prev,
+      actions: { ...prev.actions, ...props.fn(prev.tool) },
+    }),
+    [prev, props.fn],
   )
+  return <Context.Provider children={props.children} value={next} />
 }

@@ -401,7 +401,7 @@ function BaseToolProvider(props: { children: React.ReactNode }) {
 
 function NavigatorToolProvider(props: { children: React.ReactNode }) {
   const viewport = Specviz.useViewport()
-  const fn: Specviz.ToolContext.ActionsProvider["fn"] = React.useCallback(
+  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
     tool => ({
       onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
         switch (tool) {
@@ -438,9 +438,7 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
       viewport.zoomScroll,
     ],
   )
-  return (
-    <Specviz.ToolContext.ActionsProvider children={props.children} fn={fn} />
-  )
+  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
 }
 
 function VisualizationToolProvider(props: { children: React.ReactNode }) {
@@ -456,7 +454,7 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
     },
     [viewport.zoomScroll, viewport.scroll],
   )
-  const fn: Specviz.ToolContext.ActionsProvider["fn"] = React.useCallback(
+  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
     tool => {
       switch (tool) {
         case "annotate":
@@ -530,14 +528,12 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
       viewport.zoomPoint,
     ],
   )
-  return (
-    <Specviz.ToolContext.ActionsProvider children={props.children} fn={fn} />
-  )
+  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
 }
 
 function HorizontalAxisToolProvider(props: { children: React.ReactNode }) {
   const viewport = Specviz.useViewport()
-  const fn: Specviz.ToolContext.ActionsProvider["fn"] = React.useCallback(
+  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
     tool => ({
       onWheel: ({ dx, dy, event }) => {
         if (event.altKey) {
@@ -549,14 +545,12 @@ function HorizontalAxisToolProvider(props: { children: React.ReactNode }) {
     }),
     [viewport.zoomScroll],
   )
-  return (
-    <Specviz.ToolContext.ActionsProvider children={props.children} fn={fn} />
-  )
+  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
 }
 
 function VerticalAxisToolProvider(props: { children: React.ReactNode }) {
   const viewport = Specviz.useViewport()
-  const fn: Specviz.ToolContext.ActionsProvider["fn"] = React.useCallback(
+  const fn: Specviz.ToolContext.TransformProps["fn"] = React.useCallback(
     tool => ({
       onWheel: ({ dx, dy, event }) => {
         if (event.altKey) {
@@ -568,9 +562,7 @@ function VerticalAxisToolProvider(props: { children: React.ReactNode }) {
     }),
     [viewport.zoomScroll],
   )
-  return (
-    <Specviz.ToolContext.ActionsProvider children={props.children} fn={fn} />
-  )
+  return <Specviz.ToolContext.Transform children={props.children} fn={fn} />
 }
 
 function Keybinds() {
