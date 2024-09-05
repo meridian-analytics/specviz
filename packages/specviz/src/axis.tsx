@@ -7,7 +7,7 @@ import * as Viewport from "./viewport"
 
 type taxisformat = (x: number) => string
 
-type taxis = {
+export type taxis = {
   unit: string
   format: taxisformat
   intervals: Array<[number, number]>
@@ -17,7 +17,7 @@ type taxis = {
  * computeUnit
  * map value from unit space to user space
  */
-function computeUnit(t: taxis, q: number) {
+export function computeUnit(t: taxis, q: number) {
   if (t == null) return Number.NEGATIVE_INFINITY
   const { intervals: s } = t
   if (s.length < 2) return Number.NEGATIVE_INFINITY
@@ -41,7 +41,7 @@ function computeUnit(t: taxis, q: number) {
  * computeUnitInverse
  * map value from user space to unit space
  */
-function computeUnitInverse(t: taxis, q: number): number {
+export function computeUnitInverse(t: taxis, q: number): number {
   if (t == null) return Number.NEGATIVE_INFINITY
   const s = [...t.intervals].sort(([ax, ay], [bx, by]) => ay - by) // todo: memoize
   if (s.length < 2) return Number.NEGATIVE_INFINITY
@@ -82,13 +82,13 @@ function computeRectAux(func: (t: taxis, q: number) => number) {
  * computeRect
  * map rect from unit space to user space
  */
-const computeRect = computeRectAux(computeUnit)
+export const computeRect = computeRectAux(computeUnit)
 
 /**
  * computeRectInverse
  * map rect from user space to unit space
  */
-const computeRectInverse = computeRectAux(computeUnitInverse)
+export const computeRectInverse = computeRectAux(computeUnitInverse)
 
 /**
  * computeTicks
@@ -116,11 +116,11 @@ function computeTicks(axis: taxis, count: number): [number, number][] {
   return r
 }
 
-function formatUnit(t: taxis, q: number) {
+export function formatUnit(t: taxis, q: number) {
   return t.format(q)
 }
 
-function linear(
+export function linear(
   min: number,
   max: number,
   unit?: string,
@@ -136,7 +136,7 @@ function linear(
   }
 }
 
-function nonlinear(
+export function nonlinear(
   intervals: Array<[number, number]>,
   unit?: string,
   format?: taxisformat,
@@ -148,7 +148,7 @@ function nonlinear(
   }
 }
 
-type AxisProps = {
+export type AxisProps = {
   tickHeight?: number
   tickWidth?: number
 }
@@ -161,7 +161,7 @@ type AxisProps = {
  * - [ ] vertical alignment: bottom (default) or top
  * - [ ] horizontal alignment: left (default) or right
  */
-function Horizontal(props: AxisProps) {
+export function Horizontal(props: AxisProps) {
   const svgRoot = R.useRef<SVGSVGElement>(null)
   const plane = Plane.useContext()
   const dimensions = Hooks.useDimensions(svgRoot)
@@ -218,7 +218,7 @@ function Horizontal(props: AxisProps) {
 }
 
 /** Axis.Vertical */
-function Vertical(props: AxisProps) {
+export function Vertical(props: AxisProps) {
   const svgRoot = R.useRef<SVGSVGElement>(null)
   const plane = Plane.useContext()
   const dimensions = Hooks.useDimensions(svgRoot)
@@ -274,34 +274,14 @@ function Vertical(props: AxisProps) {
   )
 }
 
-type Axes = Record<string, undefined | taxis>
-
-export type Context = Axes
+export type Context = Record<string, undefined | taxis>
 
 const defaultContext: Context = {}
 
 const Context = R.createContext(defaultContext)
 
-const Provider = Context.Provider
+export const Provider = Context.Provider
 
-function useContext() {
+export function useContext() {
   return R.useContext(Context)
-}
-
-export {
-  type Axes,
-  type AxisProps,
-  type Context,
-  type taxis,
-  computeRect,
-  computeRectInverse,
-  computeUnit,
-  computeUnitInverse,
-  formatUnit,
-  Horizontal,
-  linear,
-  nonlinear,
-  Provider,
-  useContext,
-  Vertical,
 }

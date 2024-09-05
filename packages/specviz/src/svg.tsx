@@ -5,15 +5,15 @@ type tpositional = SVGLineElement | SVGRectElement | SVGTextElement
 
 type tformat = (q: number) => string
 
-function hide(svg: SVGElement) {
+export function hide(svg: SVGElement) {
   svg.setAttribute("display", "none")
 }
 
-function show(svg: SVGElement) {
+export function show(svg: SVGElement) {
   svg.setAttribute("display", "inline")
 }
 
-function setAnchor(
+export function setAnchor(
   svg: SVGTextElement,
   anchor: Vector2.tvector2,
   format: tformat = String,
@@ -34,11 +34,12 @@ function setAnchor(
   }
 }
 
-function setPath(svg: SVGPathElement, path: string) {
+/** todo: unused */
+export function setPath(svg: SVGPathElement, path: string) {
   svg.setAttribute("d", path)
 }
 
-function setRect(
+export function setRect(
   svg: SVGRectElement,
   rect: Rect.trect,
   format: tformat = String,
@@ -49,11 +50,12 @@ function setRect(
   svg.setAttribute("height", format(rect.height))
 }
 
-function setText(svg: SVGTextElement, text: string) {
+export function setText(svg: SVGTextElement, text: string) {
   svg.textContent = text
 }
 
-function setTransform(
+/** todo: unused */
+export function setTransform(
   svg: SVGElement,
   translate: Vector2.tvector2,
   scale: Vector2.tvector2,
@@ -64,7 +66,7 @@ function setTransform(
   )
 }
 
-function setX(
+export function setX(
   svg: tpositional,
   x1: number,
   x2: number = x1,
@@ -85,7 +87,7 @@ function setX(
   }
 }
 
-function setY(
+export function setY(
   svg: tpositional,
   y1: number,
   y2: number = y1,
@@ -104,16 +106,4 @@ function setY(
       svg.setAttribute("height", format(y2))
       break
   }
-}
-
-export {
-  hide,
-  show,
-  setAnchor,
-  setPath,
-  setRect,
-  setText,
-  setTransform,
-  setX,
-  setY,
 }
