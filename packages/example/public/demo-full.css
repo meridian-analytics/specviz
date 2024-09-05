@@ -1,21 +1,3 @@
-body {
-  background-color: #eee;
-  font-family: monospace; 
-  color: #333;
-  margin: 0;
-}
-
-button {
-  font-family: monospace;
-  padding: 0.5rem;
-  cursor: pointer;
-}
-
-h3 {
-  font-size: 1rem;
-  margin: 0;
-}
-
 #app {
   background-color: mintcream;
   display: grid;

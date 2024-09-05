@@ -2,21 +2,14 @@ import * as Audio from "@specviz/audio"
 import * as Specviz from "@specviz/core"
 import * as Format from "@specviz/format"
 import * as React from "react"
-import * as ReactDOM from "react-dom/client"
-import * as Reb from "react-error-boundary"
+
+export const element = <AppProvider children={<App />} />
 
 type Sample = {
   audio: string
   spectrogram: string
   waveform: string
   offset: number
-}
-
-const sample1: Sample = {
-  audio: "./audio.wav",
-  spectrogram: "./spectrogram.png",
-  waveform: "./waveform.png",
-  offset: 0,
 }
 
 const initRegions: Specviz.RegionState = new Map([
@@ -68,13 +61,18 @@ const initRegions: Specviz.RegionState = new Map([
 
 type AppContext = {
   focus: null | string
-  sample: null | Sample
+  sample: Sample
   setFocus: (regionId: null | string) => void
 }
 
 const defaultContext: AppContext = {
   focus: null,
-  sample: null,
+  sample: {
+    audio: "./audio.wav",
+    spectrogram: "./spectrogram.png",
+    waveform: "./waveform.png",
+    offset: 0,
+  },
   setFocus() {
     throw Error("setFocus called outside of context")
   },
@@ -83,23 +81,22 @@ const defaultContext: AppContext = {
 const Context = React.createContext(defaultContext)
 
 export function AppProvider(props: { children: React.ReactNode }) {
-  const [sample, setSample] = React.useState(sample1)
   const [focus, _setFocus] = React.useState<null | string>(null)
   const context: AppContext = React.useMemo(
     () => ({
       focus,
-      sample,
+      sample: defaultContext.sample,
       setFocus: (regionId: null | string) => {
         _setFocus(prev => (prev == regionId ? null : regionId))
       },
     }),
-    [focus, sample],
+    [focus],
   )
   return (
     <Context.Provider value={context}>
-      <Audio.Provider url={sample.audio}>
+      <Audio.Provider url={defaultContext.sample.audio}>
         <Specviz.InputProvider>
-          <AxisProvider segment={sample}>
+          <AxisProvider segment={defaultContext.sample}>
             <Specviz.RegionProvider
               initRegions={initRegions}
               initSelection={() => new Set(initRegions.keys())}
@@ -117,9 +114,10 @@ export function AppProvider(props: { children: React.ReactNode }) {
   )
 }
 
-export function App() {
+export default function App() {
   return (
     <div id="app">
+      <link rel="stylesheet" href="./demo-full.css" />
       <AnnotationTool />
       <Annotations />
       <Controls />
@@ -670,27 +668,3 @@ function Keybinds() {
     </Specviz.Bindings>
   )
 }
-
-function Fallback(props: Reb.FallbackProps) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre style={{ color: "red" }}>{props.error.message}</pre>
-      <button
-        type="button"
-        onClick={props.resetErrorBoundary}
-        children="Try again"
-      />
-    </div>
-  )
-}
-
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <Reb.ErrorBoundary FallbackComponent={Fallback}>
-      <AppProvider>
-        <App />
-      </AppProvider>
-    </Reb.ErrorBoundary>
-  </React.StrictMode>,
-)
