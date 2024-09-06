@@ -45,52 +45,65 @@ export function Provider(props: ProviderProps) {
   const audioContext = AudioContext.useContext()
   const [state, setState] = R.useState(() => defaultContext.state)
 
-  const play: Context["play"] = seek => {
-    setState(prev => {
-      const nextSeek = seek ?? getSeek(prev)
-      return {
-        pause: false,
-        seek: nextSeek,
-        timecode: audioContext.currentTime - nextSeek,
-      }
-    })
-  }
-
-  const seek: Context["seek"] = seek => {
-    setState(prev => {
-      const timecode = audioContext.currentTime - seek
-      return { ...prev, seek, timecode }
-    })
-  }
-
-  const stop: Context["stop"] = seek => {
-    setState(prev => {
-      const nextSeek = seek ?? getSeek(prev)
-      return {
-        pause: true,
-        seek: nextSeek,
-        timecode: audioContext.currentTime - nextSeek,
-      }
-    })
-  }
-
-  const getSeek: Context["getSeek"] = state => {
-    return state.pause ? state.seek : audioContext.currentTime - state.timecode
-  }
-
-  return (
-    <Context.Provider
-      value={{
-        play,
-        seek,
-        state,
-        stop,
-        getSeek,
-      }}
-    >
-      {props.children}
-    </Context.Provider>
+  const play: Context["play"] = R.useCallback(
+    seek => {
+      setState(prev => {
+        const nextSeek = seek ?? getSeek(prev)
+        return {
+          pause: false,
+          seek: nextSeek,
+          timecode: audioContext.currentTime - nextSeek,
+        }
+      })
+    },
+    [audioContext],
   )
+
+  const seek: Context["seek"] = R.useCallback(
+    seek => {
+      setState(prev => {
+        const timecode = audioContext.currentTime - seek
+        return { ...prev, seek, timecode }
+      })
+    },
+    [audioContext],
+  )
+
+  const stop: Context["stop"] = R.useCallback(
+    seek => {
+      setState(prev => {
+        const nextSeek = seek ?? getSeek(prev)
+        return {
+          pause: true,
+          seek: nextSeek,
+          timecode: audioContext.currentTime - nextSeek,
+        }
+      })
+    },
+    [audioContext],
+  )
+
+  const getSeek: Context["getSeek"] = R.useCallback(
+    state => {
+      return state.pause
+        ? state.seek
+        : audioContext.currentTime - state.timecode
+    },
+    [audioContext],
+  )
+
+  const value = R.useMemo(
+    () => ({
+      state,
+      play,
+      seek,
+      stop,
+      getSeek,
+    }),
+    [state, play, seek, stop, getSeek],
+  )
+
+  return <Context.Provider children={props.children} value={value} />
 }
 
 export function useContext() {
