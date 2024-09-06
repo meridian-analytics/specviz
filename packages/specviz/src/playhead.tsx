@@ -8,15 +8,31 @@ function Playhead() {
   const { buffer, transport } = Audio2.useContext()
   Hooks.useAnimationFrame(
     R.useCallback(() => {
-      if (line.current) {
+      if (line.current && transport.hasAudio) {
         const seek = transport.getSeek(transport.state)
         Svg.setX(line.current, seek / buffer.duration)
         Svg.setY(line.current, 0, 1) // todo: y-axis on spectrograms
+        Svg.show(line.current)
       }
-    }, [buffer.duration, transport.getSeek, transport.state]),
+    }, [
+      buffer.duration,
+      transport.getSeek,
+      transport.hasAudio,
+      transport.state,
+    ]),
   )
 
-  return <line ref={line} className="playhead" x1="0" y1="0" x2="0" y2="100%" />
+  return (
+    <line
+      ref={line}
+      className="playhead"
+      display="none"
+      x1="0"
+      y1="0"
+      x2="0"
+      y2="100%"
+    />
+  )
 }
 
 export default Playhead

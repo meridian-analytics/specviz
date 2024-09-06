@@ -19,7 +19,7 @@ export function Provider(props: ProviderProps) {
   return (
     <AudioContext.Provider>
       <BufferContext.Provider fallback={props.fallback} url={props.url}>
-        <TransportContext.Provider children={props.children} />
+        <TransportContext.Provider children={props.children} hasAudio={true} />
       </BufferContext.Provider>
     </AudioContext.Provider>
   )

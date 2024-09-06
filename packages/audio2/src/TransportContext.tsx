@@ -9,6 +9,7 @@ export type State = {
 
 export type Context = {
   state: State
+  hasAudio: boolean
   play: (seek?: number) => void
   stop: (seek?: number) => void
   seek: (seek: number) => void
@@ -21,6 +22,7 @@ const defaultContext: Context = {
     seek: 0,
     timecode: 0,
   },
+  hasAudio: false,
   play() {
     throw Error("play called outside of context")
   },
@@ -39,6 +41,7 @@ const Context = R.createContext(defaultContext)
 
 type ProviderProps = {
   children: R.ReactNode
+  hasAudio?: boolean
 }
 
 export function Provider(props: ProviderProps) {
@@ -95,12 +98,13 @@ export function Provider(props: ProviderProps) {
   const value = R.useMemo(
     () => ({
       state,
+      hasAudio: props.hasAudio ?? false,
       play,
       seek,
       stop,
       getSeek,
     }),
-    [state, play, seek, stop, getSeek],
+    [state, props.hasAudio, play, seek, stop, getSeek],
   )
 
   return <Context.Provider children={props.children} value={value} />
