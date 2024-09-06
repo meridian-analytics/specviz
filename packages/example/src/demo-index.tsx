@@ -1,6 +1,7 @@
 import * as R from "react"
 import * as RDC from "react-dom/client"
 import * as RR from "react-router-dom"
+import * as DemoBasicPng from "./demo-basic-png"
 import * as DemoFull from "./demo-full"
 
 const router = RR.createBrowserRouter([
@@ -11,6 +12,10 @@ const router = RR.createBrowserRouter([
       {
         path: "/",
         loader: async () => RR.redirect("/full"),
+      },
+      {
+        path: "/basic-png",
+        element: DemoBasicPng.element,
       },
       {
         path: "/full",
