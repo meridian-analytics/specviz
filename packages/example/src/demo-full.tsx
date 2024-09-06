@@ -130,7 +130,6 @@ export default function App() {
 export function AnnotationTool() {
   const app = React.useContext(Context)
   const tool = Specviz.useTool()
-  if (app.sample == null) throw Error("sample is null")
   return (
     <div className={`annotation-tool tool-${tool.tool}`}>
       <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
