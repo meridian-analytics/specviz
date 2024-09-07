@@ -102,10 +102,6 @@
   justify-content: center;
 }
 
-.controls button ~ button {
-  margin-left: 0.5rem;
-}
-
 .navigator {
   cursor: crosshair;
   background-color:navajowhite;
