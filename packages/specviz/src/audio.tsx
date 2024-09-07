@@ -80,9 +80,6 @@ export type ProviderProps = {
 }
 
 export function Provider(props: ProviderProps) {
-  const [audioContext] = React.useState(
-    () => props.audioContext ?? new AudioContext(),
-  )
   const [state, setState] = React.useState(defaultContext.state)
   const transport: Transport = React.useMemo(
     () => ({
@@ -90,17 +87,19 @@ export function Provider(props: ProviderProps) {
         setState(prev => {
           const nextSeek =
             seek ?? // seek or getSeek (inlined)
-            (prev.pause ? prev.seek : audioContext.currentTime - prev.timecode)
+            (prev.pause
+              ? prev.seek
+              : defaultContext.audioContext.currentTime - prev.timecode)
           return {
             pause: false,
             seek: nextSeek,
-            timecode: audioContext.currentTime - nextSeek,
+            timecode: defaultContext.audioContext.currentTime - nextSeek,
           }
         })
       },
       seek: seek => {
         setState(prev => {
-          const timecode = audioContext.currentTime - seek
+          const timecode = defaultContext.audioContext.currentTime - seek
           return { ...prev, seek, timecode }
         })
       },
@@ -108,34 +107,37 @@ export function Provider(props: ProviderProps) {
         setState(prev => {
           const nextSeek =
             seek ?? // seek or getSeek (inlined)
-            (prev.pause ? prev.seek : audioContext.currentTime - prev.timecode)
+            (prev.pause
+              ? prev.seek
+              : defaultContext.audioContext.currentTime - prev.timecode)
           return {
             pause: true,
             seek: nextSeek,
-            timecode: audioContext.currentTime - nextSeek,
+            timecode: defaultContext.audioContext.currentTime - nextSeek,
           }
         })
       },
       getSeek: state => {
         return state.pause
           ? state.seek
-          : audioContext.currentTime - state.timecode
+          : defaultContext.audioContext.currentTime - state.timecode
       },
     }),
-    [audioContext],
+    [],
   )
-  const value = React.useMemo(
-    () => ({
-      audioContext,
-      buffer: props.buffer,
-      fx: props.fx ?? defaultContext.fx,
-      hasAudio: true,
-      state,
-      transport,
-    }),
-    [audioContext, props.buffer, props.fx, state, transport],
+  return (
+    <Context.Provider
+      children={props.children}
+      value={{
+        audioContext: defaultContext.audioContext,
+        buffer: props.buffer,
+        fx: props.fx ?? defaultContext.fx,
+        hasAudio: true,
+        state,
+        transport,
+      }}
+    />
   )
-  return <Context.Provider children={props.children} value={value} />
 }
 
 export function useContext() {
