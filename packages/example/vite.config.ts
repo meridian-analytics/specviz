@@ -14,8 +14,6 @@ export default Vite.defineConfig({
       external: ["react", "react/jsx-runtime", "react-dom"],
       input: {
         "specviz-react": "src/index.tsx",
-        audio: "src/audio.tsx",
-        axis: "src/axis.tsx",
         format: "src/format.tsx",
       },
       output: {

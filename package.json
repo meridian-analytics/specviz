@@ -16,7 +16,6 @@
   },
   "exports": {
     ".": "./packages/specviz/src/index.ts",
-    "./audio": "./packages/audio2/src/index.ts",
     "./format": "./packages/format/src/index.ts"
   },
   "peerDependencies": {

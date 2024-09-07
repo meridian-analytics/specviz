@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@specviz/audio": "workspace:*",
     "@specviz/core": "workspace:*",
     "@specviz/format": "workspace:*",
     "react": "^18.3.1",
@@ -11,6 +10,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^3.1.0",
     "react-router-dom": "^6.26.1",
+    "react-router-typesafe": "^1.5.0",
     "typescript": "^5.5.3",
     "vite": "^4.2.0"
   },

@@ -19,6 +19,7 @@ const router = RR.createBrowserRouter([
       },
       {
         path: "/full",
+        loader: DemoFull.loader,
         element: DemoFull.element,
       },
     ],
