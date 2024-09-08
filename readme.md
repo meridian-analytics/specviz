@@ -359,6 +359,7 @@ type Context = {
     xaxis: Axis.Axis,
     yaxis: Axis.Axis,
     userData?: UserData,
+    autoSelect?: boolean,
   ) => void
   canCreate: boolean
   canDelete: (region: Region) => boolean

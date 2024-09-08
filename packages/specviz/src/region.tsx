@@ -54,6 +54,7 @@ export type Context = {
     xaxis: Axis.Axis,
     yaxis: Axis.Axis,
     userData?: UserData,
+    autoSelect?: boolean,
   ) => void
   canCreate: boolean
   canDelete: (region: Region) => boolean
@@ -241,7 +242,7 @@ export function Provider(props: ProviderProps) {
 
   // commands
   const annotate: Context["annotate"] = R.useCallback(
-    (rect, xaxis, yaxis, userData) => {
+    (rect, xaxis, yaxis, userData, autoSelect) => {
       if (!canCreate) return
       const id = Format.randomBytes(10)
       setRegions(prev =>
@@ -253,7 +254,7 @@ export function Provider(props: ProviderProps) {
           yunit: yaxis.unit,
         }),
       )
-      setSelection(new Set([id]))
+      if (autoSelect) setSelection(new Set([id]))
     },
     [canCreate],
   )
