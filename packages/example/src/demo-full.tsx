@@ -75,7 +75,7 @@ const initRegions: Specviz.RegionState = new Map([
 
 type AppContext = {
   focus: null | string
-  tool: "annotate" | "select" | "zoom" | "pan"
+  tool: "annotate" | "select" | "zoom" | "move"
   setFocus: (regionId: null | string) => void
   setTool: (t: AppContext["tool"]) => void
 }
@@ -146,7 +146,7 @@ export default function App() {
 export function AnnotationTool() {
   const loaderData = RRT.useLoaderData<typeof loader>()
   const app = React.useContext(Context)
-  const showSelection = app.tool != "pan"
+  const showSelection = app.tool != "move"
   return (
     <div className={`annotation-tool tool-${app.tool}`}>
       <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
@@ -349,9 +349,9 @@ function ToolControls() {
       <button
         title="F"
         type="button"
-        onClick={_ => app.setTool("pan")}
-        className={app.tool === "pan" ? "active" : ""}
-        children="Pan"
+        onClick={_ => app.setTool("move")}
+        className={app.tool === "move" ? "active" : ""}
+        children="Move"
       />
     </div>
   )
@@ -478,7 +478,7 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
         switch (app.tool) {
           case "annotate":
           case "select":
-          case "pan":
+          case "move":
             viewport.scrollTo({
               x: rel.x * viewport.state.zoom.x - 0.5,
               y: rel.y * viewport.state.zoom.y - 0.5,
@@ -564,7 +564,7 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
           },
           onWheel,
         }
-      case "pan":
+      case "move":
         return {
           onDrag: ({ dx, dy, event }) => {
             if (region.selection.size == 0) {
@@ -669,7 +669,7 @@ function Keybinds() {
       <Specviz.Keypress bind="a" onKeyDown={() => app.setTool("annotate")} />
       <Specviz.Keypress bind="s" onKeyDown={() => app.setTool("select")} />
       <Specviz.Keypress bind="d" onKeyDown={() => app.setTool("zoom")} />
-      <Specviz.Keypress bind="f" onKeyDown={() => app.setTool("pan")} />
+      <Specviz.Keypress bind="f" onKeyDown={() => app.setTool("move")} />
       <Specviz.Keypress bind="z" onKeyDown={() => audio.transport.play()} />
       <Specviz.Keypress
         bind="x"
