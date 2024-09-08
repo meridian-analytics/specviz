@@ -489,7 +489,7 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
             break
         }
       },
-      onMove: ({ dx, dy, event }) => {
+      onDrag: ({ dx, dy, event }) => {
         viewport.scroll(dx * viewport.state.zoom.x, dy * viewport.state.zoom.y)
       },
       onWheel: ({ dx, dy, event }) => {
@@ -566,7 +566,7 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
         }
       case "pan":
         return {
-          onMove: ({ dx, dy, event }) => {
+          onDrag: ({ dx, dy, event }) => {
             if (region.selection.size == 0) {
               viewport.scroll(-dx, -dy)
             } else {

@@ -188,8 +188,8 @@ export type UseMouseWheelHandler = (useMouseEvent: {
 export type UseMouseProps = {
   onClick?: UseMouseClickHandler
   onContextMenu?: UseMouseContextMenuHandler
+  onDrag?: UseMouseMoveHandler
   onRect?: UseMouseRectHandler
-  onMove?: UseMouseMoveHandler
   onWheel?: UseMouseWheelHandler
 }
 
@@ -202,10 +202,10 @@ export function useMouse(props: UseMouseProps) {
         if (input.input.buttons & 1) {
           const dx = event.movementX / event.currentTarget.clientWidth
           const dy = event.movementY / event.currentTarget.clientHeight
-          props.onMove?.({ dx, dy, event })
+          props.onDrag?.({ dx, dy, event })
         }
       },
-      [input.input, props.onMove],
+      [input.input, props.onDrag],
     ),
     onMouseUp: R.useCallback<R.MouseEventHandler>(
       event => {
