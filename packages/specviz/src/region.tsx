@@ -451,63 +451,38 @@ export function Provider(props: ProviderProps) {
     [canUpdate, transformedSelection],
   )
 
-  // computed context
-  const value: Context = R.useMemo(
-    () => ({
-      annotate,
-      canCreate,
-      canDelete,
-      canRead,
-      canUpdate,
-      delete: delete_,
-      deselect,
-      moveSelection,
-      regions,
-      selectArea,
-      selectId,
-      selection,
-      selectPoint,
-      setRectX,
-      setRectX1,
-      setRectX2,
-      setRectY,
-      setRectY1,
-      setRectY2,
-      setRegions,
-      setSelection,
-      transformedRegions,
-      transformedSelection,
-      updateRegion,
-      updateSelectedRegions,
-    }),
-    [
-      annotate,
-      canCreate,
-      canDelete,
-      canRead,
-      canUpdate,
-      delete_,
-      deselect,
-      moveSelection,
-      regions,
-      selectArea,
-      selectId,
-      selection,
-      selectPoint,
-      setRectX,
-      setRectX1,
-      setRectX2,
-      setRectY,
-      setRectY1,
-      setRectY2,
-      updateRegion,
-      updateSelectedRegions,
-      transformedRegions,
-      transformedSelection,
-    ],
+  return (
+    <Context.Provider
+      children={props.children}
+      value={{
+        annotate,
+        canCreate,
+        canDelete,
+        canRead,
+        canUpdate,
+        delete: delete_,
+        deselect,
+        moveSelection,
+        regions,
+        selectArea,
+        selectId,
+        selection,
+        selectPoint,
+        setRectX,
+        setRectX1,
+        setRectX2,
+        setRectY,
+        setRectY1,
+        setRectY2,
+        setRegions,
+        setSelection,
+        transformedRegions,
+        transformedSelection,
+        updateRegion,
+        updateSelectedRegions,
+      }}
+    />
   )
-
-  return <Context.Provider children={props.children} value={value} />
 }
 
 export function useContext() {
