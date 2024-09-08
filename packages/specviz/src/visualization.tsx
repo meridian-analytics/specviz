@@ -1,4 +1,5 @@
 import * as R from "react"
+import * as Action from "./action"
 import Annotation from "./annotation"
 import Cursor from "./cursor"
 import * as Hooks from "./hooks"
@@ -20,11 +21,11 @@ export type VisualizationProps = {
 export default function Visualization(props: VisualizationProps) {
   const svgRoot = R.useRef<SVGSVGElement>(null)
   const region = Region.useContext()
-  const tool = Tool.useContext()
+  const action = Action.useContext()
   const viewport = Viewport.useContext()
   const dimensions = Hooks.useDimensions(svgRoot)
-  const onMouse = Hooks.useMouse(tool.actions)
-  Hooks.useWheel({ ref: svgRoot, onWheel: tool.actions.onWheel })
+  const onMouse = Hooks.useMouse(action)
+  Hooks.useWheel({ ref: svgRoot, onWheel: action.onWheel })
 
   const translate = `translate(${-viewport.state.scroll.x}, ${-viewport.state
     .scroll.y})`

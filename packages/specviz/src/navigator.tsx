@@ -1,9 +1,9 @@
 import * as R from "react"
+import * as Action from "./action"
 import Annotation from "./annotation"
 import * as Hooks from "./hooks"
 import Playhead from "./playhead"
 import * as Region from "./region"
-import * as Tool from "./tool"
 import * as Viewport from "./viewport"
 
 export type NavigatorProps = {
@@ -13,14 +13,13 @@ export type NavigatorProps = {
 
 export default function Navigator(props: NavigatorProps) {
   const region = Region.useContext()
-  const tool = Tool.useContext()
+  const action = Action.useContext()
   const containerRef = R.useRef<SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
   const viewport = Viewport.useContext()
-  const onMouse = Hooks.useMouse(tool.actions)
-
-  Hooks.useWheel({ ref: containerRef, onWheel: tool.actions.onWheel })
+  const onMouse = Hooks.useMouse(action)
   const dimensions = Hooks.useDimensions(containerRef)
+  Hooks.useWheel({ ref: containerRef, onWheel: action.onWheel })
   const maskPath = `
     M 0 0
     h 1

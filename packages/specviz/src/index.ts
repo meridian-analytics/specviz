@@ -1,4 +1,5 @@
 // types
+export { type Action } from "./action"
 export { type AnnotationProps } from "./annotation"
 export { type Axis, type Context as Axes } from "./axis"
 export {
@@ -29,6 +30,7 @@ export { default as Navigator } from "./navigator"
 export { default as Visualization } from "./visualization"
 
 // contexts
+export * as ActionContext from "./action"
 export * as AudioContext from "./audio"
 export * as AxisContext from "./axis"
 export * as InputContext from "./input"
@@ -37,6 +39,7 @@ export * as RegionContext from "./region"
 export * as ToolContext from "./tool"
 export * as ViewportContext from "./viewport"
 
+export { Provider as ActionProvider } from "./action"
 export { Provider as AudioProvider } from "./audio"
 export { Provider as AxisProvider } from "./axis"
 export { Provider as InputProvider } from "./input"
@@ -45,6 +48,7 @@ export { Provider as RegionProvider } from "./region"
 export { Provider as ToolProvider } from "./tool"
 export { Provider as ViewportProvider } from "./viewport"
 
+export { useContext as useAction } from "./action"
 export { useContext as useAudio } from "./audio"
 export { useContext as useAxis } from "./axis"
 export { useContext as useInput } from "./input"

@@ -1,8 +1,8 @@
 import * as R from "react"
+import * as Action from "./action"
 import * as Hooks from "./hooks"
 import * as Plane from "./plane"
 import * as Rect from "./rect"
-import * as Tool from "./tool"
 import * as Viewport from "./viewport"
 
 type FormatFn = (x: number) => string
@@ -165,9 +165,9 @@ export function Horizontal(props: AxisProps) {
   const svgRoot = R.useRef<SVGSVGElement>(null)
   const plane = Plane.useContext()
   const dimensions = Hooks.useDimensions(svgRoot)
-  const tool = Tool.useContext()
+  const action = Action.useContext()
   const viewport = Viewport.useContext()
-  Hooks.useWheel({ ref: svgRoot, onWheel: tool.actions.onWheel })
+  Hooks.useWheel({ ref: svgRoot, onWheel: action.onWheel })
   const X = props.tickWidth ?? 80
   const Y = props.tickHeight ?? 20
   const width = dimensions.x * viewport.state.zoom.x
@@ -222,9 +222,9 @@ export function Vertical(props: AxisProps) {
   const svgRoot = R.useRef<SVGSVGElement>(null)
   const plane = Plane.useContext()
   const dimensions = Hooks.useDimensions(svgRoot)
-  const tool = Tool.useContext()
+  const action = Action.useContext()
   const viewport = Viewport.useContext()
-  Hooks.useWheel({ ref: svgRoot, onWheel: tool.actions.onWheel })
+  Hooks.useWheel({ ref: svgRoot, onWheel: action.onWheel })
   const X = props.tickWidth ?? 80
   const Y = props.tickHeight ?? 20
   const width = dimensions.x * 1 // fixed zoom
