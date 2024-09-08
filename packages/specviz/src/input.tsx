@@ -16,7 +16,7 @@ type InputState = {
   yaxis: null | Axis.Axis
 }
 
-type Context = {
+export type Context = {
   input: InputState
   mousedown: Coord
   mouseup: Coord
@@ -124,5 +124,3 @@ export function Provider(props: ProviderProps) {
 export function useContext() {
   return R.useContext(Context)
 }
-
-export default defaultContext

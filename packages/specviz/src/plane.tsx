@@ -1,8 +1,7 @@
 import * as R from "react"
-
 import * as Axis from "./axis"
 
-type Context = {
+export type Context = {
   xaxis: Axis.Axis
   yaxis: Axis.Axis
 }

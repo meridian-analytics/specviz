@@ -3,7 +3,7 @@ import * as Audio from "./audio"
 import * as Hooks from "./hooks"
 import * as Svg from "./svg"
 
-function Playhead() {
+export default function Playhead() {
   const line = R.useRef<SVGLineElement>(null)
   const audio = Audio.useContext()
   Hooks.useAnimationFrame(
@@ -33,5 +33,3 @@ function Playhead() {
     />
   )
 }
-
-export default Playhead

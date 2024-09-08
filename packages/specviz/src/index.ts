@@ -1,15 +1,10 @@
 // types
 export { type Action } from "./action"
 export { type AnnotationProps } from "./annotation"
-export { type Axis, type Context as Axes } from "./axis"
-export {
-  type UseMouseClickHandler,
-  type UseMouseContextMenuHandler,
-  type UseMouseMoveHandler,
-  type UseMouseRectHandler,
-  type UseMouseWheelHandler,
-} from "./hooks"
+export { type Axis, type Axes } from "./axis"
+export { type EncoderProps } from "./encoder"
 export { type NavigatorProps } from "./navigator"
+export { type Rect } from "./rect"
 export {
   type Region,
   type RegionState,
@@ -17,13 +12,14 @@ export {
   type SelectionState,
   SelectionMode, // enum
 } from "./region"
+export { type Vector2 } from "./vector2"
 export {
   ZoomDirection, // enum
 } from "./viewport"
 export { type VisualizationProps } from "./visualization"
 
 // components
-export { default as AudioEffect } from "./audio"
+export { AudioEffect } from "./audio"
 export { default as Encoder } from "./encoder"
 export { Keypress, Bindings } from "./keybinds"
 export { default as Navigator } from "./navigator"
@@ -55,7 +51,7 @@ export { useContext as useRegion } from "./region"
 export { useContext as useViewport } from "./viewport"
 
 // hooks
-export { useAnimationFrame, useMouse } from "./hooks"
+export { useAnimationFrame } from "./hooks"
 
 // package
 import pkg from "../../../package.json"

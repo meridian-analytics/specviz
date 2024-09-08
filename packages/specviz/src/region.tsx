@@ -6,8 +6,6 @@ import * as Mathx from "./mathx"
 import * as Rect from "./rect"
 import type * as Vector2 from "./vector2"
 
-export type UserData = Record<string, RegionValue>
-
 export type Region = {
   id: string
   x: number
@@ -18,9 +16,9 @@ export type Region = {
   yunit: string
 } & UserData
 
-export type RegionValue = boolean | number | string | string[]
-
 export type RegionState = Map<Region["id"], Region>
+
+export type RegionValue = boolean | number | string | string[]
 
 export type SelectionState = Set<Region["id"]>
 
@@ -30,6 +28,8 @@ export enum SelectionMode {
   replace = "replace",
   subtract = "subtract",
 }
+
+export type UserData = Record<string, RegionValue>
 
 function concatSelection(
   prev: SelectionState,
@@ -510,11 +510,9 @@ export function selectionMode(event: R.MouseEvent): SelectionMode {
   }
 }
 
-export type TransformFn = (regionState: RegionState) => RegionState
-
 export type TransformProps = {
   children: R.ReactNode
-  fn: TransformFn
+  fn: (regionState: RegionState) => RegionState
 }
 
 export function Transform(props: TransformProps) {
@@ -533,7 +531,9 @@ export function Transform(props: TransformProps) {
   return <Context.Provider children={props.children} value={next} />
 }
 
-export function transformFilter(fn: (region: Region) => boolean) {
+export function transformFilter(
+  fn: (region: Region) => boolean,
+): TransformProps["fn"] {
   return (regions: RegionState) => {
     const next = new Map()
     for (const [id, region] of regions) if (fn(region)) next.set(id, region)

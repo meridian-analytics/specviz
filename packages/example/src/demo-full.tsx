@@ -517,7 +517,7 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
   const app = React.useContext(Context)
   const region = Specviz.useRegion()
   const viewport = Specviz.useViewport()
-  const onWheel: Specviz.UseMouseWheelHandler = React.useCallback(
+  const onWheel: Specviz.Action["onWheel"] = React.useCallback(
     ({ dx, dy, event }) => {
       if (event.altKey) {
         viewport.zoomScroll(-dx, -dy)

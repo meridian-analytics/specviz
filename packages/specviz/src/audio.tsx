@@ -158,7 +158,7 @@ export function TransformFx(props: TransformFxProps) {
   return <Context.Provider children={props.children} value={next} />
 }
 
-export default function AudioEffect() {
+export function AudioEffect() {
   const audio = useContext()
   return audio.state.pause ? <React.Fragment /> : <PlayEffect />
 }

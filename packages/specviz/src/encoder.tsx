@@ -6,12 +6,14 @@ import * as Region from "./region"
 const min = (5 * Math.PI) / 4
 const max = -Math.PI / 4
 
-function Encoder(props: {
+export type EncoderProps = {
   state: number
   setState: (nextState: number) => void
   value: number
   unit: string
-}) {
+}
+
+export default function Encoder(props: EncoderProps) {
   const svgRef = R.useRef<null | SVGSVGElement>(null)
 
   const { x, y } = R.useMemo(() => {
@@ -111,5 +113,3 @@ Encoder.Y2 = function EncoderY2(region: Region.Region) {
     />
   )
 }
-
-export default Encoder

@@ -6,9 +6,11 @@ import * as Input from "./input"
 import * as Plane from "./plane"
 import * as Svg from "./svg"
 
-function Cursor(props: {
+type CursorProps = {
   parent: R.RefObject<SVGGElement>
-}) {
+}
+
+export default function Cursor(props: CursorProps) {
   const { input, mouseup, unitUp } = Input.useContext()
   const svgLayer = R.useRef<SVGGElement>(null)
   const svgXline = R.useRef<SVGLineElement>(null)
@@ -88,5 +90,3 @@ function Cursor(props: {
     </g>
   )
 }
-
-export default Cursor

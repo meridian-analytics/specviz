@@ -17,7 +17,7 @@ export type Axis = {
  * computeUnit
  * map value from unit space to user space
  */
-export function computeUnit(t: Axis, q: number) {
+export function computeUnit(t: Axis, q: number): number {
   if (t == null) return Number.NEGATIVE_INFINITY
   const { intervals: s } = t
   if (s.length < 2) return Number.NEGATIVE_INFINITY
@@ -61,12 +61,14 @@ export function computeUnitInverse(t: Axis, q: number): number {
   return Number.NEGATIVE_INFINITY
 }
 
+type ComputeRectFn = (tx: Axis, ty: Axis, rect: Rect.Rect) => Rect.Rect
+
 /**
  * computeRectAux
  * map rect from space to space
  */
-function computeRectAux(func: (t: Axis, q: number) => number) {
-  return (tx: Axis, ty: Axis, rect: Rect.Rect) => {
+function computeRectAux(func: (t: Axis, q: number) => number): ComputeRectFn {
+  return (tx, ty, rect) => {
     const x = func(tx, rect.x)
     const y = func(ty, rect.y)
     return Rect.normalize({
@@ -82,13 +84,14 @@ function computeRectAux(func: (t: Axis, q: number) => number) {
  * computeRect
  * map rect from unit space to user space
  */
-export const computeRect = computeRectAux(computeUnit)
+export const computeRect: ComputeRectFn = computeRectAux(computeUnit)
 
 /**
  * computeRectInverse
  * map rect from user space to unit space
  */
-export const computeRectInverse = computeRectAux(computeUnitInverse)
+export const computeRectInverse: ComputeRectFn =
+  computeRectAux(computeUnitInverse)
 
 /**
  * computeTicks
@@ -116,7 +119,7 @@ function computeTicks(axis: Axis, count: number): [number, number][] {
   return r
 }
 
-export function formatUnit(t: Axis, q: number) {
+export function formatUnit(t: Axis, q: number): string {
   return t.format(q)
 }
 
@@ -273,6 +276,8 @@ export function Vertical(props: AxisProps) {
     </svg>
   )
 }
+
+export type Axes = Context
 
 export type Context = Record<string, undefined | Axis>
 
