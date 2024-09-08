@@ -36,7 +36,6 @@ export * as AxisContext from "./axis"
 export * as InputContext from "./input"
 export * as PlaneContext from "./plane"
 export * as RegionContext from "./region"
-export * as ToolContext from "./tool"
 export * as ViewportContext from "./viewport"
 
 export { Provider as ActionProvider } from "./action"
@@ -45,7 +44,6 @@ export { Provider as AxisProvider } from "./axis"
 export { Provider as InputProvider } from "./input"
 export { Provider as PlaneProvider } from "./plane"
 export { Provider as RegionProvider } from "./region"
-export { Provider as ToolProvider } from "./tool"
 export { Provider as ViewportProvider } from "./viewport"
 
 export { useContext as useAction } from "./action"
@@ -54,7 +52,6 @@ export { useContext as useAxis } from "./axis"
 export { useContext as useInput } from "./input"
 export { useContext as usePlane } from "./plane"
 export { useContext as useRegion } from "./region"
-export { useContext as useTool } from "./tool"
 export { useContext as useViewport } from "./viewport"
 
 // hooks

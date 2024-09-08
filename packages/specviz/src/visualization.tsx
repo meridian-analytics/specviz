@@ -9,12 +9,12 @@ import Playhead from "./playhead"
 import * as Rect from "./rect"
 import * as Region from "./region"
 import * as Svg from "./svg"
-import * as Tool from "./tool"
 import * as Viewport from "./viewport"
 
 export type VisualizationProps = {
   children?: typeof Annotation
   ignoreRegionTransform?: boolean
+  showSelection?: boolean
   src: string
 }
 
@@ -82,7 +82,7 @@ export default function Visualization(props: VisualizationProps) {
               />
             ),
           )}
-          <Selection />
+          {props.showSelection && <Selection />}
           <Playhead />
         </g>
       </svg>
@@ -95,41 +95,24 @@ function Selection() {
   const svgRef = R.useRef<SVGRectElement>(null)
   const input = Input.useContext()
   const plane = Plane.useContext()
-  const tool = Tool.useContext()
   Hooks.useAnimationFrame(
     R.useCallback(() => {
       if (svgRef.current) {
-        switch (tool.tool) {
-          case "annotate":
-          case "select":
-          case "zoom":
-            if (input.input.buttons & 1) {
-              Svg.show(svgRef.current)
-              Svg.setRect(
-                svgRef.current,
-                Rect.logical(
-                  Rect.fromPoints(input.mousedown.abs, input.mouseup.abs), // input.mouseRect,
-                  plane.xaxis === input.input.xaxis,
-                  plane.yaxis === input.input.yaxis,
-                ),
-              )
-            } else {
-              Svg.hide(svgRef.current)
-            }
-            break
-          case "pan":
-            Svg.hide(svgRef.current)
-            break
+        if (input.input.buttons & 1) {
+          Svg.show(svgRef.current)
+          Svg.setRect(
+            svgRef.current,
+            Rect.logical(
+              Rect.fromPoints(input.mousedown.abs, input.mouseup.abs), // input.mouseRect,
+              plane.xaxis === input.input.xaxis,
+              plane.yaxis === input.input.yaxis,
+            ),
+          )
+        } else {
+          Svg.hide(svgRef.current)
         }
       }
-    }, [
-      tool.tool,
-      plane.xaxis,
-      plane.yaxis,
-      input.input,
-      input.mousedown,
-      input.mouseup,
-    ]),
+    }, [plane.xaxis, plane.yaxis, input.input, input.mousedown, input.mouseup]),
   )
   return (
     <rect ref={svgRef} className="selection" x="0" y="0" width="0" height="0" />
