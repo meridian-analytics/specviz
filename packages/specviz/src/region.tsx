@@ -169,7 +169,7 @@ export function Provider(props: ProviderProps) {
   const axis = Axis.useContext()
 
   // access control
-  const canCreate = props.canCreate ?? true
+  const canCreate = props.canCreate ?? defaultContext.canCreate
   const canDelete = props.canDelete ?? defaultContext.canDelete
   const canRead = props.canRead ?? defaultContext.canRead
   const canUpdate = props.canUpdate ?? defaultContext.canUpdate
