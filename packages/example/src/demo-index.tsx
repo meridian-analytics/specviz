@@ -4,6 +4,7 @@ import * as RR from "react-router-dom"
 import * as DemoBasicAudio from "./demo-basic-audio"
 import * as DemoBasicPng from "./demo-basic-png"
 import * as DemoFull from "./demo-full"
+import * as DemoInteractivePng from "./demo-interactive-png"
 
 const router = RR.createBrowserRouter([
   {
@@ -22,6 +23,11 @@ const router = RR.createBrowserRouter([
         path: "/basic-audio",
         loader: DemoBasicAudio.loader,
         element: DemoBasicAudio.element,
+      },
+      {
+        path: "/interactive-png",
+        loader: DemoInteractivePng.loader,
+        element: DemoInteractivePng.element,
       },
       {
         path: "/full",
