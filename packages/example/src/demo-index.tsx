@@ -44,12 +44,95 @@ const router = RR.createBrowserRouter([
   },
 ])
 
+const css = `
+  body {
+    background-color: seashell;
+    background-image: 
+      linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+    background-size: 1rem 1rem;
+    color: #333;
+    font-family: monospace; 
+    margin: 0;
+  }
+
+  button {
+    font-family: monospace;
+    padding: 0.5rem;
+    cursor: pointer;
+  }
+
+  button ~ button {
+    margin-left: 0.5rem;
+  }
+
+  h3 {
+    font-size: 1rem;
+    margin: 0;
+  }
+`
+
 function Demo() {
   return (
-    <div id="demo">
-      <link rel="stylesheet" href="./demo-index.css" />
-      <RR.Outlet />
+    <div
+      style={{
+        maxWidth: 1400,
+        margin: "2rem auto 0",
+      }}
+    >
+      <style children={css} />
+      <Navigation />
+      <div
+        style={{
+          boxShadow: "0.25rem 0.25rem 0.5rem rgba(0, 0, 0, 0.25)",
+        }}
+      >
+        <RR.Outlet />
+      </div>
     </div>
+  )
+}
+
+function Navigation() {
+  return (
+    <nav
+      style={{
+        backgroundColor: "honeydew",
+        border: "1px solid mediumseagreen",
+        marginBottom: "1rem",
+      }}
+    >
+      <ul style={{ padding: 0 }}>
+        <NavLink to="/basic-png" children="Basic PNG" />
+        <NavLink to="/basic-audio" children="Basic Audio" />
+        <NavLink to="/interactive-png" children="Interactive PNG" />
+        <NavLink to="/annotation" children="Annotation" />
+        <NavLink to="/full" children="Full" />
+      </ul>
+    </nav>
+  )
+}
+
+function NavLink(props: RR.LinkProps) {
+  return (
+    <li style={{ display: "inline-block", marginLeft: "0.5rem" }}>
+      <RR.NavLink
+        {...props}
+        style={linkState =>
+          linkState.isActive
+            ? {
+                backgroundColor: "mediumseagreen",
+                color: "honeydew",
+                padding: "0.5rem",
+                textDecoration: "none",
+              }
+            : {
+                color: "mediumseagreen",
+                padding: "0.5rem",
+              }
+        }
+      />
+    </li>
   )
 }
 
