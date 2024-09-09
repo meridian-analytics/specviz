@@ -3,7 +3,8 @@
   "version": "0.11.0",
   "type": "module",
   "scripts": {
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "tsc": "bun --filter '*' tsc"
   },
   "dependencies": {
     "react": "^18.3.1",
