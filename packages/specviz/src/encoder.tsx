@@ -14,7 +14,7 @@ export type EncoderProps = {
 }
 
 export default function Encoder(props: EncoderProps) {
-  const svgRef = R.useRef<null | SVGSVGElement>(null)
+  const ref = R.useRef<null | SVGSVGElement>(null)
 
   const { x, y } = R.useMemo(() => {
     const rad = min - props.state * (min - max)
@@ -28,10 +28,10 @@ export default function Encoder(props: EncoderProps) {
     [props.setState],
   )
 
-  Hooks.useWheel({ ref: svgRef, onWheel })
+  Hooks.useWheel(ref, onWheel)
 
   return (
-    <svg ref={svgRef} width="60" height="60" viewBox="-1.1 -1.1 2.2 2.2">
+    <svg ref={ref} width="60" height="60" viewBox="-1.1 -1.1 2.2 2.2">
       <path
         className="encoder"
         d={`

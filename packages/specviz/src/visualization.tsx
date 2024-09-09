@@ -19,20 +19,20 @@ export type VisualizationProps = {
 }
 
 export default function Visualization(props: VisualizationProps) {
-  const svgRoot = R.useRef<SVGSVGElement>(null)
+  const ref = R.useRef<null | SVGSVGElement>(null)
   const region = Region.useContext()
   const action = Action.useContext()
   const viewport = Viewport.useContext()
-  const dimensions = Hooks.useDimensions(svgRoot)
+  const dimensions = Hooks.useDimensions(ref)
   const onMouse = Hooks.useMouse(action)
-  Hooks.useWheel({ ref: svgRoot, onWheel: action.onWheel })
+  Hooks.useWheel(ref, action.onWheel)
 
   const translate = `translate(${-viewport.state.scroll.x}, ${-viewport.state
     .scroll.y})`
   const scale = `scale(${viewport.state.zoom.x}, ${viewport.state.zoom.y})`
   const transform = `${translate} ${scale}`
   return (
-    <svg ref={svgRoot} width="100%" height="100%" {...onMouse}>
+    <svg ref={ref} width="100%" height="100%" {...onMouse}>
       <defs>
         <pattern
           id="dotted-grid"
@@ -86,7 +86,7 @@ export default function Visualization(props: VisualizationProps) {
           <Playhead />
         </g>
       </svg>
-      <Cursor parent={svgRoot} />
+      <Cursor parent={ref} />
     </svg>
   )
 }

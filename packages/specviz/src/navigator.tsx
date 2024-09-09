@@ -14,12 +14,12 @@ export type NavigatorProps = {
 export default function Navigator(props: NavigatorProps) {
   const region = Region.useContext()
   const action = Action.useContext()
-  const containerRef = R.useRef<SVGSVGElement>(null)
+  const ref = R.useRef<null | SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
   const viewport = Viewport.useContext()
   const onMouse = Hooks.useMouse(action)
-  const dimensions = Hooks.useDimensions(containerRef)
-  Hooks.useWheel({ ref: containerRef, onWheel: action.onWheel })
+  const dimensions = Hooks.useDimensions(ref)
+  Hooks.useWheel(ref, action.onWheel)
   const maskPath = `
     M 0 0
     h 1
@@ -36,7 +36,7 @@ export default function Navigator(props: NavigatorProps) {
   `
   return (
     <svg
-      ref={containerRef}
+      ref={ref}
       width="100%"
       height="100%"
       viewBox="0 0 1 1"

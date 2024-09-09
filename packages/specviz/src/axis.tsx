@@ -165,12 +165,12 @@ export type AxisProps = {
  * - [ ] horizontal alignment: left (default) or right
  */
 export function Horizontal(props: AxisProps) {
-  const svgRoot = R.useRef<SVGSVGElement>(null)
+  const ref = R.useRef<null | SVGSVGElement>(null)
   const plane = Plane.useContext()
-  const dimensions = Hooks.useDimensions(svgRoot)
+  const dimensions = Hooks.useDimensions(ref)
   const action = Action.useContext()
   const viewport = Viewport.useContext()
-  Hooks.useWheel({ ref: svgRoot, onWheel: action.onWheel })
+  Hooks.useWheel(ref, action.onWheel)
   const X = props.tickWidth ?? 80
   const Y = props.tickHeight ?? 20
   const width = dimensions.x * viewport.state.zoom.x
@@ -208,7 +208,7 @@ export function Horizontal(props: AxisProps) {
   const axisTransform = `${axisTranslate} ${axisScale}`
   return (
     <svg
-      ref={svgRoot}
+      ref={ref}
       width="100%"
       height="100%"
       viewBox="0 0 1 1"
@@ -222,12 +222,12 @@ export function Horizontal(props: AxisProps) {
 
 /** Axis.Vertical */
 export function Vertical(props: AxisProps) {
-  const svgRoot = R.useRef<SVGSVGElement>(null)
+  const ref = R.useRef<SVGSVGElement>(null)
   const plane = Plane.useContext()
-  const dimensions = Hooks.useDimensions(svgRoot)
+  const dimensions = Hooks.useDimensions(ref)
   const action = Action.useContext()
   const viewport = Viewport.useContext()
-  Hooks.useWheel({ ref: svgRoot, onWheel: action.onWheel })
+  Hooks.useWheel(ref, action.onWheel)
   const X = props.tickWidth ?? 80
   const Y = props.tickHeight ?? 20
   const width = dimensions.x * 1 // fixed zoom
@@ -265,7 +265,7 @@ export function Vertical(props: AxisProps) {
   const axisTransform = `${axisTranslate} ${axisScale}`
   return (
     <svg
-      ref={svgRoot}
+      ref={ref}
       width="100%"
       height="100%"
       viewBox="0 0 1 1"

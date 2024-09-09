@@ -259,35 +259,31 @@ export function useMouse(props: UseMouseProps) {
   })
 }
 
-export function useDimensions(ref: R.RefObject<HTMLElement | SVGElement>) {
-  const [dimensions, setDimensions] = R.useState(Vector2.zero)
-  const getDimensions = R.useRef(function getDimensions() {
-    if (ref.current) {
-      const box = ref.current.getBoundingClientRect()
-      return {
-        x: box.width,
-        y: box.height,
-      }
-    }
-    return Vector2.zero
-  })
-  const update = R.useRef(function update() {
-    setDimensions(prev => {
-      if (ref.current == null) return prev
-      const dim = getDimensions.current()
-      return prev.x == dim.x && prev.y == dim.y ? prev : dim
-    })
-  })
-  R.useEffect(() => {
-    update.current()
-  })
-  R.useEffect(() => {
-    window.addEventListener("resize", update.current)
+export function useDimensions(
+  ref: R.MutableRefObject<null | HTMLElement | SVGElement>,
+): Vector2.Vector2 {
+  const [state, setState] = R.useState<Vector2.Vector2>(Vector2.zero)
+  const observer = R.useMemo(
+    () =>
+      new ResizeObserver(entries => {
+        for (const e of entries) {
+          for (const { blockSize: y, inlineSize: x } of e.borderBoxSize) {
+            setState(prev => {
+              if (prev.x === x && prev.y === y) return prev
+              return { x, y }
+            })
+          }
+        }
+      }),
+    [],
+  )
+  R.useLayoutEffect(() => {
+    if (ref.current) observer.observe(ref.current)
     return () => {
-      window.removeEventListener("resize", update.current)
+      observer.disconnect()
     }
-  }, [])
-  return dimensions
+  }, [observer, ref])
+  return state
 }
 
 export function useMutableVector2() {
@@ -385,34 +381,32 @@ export function useMutableRect() {
   }, [])
 }
 
-export type UseWheelProps = {
-  ref: R.RefObject<SVGElement>
-  onWheel?: UseMouseProps["onWheel"]
-}
-
-export function useWheel(props: UseWheelProps) {
+export function useWheel(
+  ref: R.MutableRefObject<null | SVGElement>,
+  fn?: UseMouseProps["onWheel"],
+) {
   const onWheel = R.useCallback(
     (event: WheelEvent) => {
-      if (props.ref.current) {
+      if (ref.current) {
         event.preventDefault()
-        const dx = event.deltaX / props.ref.current.clientWidth
-        const dy = event.deltaY / props.ref.current.clientHeight
-        props.onWheel?.({ dx, dy, event })
+        const dx = event.deltaX / ref.current.clientWidth
+        const dy = event.deltaY / ref.current.clientHeight
+        fn?.({ dx, dy, event })
       }
     },
-    [props.onWheel, props.ref],
+    [fn, ref],
   )
   R.useEffect(() => {
-    if (props.ref.current) {
+    if (ref.current) {
       // react uses passive event listeners by default
       // to stop propagation, use a non-passive listener
       // https://stackoverflow.com/a/67258046
-      props.ref.current.addEventListener("wheel", onWheel, { passive: false })
+      ref.current.addEventListener("wheel", onWheel, { passive: false })
     }
     return () => {
-      if (props.ref.current) {
-        props.ref.current.removeEventListener("wheel", onWheel)
+      if (ref.current) {
+        ref.current.removeEventListener("wheel", onWheel)
       }
     }
-  }, [props.ref, onWheel])
+  }, [ref, onWheel])
 }
