@@ -1,4 +1,5 @@
 ## <a name="top"></a> specviz-react
+* [example](#example)
 * [modules](#modules)
   * [specviz](#specviz)
   * [action](#action)
@@ -10,7 +11,31 @@
   * [viewport](#viewport)
 * [css styling](#css)
 * [utils](#utils)
+* [dev](#dev)
 
+## <a name="example"></a> example
+
+This repo contains an `example` package to demostrate various features and configurations of Specviz.
+
+To run the examples, change to the package's directory, install the dependecies, and run the `dev` script.
+
+```sh
+> cd packages/example
+> bun install
+> bun dev
+```
+
+The example webserver will display the connection URL. In the default case, [http://localhost:5173](http://localhost:5173).
+
+```none
+VITE v4.5.2  ready in 205 ms
+
+➜  Local:   http://localhost:5173/
+➜  Network: use --host to expose
+➜  press h to show help
+```
+
+<small>[back to top](#top)</small>
 ## <a name="modules"></a> modules
 ### <a name="specviz"></a> specviz
 
@@ -513,6 +538,36 @@ function Keypress(props: {
   onKeyDown?: (e: KeyboardEvent) => void,
   onKeyUp?: (e: KeyboardEvent) => void,
 }): JSX.Element
+```
+
+<small>[back to top](#top)</small>
+## <a name="dev"></a> dev
+
+See the [example](#example) section to start the development webserver.
+
+Run linter and formatter.
+
+```sh
+> bun check
+```
+
+```
+Checked 42 files in 15ms. No fixes needed.
+```
+
+Run typescript compiler for all packages.
+
+```sh
+> bun tsc
+```
+
+```none
+@specviz/core tsc $ tsc
+└─ Done in 728 ms
+@specviz/format tsc $ tsc
+└─ Done in 526 ms
+@specviz/example tsc $ tsc
+└─ Done in 927 ms
 ```
 
 <small>[back to top](#top)</small>
