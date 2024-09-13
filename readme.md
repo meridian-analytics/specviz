@@ -1,5 +1,6 @@
 ## <a name="top"></a> specviz-react
 * [example](#example)
+* [intro](#intro)
 * [modules](#modules)
   * [specviz](#specviz)
   * [action](#action)
@@ -13,6 +14,11 @@
 * [utils](#utils)
 * [dev](#dev)
 
+## <a name="intro"></a> intro
+
+todo: what is Specviz? 
+
+<small>[back to top](#top)</small>
 ## <a name="example"></a> example
 
 This repo contains an `example` package to demostrate various features and configurations of Specviz.

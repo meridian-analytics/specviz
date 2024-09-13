@@ -64,7 +64,7 @@
     "y2 v2"
     ". n2";
   grid-template-columns: 80px 1fr;
-  grid-template-rows: 40px 400px 20px 400px 40px;
+  grid-template-rows: 40px 300px 20px 300px 40px;
   padding: 0.5rem;
 }
 

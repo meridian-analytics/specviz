@@ -45,30 +45,18 @@ function AppProvider(props: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <div
-      style={{
-        backgroundColor: "mintcream",
-        display: "grid",
-        gridGap: "1rem",
-        gridTemplateRows: "60 auto",
-        gridTemplateAreas: `
-          "controls"
-          "viz"
-        `,
-        padding: "1rem",
-      }}
-    >
-      <AudioControls />
+    <>
       <Visualizer />
+      <AudioControls />
       <Specviz.AudioEffect />
-    </div>
+    </>
   )
 }
 
 function AudioControls() {
   const audio = Specviz.useAudio()
   return (
-    <div style={{ gridArea: "controls" }}>
+    <div>
       <button
         children="Rewind"
         onClick={_ => audio.transport.seek(0)}
@@ -76,16 +64,14 @@ function AudioControls() {
       />
       <button
         children="Play"
-        style={audio.state.pause ? {} : { color: "orchid" }}
         onClick={_ => audio.transport.play()}
-        title="Z"
+        style={audio.state.pause ? {} : { color: "orchid" }}
         type="button"
       />
       <button
         children="Stop"
-        style={audio.state.pause ? { color: "orchid" } : {}}
         onClick={_ => audio.transport.stop()}
-        title="X"
+        style={audio.state.pause ? { color: "orchid" } : {}}
         type="button"
       />
     </div>
@@ -100,7 +86,6 @@ function Visualizer() {
         backgroundColor: "cornsilk",
         border: "1px solid burlywood",
         display: "grid",
-        gridArea: "viz",
         gridGap: "1rem",
         gridTemplateColumns: "80px 1fr",
         gridTemplateRows: "400px 20px",

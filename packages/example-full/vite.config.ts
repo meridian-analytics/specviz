@@ -26,4 +26,5 @@ export default Vite.defineConfig({
     },
   },
   plugins: [react()],
+  publicDir: "../example-resources",
 })
