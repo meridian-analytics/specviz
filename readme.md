@@ -1,6 +1,6 @@
 ## <a name="top"></a> specviz-react
 * [intro](#intro)
-* [example](#example)
+* [examples](#examples)
 * [docs](#docs)
 
 ## <a name="intro"></a> intro
@@ -8,9 +8,15 @@
 todo: what is Specviz? 
 
 <small>[back to top](#top)</small>
-## <a name="example"></a> example
+## <a name="examples"></a> examples
 
 This repo contains several example packages to demostrate various features and configurations of Specviz.
+
+* `example-basic-annotation`
+* `example-basic-audio`
+* `example-basic-spectrogram`
+* `example-full`
+* `example-interactive-spectrogram`
 
 To run the examples, change to the package's directory, install the dependecies, and run the `dev` script.
 
@@ -29,8 +35,6 @@ VITE v4.5.2  ready in 205 ms
 ➜  Network: use --host to expose
 ➜  press h to show help
 ```
-
-<small>[back to top](#top)</small>
 
 <small>[back to top](#top)</small>
 ## <a name="docs"></a> docs
