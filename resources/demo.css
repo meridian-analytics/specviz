@@ -1,0 +1,42 @@
+body {
+  background-color: seashell;
+  background-image: 
+    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 1rem 1rem;
+  color: #333;
+  font-family: monospace; 
+  margin: 0;
+}
+
+button {
+  font-family: monospace;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+button ~ button {
+  margin-left: 0.5rem;
+}
+
+code {
+  background-color: lavenderblush;
+  color: orchid;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+pre {
+  background-color: lavenderblush;
+  color: orchid; 
+  padding: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+#root {
+  max-width: 1400px;
+  margin: 2rem auto;
+}

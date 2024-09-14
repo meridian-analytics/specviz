@@ -4,5 +4,5 @@ import * as Vite from "vite"
 // https://vitejs.dev/config/
 export default Vite.defineConfig({
   plugins: [react()],
-  publicDir: "../example-resources",
+  publicDir: "../../resources",
 })
