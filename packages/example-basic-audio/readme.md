@@ -6,8 +6,8 @@ your choice. The `AudioContext.load` helper is provided for convenience.
 Below is a common `react-router-dom` example.
 
 ```tsx
+import * as Specviz from "@specviz/react"
 import * as ReactRouter from "react-router-dom"
-import * as Specviz from "specviz-react"
 
 const loader = async () => {
   return {

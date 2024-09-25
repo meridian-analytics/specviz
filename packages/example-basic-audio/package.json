@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "@specviz/core": "workspace:*",
     "@specviz/format": "workspace:*",
+    "@specviz/react": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

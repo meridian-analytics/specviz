@@ -1,5 +1,5 @@
+import * as Format from "@specviz/format"
 import * as R from "react"
-import * as Format from "../../format/src"
 import * as Axis from "./axis"
 import * as Input from "./input"
 import * as Mathx from "./mathx"

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@specviz/format": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -11,7 +12,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "name": "@specviz/core",
+  "name": "@specviz/react",
   "peerDependencies": {
     "typescript": "5.4.5"
   },

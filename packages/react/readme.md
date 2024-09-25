@@ -1,4 +1,4 @@
-## <a name="top"></a> specviz-react
+## <a name="top"></a> @specviz/react
 
 * [modules](#modules)
   * [specviz](#specviz)
@@ -539,7 +539,7 @@ Run typescript compiler for all packages.
 ```
 
 ```none
-@specviz/core tsc $ tsc
+@specviz/react tsc $ tsc
 └─ Done in 728 ms
 @specviz/format tsc $ tsc
 └─ Done in 526 ms
