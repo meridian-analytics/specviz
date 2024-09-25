@@ -15,7 +15,7 @@
 }
 
 .annotation-form {
-  background-color:lavenderblush;
+  background-color: lavenderblush;
   border: 1px solid thistle;
   margin-bottom: 1rem;
 }
@@ -28,7 +28,7 @@
   flex-grow: 1;
 }
 
-.annotation-form pre { 
+.annotation-form pre {
   margin: 0;
   padding: 1rem;
 }
@@ -85,7 +85,7 @@
   flex-direction: row;
   font-family: monospace;
   font-size: 1.25rem;
-  justify-content: space-between; 
+  justify-content: space-between;
   padding: 0.5rem;
 }
 
@@ -104,7 +104,7 @@
 
 .navigator {
   cursor: crosshair;
-  background-color:navajowhite;
+  background-color: navajowhite;
 }
 
 .spectrogram.axis-y {

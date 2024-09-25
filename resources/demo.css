@@ -1,11 +1,13 @@
 body {
   background-color: seashell;
-  background-image: 
-    linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-image: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.1) 1px,
+      transparent 1px
+    ), linear-gradient(180deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 1rem 1rem;
   color: #333;
-  font-family: monospace; 
+  font-family: monospace;
   margin: 0;
 }
 
@@ -31,7 +33,7 @@ h3 {
 
 pre {
   background-color: lavenderblush;
-  color: orchid; 
+  color: orchid;
   padding: 0.5rem;
   margin-bottom: 2rem;
 }

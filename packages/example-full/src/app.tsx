@@ -454,7 +454,7 @@ function FxProvider(props: {
   const region = Specviz.useRegion()
   const fn: Specviz.AudioContext.TransformFxProps["fn"] = React.useCallback(
     fxContext => {
-      const target = app.focus ? region.regions.get(app.focus) ?? null : null
+      const target = app.focus ? (region.regions.get(app.focus) ?? null) : null
       return target == null
         ? fxContext
         : {

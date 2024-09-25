@@ -25,7 +25,7 @@
 }
 
 .annotation.annotation-selected text {
-  fill: rgba(200, 200, 200, 1)
+  fill: rgba(200, 200, 200, 1);
 }
 
 .axis-tick line {
@@ -41,7 +41,8 @@
   text-anchor: start;
 }
 
-.axis-x, .axis-y {
+.axis-x,
+.axis-y {
   overflow: hidden;
 }
 
