@@ -254,13 +254,33 @@ function nonlinear(
   format?: FormatFn,
 ): Axis
 
+function time(
+  min: number,
+  max: number,
+  unit = "seconds",
+  format: FormatFn = Format.timestamp,
+): Axis 
+
+function frequency(
+  min: number,
+  max: number,
+  unit = "hertz",
+  format: FormatFn = Format.hz,
+): Axis 
+
+function percent(
+  min: number,
+  max: number,
+  unit = "percent",
+  format: FormatFn = Format.percent,
+): Axis
+
 function computeRect(tx: Axis, ty: Axis, rect: Rect): Rect
 function computeRectInverse(tx: Axis, ty: Axis, rect: Rect): Rect
 function computeUnit(t: Axis, q: number): number
 function computeUnitInverse(t: Axis, q: number): number 
 function formatUnit(t: Axis, q: number): string
 function useContext(): Context
-
 
 type Axis = {
   unit: string

@@ -1,7 +1,6 @@
+import type * as Format from "./format"
 import type * as Rect from "./rect"
 import type * as Vector2 from "./vector2"
-
-type FormatFn = (q: number) => string
 
 type PositionableSVG = SVGLineElement | SVGRectElement | SVGTextElement
 
@@ -16,7 +15,7 @@ export function show(svg: SVGElement) {
 export function setAnchor(
   svg: SVGTextElement,
   anchor: Vector2.Vector2,
-  format: FormatFn = String,
+  format: Format.FormatFn = String,
 ) {
   if (anchor.x < 0.5) {
     setX(svg, anchor.x, undefined, format)
@@ -42,7 +41,7 @@ export function setPath(svg: SVGPathElement, path: string) {
 export function setRect(
   svg: SVGRectElement,
   rect: Rect.Rect,
-  format: FormatFn = String,
+  format: Format.FormatFn = String,
 ) {
   svg.setAttribute("x", format(rect.x))
   svg.setAttribute("y", format(rect.y))
@@ -70,7 +69,7 @@ export function setX(
   svg: PositionableSVG,
   x1: number,
   x2: number = x1,
-  format: FormatFn = String,
+  format: Format.FormatFn = String,
 ) {
   switch (svg.constructor) {
     case SVGTextElement:
@@ -91,7 +90,7 @@ export function setY(
   svg: PositionableSVG,
   y1: number,
   y2: number = y1,
-  format: FormatFn = String,
+  format: Format.FormatFn = String,
 ) {
   switch (svg.constructor) {
     case SVGTextElement:

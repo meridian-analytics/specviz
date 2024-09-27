@@ -1,5 +1,4 @@
-/** todo: unused */
-export type FormatFn<T = unknown> = (value: T) => string
+export type FormatFn<T = number> = (value: T) => string
 
 export function hz(hz: number) {
   if (hz < 1000) return hz.toFixed(0) + " Hz"

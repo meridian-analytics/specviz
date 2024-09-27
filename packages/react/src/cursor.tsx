@@ -1,6 +1,6 @@
-import * as Format from "@specviz/format"
 import * as R from "react"
 import * as Axis from "./axis"
+import * as Format from "./format"
 import * as Hooks from "./hooks"
 import * as Input from "./input"
 import * as Plane from "./plane"

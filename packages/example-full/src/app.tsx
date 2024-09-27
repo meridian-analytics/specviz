@@ -1,5 +1,5 @@
-import * as Format from "@specviz/format"
 import * as Specviz from "@specviz/react"
+import * as Format from "@specviz/react/format"
 import * as React from "react"
 import * as RRT from "react-router-typesafe"
 
@@ -411,22 +411,12 @@ function AxisProvider(props: { children: React.ReactNode }) {
   const audio = Specviz.useAudio()
   const axes: Specviz.Axes = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.linear(
+      seconds: Specviz.AxisContext.time(
         loaderData.sample.offset + 0,
         loaderData.sample.offset + audio.buffer.duration,
-        "seconds",
-        Format.timestamp,
       ),
-      hertz: Specviz.AxisContext.linear(20000, 0, "hertz", Format.hz),
-      percent: Specviz.AxisContext.nonlinear(
-        [
-          [0, 1],
-          [0.5, 0],
-          [1, -1],
-        ],
-        "percent",
-        Format.percent,
-      ),
+      hertz: Specviz.AxisContext.frequency(20000, 0),
+      percent: Specviz.AxisContext.percent(1, -1),
     }),
     [audio.buffer.duration, loaderData.sample.offset],
   )

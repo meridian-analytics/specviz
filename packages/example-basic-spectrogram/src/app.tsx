@@ -1,4 +1,3 @@
-import * as Format from "@specviz/format"
 import * as Specviz from "@specviz/react"
 import * as React from "react"
 
@@ -21,13 +20,8 @@ const sample: Sample = {
 function App() {
   const axes: Specviz.Axes = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.linear(
-        0,
-        sample.duration,
-        "seconds",
-        Format.timestamp,
-      ),
-      hertz: Specviz.AxisContext.linear(20000, 0, "hertz", Format.hz),
+      seconds: Specviz.AxisContext.time(0, sample.duration),
+      hertz: Specviz.AxisContext.frequency(20000, 0),
     }),
     [],
   )

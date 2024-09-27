@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@specviz/format": "workspace:*",
     "@specviz/react": "workspace:*",
     "markdown-to-jsx": "^7.5.0",
     "react": "^18.3.1",

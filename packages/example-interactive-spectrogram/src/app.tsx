@@ -1,4 +1,3 @@
-import * as Format from "@specviz/format"
 import * as Specviz from "@specviz/react"
 import * as React from "react"
 import * as RRT from "react-router-typesafe"
@@ -26,13 +25,8 @@ function AppProvider(props: { children: React.ReactNode }) {
   const loaderData = RRT.useLoaderData<typeof loader>()
   const axes: Specviz.Axes = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.linear(
-        0,
-        loaderData.sample.duration,
-        "seconds",
-        Format.timestamp,
-      ),
-      hertz: Specviz.AxisContext.linear(20000, 0, "hertz", Format.hz),
+      seconds: Specviz.AxisContext.time(0, loaderData.sample.duration),
+      hertz: Specviz.AxisContext.frequency(20000, 0),
     }),
     [loaderData.sample.duration],
   )

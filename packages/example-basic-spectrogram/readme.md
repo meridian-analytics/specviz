@@ -5,7 +5,6 @@ This example demonstrates how to render an image and axes.
 In your application provider, use `Specviz.AxisProvider` to provide the axes.
 
 ```tsx
-import * as Format from "@specviz/format"
 import * as Specviz from "@specviz/react"
 
 function AppProvider(props) {
@@ -28,15 +27,15 @@ function AppProvider(props) {
 }
 ```
 
-To create the axes, `AxisContext.linear` and `AxisContext.nonlinear` are
-provided. The `Format` module contains common formatting functions.
+To create the axes, `AxisContext.time` and `AxisContext.frequency` are
+used. To create a custom axis, use `AxisContext.linear` and `AxisContext.nonlinear`.
 
 ```tsx
 function AppProvider(props) {
   const axes = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.linear(0, 60, "seconds", Format.timestamp),
-      hertz: Specviz.AxisContext.linear(20000, 0, "hertz", Format.hz),
+      seconds: Specviz.AxisContext.time(0, 60),
+      hertz: Specviz.AxisContext.frequency(20000, 0),
     }),
     [],
   )

@@ -1,15 +1,14 @@
 import * as R from "react"
 import * as Action from "./action"
+import * as Format from "./format"
 import * as Hooks from "./hooks"
 import * as Plane from "./plane"
 import * as Rect from "./rect"
 import * as Viewport from "./viewport"
 
-type FormatFn = (x: number) => string
-
 export type Axis = {
   unit: string
-  format: FormatFn
+  format: Format.FormatFn
   intervals: Array<[number, number]>
 }
 
@@ -127,7 +126,7 @@ export function linear(
   min: number,
   max: number,
   unit?: string,
-  format?: FormatFn,
+  format?: Format.FormatFn,
 ): Axis {
   return {
     unit: unit ?? "units",
@@ -142,13 +141,40 @@ export function linear(
 export function nonlinear(
   intervals: Array<[number, number]>,
   unit?: string,
-  format?: FormatFn,
+  format?: Format.FormatFn,
 ): Axis {
   return {
     unit: unit ?? "units",
     format: format ?? String,
     intervals,
   }
+}
+
+export function time(
+  min: number,
+  max: number,
+  unit = "seconds",
+  format: Format.FormatFn = Format.timestamp,
+): Axis {
+  return linear(min, max, unit, format)
+}
+
+export function frequency(
+  min: number,
+  max: number,
+  unit = "hertz",
+  format: Format.FormatFn = Format.hz,
+): Axis {
+  return linear(min, max, unit, format)
+}
+
+export function percent(
+  min: number,
+  max: number,
+  unit = "percent",
+  format: Format.FormatFn = Format.percent,
+): Axis {
+  return linear(min, max, unit, format)
 }
 
 export type AxisProps = {
