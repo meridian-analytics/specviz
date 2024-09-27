@@ -11,7 +11,6 @@
   * [viewport](#viewport)
 * [css styling](#css)
 * [utils](#utils)
-* [dev](#dev)
 
 ## <a name="modules"></a> modules
 ### <a name="specviz"></a> specviz
@@ -522,42 +521,6 @@ function Keypress(props: {
   onKeyDown?: (e: KeyboardEvent) => void,
   onKeyUp?: (e: KeyboardEvent) => void,
 }): JSX.Element
-```
-
-<small>[back to top](#top)</small>
-## <a name="dev"></a> dev
-
-See the [example](#example) section to start the development webserver.
-
-Run linter and formatter.
-
-```sh
-> bun check
-```
-
-```
-Checked 42 files in 15ms. No fixes needed.
-```
-
-Run typescript compiler for all packages.
-
-```sh
-> bun tsc
-```
-
-```none
-@meridian_cfi/specviz-example-basic-audio tsc $ tsc
-└─ Done in 1.08 s
-@meridian_cfi/specviz-example-basic-spectrogram tsc $ tsc
-└─ Done in 1.38 s
-@meridian_cfi/specviz-example-interactive-spectrogram tsc $ tsc
-└─ Done in 1.07 s
-@meridian_cfi/specviz-example-full tsc $ tsc
-└─ Done in 1.42 s
-@meridian_cfi/specviz-example-basic-annotation tsc $ tsc
-└─ Done in 1.39 s
-@meridian_cfi/specviz tsc $ tsc
-└─ Done in 988 ms
 ```
 
 <small>[back to top](#top)</small>

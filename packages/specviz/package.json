@@ -4,9 +4,11 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
+    "@biomejs/biome": "^1.9.2",
+    "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
-    "vitest": "^0.30.1"
+    "typescript": "5.6.2",
+    "vitest": "^2.1.1"
   },
   "exports": {
     ".": "./src/react.ts",
@@ -27,10 +29,8 @@
     "./viewport": "./src/viewport.tsx"
   },
   "name": "@meridian_cfi/specviz",
-  "peerDependencies": {
-    "typescript": "5.4.5"
-  },
   "scripts": {
+    "check": "biome check --write .",
     "test": "bun run --bun vitest run",
     "tsc": "tsc"
   },

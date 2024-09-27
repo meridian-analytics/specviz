@@ -5,16 +5,18 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
+    "@biomejs/biome": "^1.9.2",
+    "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^3.1.0",
-    "react-router-dom": "^6.26.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "react-router-dom": "^6.26.2",
     "react-router-typesafe": "^1.5.0",
-    "typescript": "^5.5.3",
-    "vite": "^4.2.0"
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8"
   },
   "name": "@meridian_cfi/specviz-example-basic-spectrogram",
   "scripts": {
+    "check": "biome check --write .",
     "dev": "bun run --bun vite",
     "tsc": "tsc"
   },
