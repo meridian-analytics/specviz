@@ -1,4 +1,4 @@
-## <a name="top"></a> @specviz/react
+## <a name="top"></a> @meridian_cfi/specviz
 
 * [modules](#modules)
   * [specviz](#specviz)
@@ -546,12 +546,18 @@ Run typescript compiler for all packages.
 ```
 
 ```none
-@specviz/react tsc $ tsc
-└─ Done in 728 ms
-@specviz/format tsc $ tsc
-└─ Done in 526 ms
-@specviz/example tsc $ tsc
-└─ Done in 927 ms
+@meridian_cfi/specviz-example-basic-audio tsc $ tsc
+└─ Done in 1.08 s
+@meridian_cfi/specviz-example-basic-spectrogram tsc $ tsc
+└─ Done in 1.38 s
+@meridian_cfi/specviz-example-interactive-spectrogram tsc $ tsc
+└─ Done in 1.07 s
+@meridian_cfi/specviz-example-full tsc $ tsc
+└─ Done in 1.42 s
+@meridian_cfi/specviz-example-basic-annotation tsc $ tsc
+└─ Done in 1.39 s
+@meridian_cfi/specviz tsc $ tsc
+└─ Done in 988 ms
 ```
 
 <small>[back to top](#top)</small>

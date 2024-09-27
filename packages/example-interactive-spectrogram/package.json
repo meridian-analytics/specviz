@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@specviz/react": "workspace:*",
+    "@meridian_cfi/specviz": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -13,7 +13,7 @@
     "typescript": "^5.5.3",
     "vite": "^4.2.0"
   },
-  "name": "@specviz/example-interactive-spectrogram",
+  "name": "@meridian_cfi/specviz-example-interactive-spectrogram",
   "scripts": {
     "dev": "bun run --bun vite",
     "tsc": "tsc"

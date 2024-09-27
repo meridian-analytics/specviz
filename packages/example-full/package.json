@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@specviz/react": "workspace:*",
+    "@meridian_cfi/specviz": "workspace:*",
     "markdown-to-jsx": "^7.5.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -14,7 +14,7 @@
     "typescript": "^5.5.3",
     "vite": "^4.2.0"
   },
-  "name": "@specviz/example-full",
+  "name": "@meridian_cfi/specviz-example-full",
   "scripts": {
     "dev": "bun run --bun vite",
     "tsc": "tsc"

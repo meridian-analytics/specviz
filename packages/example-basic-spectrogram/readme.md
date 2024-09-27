@@ -5,7 +5,7 @@ This example demonstrates how to render an image and axes.
 In your application provider, use `Specviz.AxisProvider` to provide the axes.
 
 ```tsx
-import * as Specviz from "@specviz/react"
+import * as Specviz from "@meridian_cfi/specviz"
 
 function AppProvider(props) {
   const axes = React.useMemo(

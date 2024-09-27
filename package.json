@@ -1,5 +1,5 @@
 {
-  "name": "@specviz/monorepo",
+  "name": "@meridian_cfi/specviz-monorepo",
   "type": "module",
   "scripts": {
     "check": "biome check --write .",
@@ -13,10 +13,6 @@
     "@biomejs/biome": "^1.7.3",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0"
-  },
-  "exports": {
-    ".": "./packages/specviz/src/index.ts",
-    "./format": "./packages/format/src/index.ts"
   },
   "peerDependencies": {
     "typescript": "^5.5.3"

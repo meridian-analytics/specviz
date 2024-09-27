@@ -9,7 +9,7 @@
     "vitest": "^0.30.1"
   },
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./src/react.ts",
     "./action": "./src/action.tsx",
     "./audio": "./src/audio.tsx",
     "./axis": "./src/axis.tsx",
@@ -19,13 +19,14 @@
     "./keybinds": "./src/keybinds.tsx",
     "./math": "./src/math.ts",
     "./plane": "./src/plane.tsx",
+    "./react": "./src/react.ts",
     "./rect": "./src/rect.ts",
     "./region": "./src/region.tsx",
     "./svg": "./src/svg.ts",
     "./vector2": "./src/vector2.ts",
     "./viewport": "./src/viewport.tsx"
   },
-  "name": "@specviz/react",
+  "name": "@meridian_cfi/specviz",
   "peerDependencies": {
     "typescript": "5.4.5"
   },

@@ -1,4 +1,4 @@
-## <a name="top"></a> @specviz/monorepo
+## <a name="top"></a> @meridian/specviz-monorepo
 * [intro](#intro)
 * [examples](#examples)
 * [docs](#docs)
@@ -39,4 +39,4 @@ VITE v4.5.2  ready in 205 ms
 <small>[back to top](#top)</small>
 ## <a name="docs"></a> docs
 
-See `packages/react/readme.md`.
+See `packages/specviz/readme.md`.

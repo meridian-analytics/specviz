@@ -1,4 +1,4 @@
-import * as Specviz from "@specviz/react"
+import * as Specviz from "@meridian_cfi/specviz"
 import * as React from "react"
 
 export const element = <App />

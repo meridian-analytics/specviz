@@ -1,5 +1,5 @@
-import * as Specviz from "@specviz/react"
-import * as Format from "@specviz/react/format"
+import * as Specviz from "@meridian_cfi/specviz"
+import * as Format from "@meridian_cfi/specviz/format"
 import * as React from "react"
 import * as RRT from "react-router-typesafe"
 
