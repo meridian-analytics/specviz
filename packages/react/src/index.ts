@@ -54,5 +54,5 @@ export { useContext as useViewport } from "./viewport"
 export { useAnimationFrame } from "./hooks"
 
 // package
-import pkg from "../../../package.json"
+import pkg from "../package.json"
 export const version = pkg.version

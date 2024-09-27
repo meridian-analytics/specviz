@@ -1,6 +1,5 @@
 {
   "name": "@specviz/monorepo",
-  "version": "0.11.0",
   "type": "module",
   "scripts": {
     "check": "biome check --write .",

@@ -20,5 +20,6 @@
     "test": "bun run --bun vitest run",
     "tsc": "tsc"
   },
-  "type": "module"
+  "type": "module",
+  "version": "0.11.0"
 }
