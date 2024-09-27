@@ -76,13 +76,6 @@ type NavigatorProps = {
   src: string
 }
 
-type Rect = {
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-}
-
 type UseMouseClickHandler = (useMouseEvent: {
   unit: Vector2
   rel: Vector2
@@ -137,14 +130,8 @@ type VisualizationProps = {
   src: string
 }
 
-type Vector2 = {
-  x: number,
-  y: number,
-}
-
 // aliases
 type Action = ActionContext.Action
-type Axis = AxisContext.Axis
 type Axes = AxisContext.Axes
 type Region = Region.Region
 type RegionState = Region.RegionState

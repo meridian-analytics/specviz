@@ -1,10 +1,9 @@
 // types
 export { type Action } from "./action"
 export { type AnnotationProps } from "./annotation"
-export { type Axis, type Axes } from "./axis"
+export { type Axes } from "./axis"
 export { type EncoderProps } from "./encoder"
 export { type NavigatorProps } from "./navigator"
-export { type Rect } from "./rect"
 export {
   type Region,
   type RegionState,
@@ -12,7 +11,6 @@ export {
   type SelectionState,
   SelectionMode, // enum
 } from "./region"
-export { type Vector2 } from "./vector2"
 export {
   ZoomDirection, // enum
 } from "./viewport"

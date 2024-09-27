@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as Input from "./input"
-import * as Mathx from "./mathx"
+import * as Mathx from "./math"
 import type * as Rect from "./rect"
 import type * as Vector2 from "./vector2"
 

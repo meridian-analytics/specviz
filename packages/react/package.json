@@ -10,7 +10,20 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./format": "./src/format.ts"
+    "./action": "./src/action.tsx",
+    "./audio": "./src/audio.tsx",
+    "./axis": "./src/axis.tsx",
+    "./format": "./src/format.ts",
+    "./hooks": "./src/hooks.tsx",
+    "./input": "./src/input.tsx",
+    "./keybinds": "./src/keybinds.tsx",
+    "./math": "./src/math.ts",
+    "./plane": "./src/plane.tsx",
+    "./rect": "./src/rect.ts",
+    "./region": "./src/region.tsx",
+    "./svg": "./src/svg.ts",
+    "./vector2": "./src/vector2.ts",
+    "./viewport": "./src/viewport.tsx"
   },
   "name": "@specviz/react",
   "peerDependencies": {

@@ -1,7 +1,7 @@
 import * as R from "react"
 import * as Axis from "./axis"
 import * as Input from "./input"
-import * as Mathx from "./mathx"
+import * as Mathx from "./math"
 import * as Plane from "./plane"
 import * as Rect from "./rect"
 import * as Vector2 from "./vector2"

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { clamp } from "./mathx"
+import { clamp } from "./math"
 
 export type Context = {
   audioContext: AudioContext
