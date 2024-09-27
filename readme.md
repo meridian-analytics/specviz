@@ -18,11 +18,11 @@ This repo contains several example packages to demostrate various features and c
 * `example-full`
 * `example-interactive-spectrogram`
 
-To run the examples, change to the package's directory, install the dependecies, and run the `dev` script.
+To run the examples, install the development dependencies, change to the example's directory, and run the `dev` script.
 
 ```sh
-> cd packages/example-full
 > bun install
+> cd examples/example-full
 > bun dev
 ```
 
