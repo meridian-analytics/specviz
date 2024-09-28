@@ -1,4 +1,4 @@
-## <a name="top"></a> @meridian/specviz-monorepo
+## <a name="top"></a> @meridian_cfi/specviz-monorepo
 * [intro](#intro)
 * [examples](#examples)
 * [docs](#docs)
@@ -6,7 +6,18 @@
 
 ## <a name="intro"></a> intro
 
-todo: what is Specviz? 
+Specviz is a customizable javascript library to display pre-computed spectrograms, built on top of React, SVG, and WebAudio. It currently provides the following main features, most of which can be opted in or out:
+
+* Pre-computed spectrogram and waveform loading
+* Zoom and pan navigation synchronized across multiple visuals
+* Corresponding audio file playback
+* Annotation tool for creating bounding boxes on the spectrogram and adding domain-specific data
+* Listen to annotated regions with real-time frequency audio filter
+* User-defined layouts and styles
+
+Note that this library does not currently handle the spectrogram computation. This must be handled by the user in the backend or frontend and supplied to Specviz with a URL. It was originally inspired by [wavesurfer.js](https://wavesurfer-js.org/) and APLOSE.
+
+![resources/example-full.webp](resources/example-full.webp)
 
 <small>[back to top](#top)</small>
 ## <a name="examples"></a> examples
