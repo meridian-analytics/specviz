@@ -1,7 +1,7 @@
 import * as React from "react"
 import type * as Hooks from "./hooks"
 
-export type Action = Required<Hooks.UseMouseProps>
+export type Handler = Required<Hooks.UseMouseProps>
 
 export type Context = Hooks.UseMouseProps
 

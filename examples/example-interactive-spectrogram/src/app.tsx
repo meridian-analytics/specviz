@@ -23,26 +23,26 @@ export const loader = RRT.makeLoader(async () => {
 
 function AppProvider(props: { children: React.ReactNode }) {
   const loaderData = RRT.useLoaderData<typeof loader>()
-  const axes: Specviz.Axes = React.useMemo(
+  const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.time(0, loaderData.sample.duration),
-      hertz: Specviz.AxisContext.frequency(20000, 0),
+      seconds: Specviz.Axis.time(0, loaderData.sample.duration),
+      hertz: Specviz.Axis.frequency(20000, 0),
     }),
     [loaderData.sample.duration],
   )
   return (
-    <Specviz.AxisProvider value={axes}>
-      <Specviz.InputProvider>
-        <Specviz.ViewportProvider children={props.children} />
-      </Specviz.InputProvider>
-    </Specviz.AxisProvider>
+    <Specviz.Axis.Provider value={axes}>
+      <Specviz.Input.Provider>
+        <Specviz.Viewport.Provider children={props.children} />
+      </Specviz.Input.Provider>
+    </Specviz.Axis.Provider>
   )
 }
 
 function App() {
   const loaderData = RRT.useLoaderData<typeof loader>()
-  const viewport = Specviz.useViewport()
-  const zoomX: Specviz.Action["onWheel"] = React.useCallback(
+  const viewport = Specviz.Viewport.useContext()
+  const zoomX: Specviz.Action.Handler["onWheel"] = React.useCallback(
     ({ dx, dy, event }) => {
       if (event.altKey) {
         viewport.zoomScroll(dy, 0)
@@ -52,7 +52,7 @@ function App() {
     },
     [viewport.zoomScroll],
   )
-  const zoomY: Specviz.Action["onWheel"] = React.useCallback(
+  const zoomY: Specviz.Action.Handler["onWheel"] = React.useCallback(
     ({ dx, dy, event }) => {
       if (event.altKey) {
         viewport.zoomScroll(0, dy)
@@ -62,13 +62,13 @@ function App() {
     },
     [viewport.zoomScroll],
   )
-  const pan: Specviz.Action["onDrag"] = React.useCallback(
+  const pan: Specviz.Action.Handler["onDrag"] = React.useCallback(
     ({ dx, dy, event }) => {
       viewport.scroll(-dx, -dy)
     },
     [viewport.scroll],
   )
-  const jump: Specviz.Action["onClick"] = React.useCallback(
+  const jump: Specviz.Action.Handler["onClick"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
       viewport.scrollTo({
         x: rel.x * viewport.state.zoom.x - 0.5,
@@ -94,28 +94,28 @@ function App() {
         padding: "1rem",
       }}
     >
-      <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
+      <Specviz.Plane.Provider xaxis="seconds" yaxis="hertz">
         <div style={{ gridArea: "nav" }}>
-          <Specviz.ActionProvider onClick={jump}>
+          <Specviz.Action.Provider onClick={jump}>
             <Specviz.Navigator src={loaderData.sample.spectrogram} />
-          </Specviz.ActionProvider>
+          </Specviz.Action.Provider>
         </div>
         <div style={{ gridArea: "x", overflow: "hidden" }}>
-          <Specviz.ActionProvider onWheel={zoomX}>
-            <Specviz.AxisContext.Horizontal />
-          </Specviz.ActionProvider>
+          <Specviz.Action.Provider onWheel={zoomX}>
+            <Specviz.Axis.Horizontal />
+          </Specviz.Action.Provider>
         </div>
         <div style={{ gridArea: "y", overflow: "hidden" }}>
-          <Specviz.ActionProvider onWheel={zoomY}>
-            <Specviz.AxisContext.Vertical />
-          </Specviz.ActionProvider>
+          <Specviz.Action.Provider onWheel={zoomY}>
+            <Specviz.Axis.Vertical />
+          </Specviz.Action.Provider>
         </div>
         <div style={{ gridArea: "viz" }}>
-          <Specviz.ActionProvider onDrag={pan}>
+          <Specviz.Action.Provider onDrag={pan}>
             <Specviz.Visualization src={loaderData.sample.spectrogram} />
-          </Specviz.ActionProvider>
+          </Specviz.Action.Provider>
         </div>
-      </Specviz.PlaneProvider>
+      </Specviz.Plane.Provider>
     </div>
   )
 }

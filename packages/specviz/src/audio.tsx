@@ -1,4 +1,6 @@
 import * as React from "react"
+import * as Format from "./format"
+import * as Hooks from "./hooks"
 import { clamp } from "./math"
 
 export type Context = {
@@ -158,7 +160,25 @@ export function TransformFx(props: TransformFxProps) {
   return <Context.Provider children={props.children} value={next} />
 }
 
-export function AudioEffect() {
+export type SeekProps = {
+  format?: Format.FormatFn
+}
+
+export function Seek(props: SeekProps) {
+  const audio = useContext()
+  const ref = React.useRef<null | HTMLElement>(null)
+  const format = props.format ?? Format.timestamp
+  Hooks.useAnimationFrame(
+    React.useCallback(() => {
+      if (ref.current) {
+        ref.current.textContent = format(audio.transport.getSeek(audio.state))
+      }
+    }, [audio.transport.getSeek, audio.state, format]),
+  )
+  return <span ref={ref}>{format(0)}</span>
+}
+
+export function Effect() {
   const audio = useContext()
   return audio.state.pause ? <React.Fragment /> : <PlayEffect />
 }

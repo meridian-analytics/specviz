@@ -2,7 +2,7 @@
 
 This example demonstrates how to load and control playback of an audio file. 
 Specviz expects a fully decoded audio buffer and a React loading pattern of 
-your choice. The `AudioContext.load` helper is provided for convenience.
+your choice. The `Audio.load` helper is provided for convenience.
 Below is a common `react-router-dom` example.
 
 ```tsx
@@ -11,27 +11,27 @@ import * as ReactRouter from "react-router-dom"
 
 const loader = async () => {
   return {
-    audioBuffer: await Specviz.AudioContext.load("./audio.wav")
+    audioBuffer: await Specviz.Audio.load("./audio.wav")
   }
 }
 ```
 
-`Specviz.AudioProvider` provides the audio buffer to the application.
+`Specviz.Audio.Provider` provides the audio buffer to the application.
 
 ```tsx
 function AppProvider(props) {
   const { audioSample } = ReactRouter.useLoaderData()
   return (
-    <Specviz.AudioProvider buffer={audioSample}>
+    <Specviz.Audio.Provider buffer={audioSample}>
       <...>
         {props.children}
       </...>
-    </Specviz.AudioProvider>
+    </Specviz.Audio.Provider>
   )
 }
 ```
 
-In your `App`, use the `Specviz.AudioEffect` component to play the audio.
+In your `App`, use the `Specviz.Audio.Effect` component to play the audio.
 
 ```tsx
 function App() {
@@ -40,17 +40,17 @@ function App() {
       <Visualizer />
       <AudioControls />
       <... />
-      <Specviz.AudioEffect />
+      <Specviz.Audio.Effect />
     </>
   )
 }
 ```
 
-The `AudioContext` provides access to the audio state and transport controls.
+The `Audio` context provides access to the audio state and transport controls.
 
 ```tsx
 function AudioControls() {
-  const audio = Specviz.useAudio()
+  const audio = Specviz.Audio.useContext()
   return (
     <>
       <button

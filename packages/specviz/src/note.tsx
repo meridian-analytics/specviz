@@ -1,10 +1,11 @@
 import * as R from "react"
 import * as Axis from "./axis"
-import * as Format from "./format"
 import * as Input from "./input"
 import * as Mathx from "./math"
+import * as Plane from "./plane"
 import * as Rect from "./rect"
 import type * as Vector2 from "./vector2"
+import * as Viewport from "./viewport"
 
 export type Region = {
   id: string
@@ -49,25 +50,26 @@ function concatSelection(
 }
 
 export type Context = {
-  annotate: (
-    rect: Rect.Rect,
-    xaxis: Axis.Axis,
-    yaxis: Axis.Axis,
-    userData?: UserData,
-    autoSelect?: boolean,
-  ) => void
   canCreate: boolean
+  regions: RegionState
+  selection: SelectionState
+  transformedRegions: RegionState
+  transformedSelection: SelectionState
   canDelete: (region: Region) => boolean
   canRead: (region: Region) => boolean
   canUpdate: (region: Region) => boolean
-  delete: () => void
+  create: (
+    region: Region,
+    options?: {
+      autoSelect?: boolean
+    },
+  ) => void
+  deleteSelection: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
-  regions: RegionState
   selectArea: (rect: Rect.Rect, selectionMode?: SelectionMode) => void
-  selection: SelectionState
-  selectPoint: (pt: Vector2.Vector2, selectionMode?: SelectionMode) => void
   selectId: (id: string, selectionMode?: SelectionMode) => void
+  selectPoint: (pt: Vector2.Vector2, selectionMode?: SelectionMode) => void
   setRectX: (region: Region, dx: number) => void
   setRectX1: (region: Region, dx: number) => void
   setRectX2: (region: Region, dx: number) => void
@@ -76,17 +78,19 @@ export type Context = {
   setRectY2: (region: Region, dy: number) => void
   setRegions: R.Dispatch<R.SetStateAction<RegionState>>
   setSelection: R.Dispatch<R.SetStateAction<SelectionState>>
-  transformedRegions: RegionState
-  transformedSelection: SelectionState
   updateRegion: (id: string, region: Region) => void
   updateSelectedRegions: (fn: (region: Region) => Region) => void
 }
 
 const defaultContext: Context = {
-  annotate() {
+  canCreate: true,
+  regions: new Map(),
+  selection: new Set(),
+  transformedRegions: new Map(),
+  transformedSelection: new Set(),
+  create() {
     throw Error("annotate called outside of context")
   },
-  canCreate: true,
   canDelete() {
     return true
   },
@@ -96,7 +100,7 @@ const defaultContext: Context = {
   canUpdate() {
     return true
   },
-  delete() {
+  deleteSelection() {
     throw Error("delete called outside of context")
   },
   deselect() {
@@ -105,14 +109,12 @@ const defaultContext: Context = {
   moveSelection() {
     throw Error("moveSelection called outside of context")
   },
-  regions: new Map(),
   selectArea() {
     throw Error("selectArea called outside of context")
   },
   selectId() {
     throw Error("selectId called outside of context")
   },
-  selection: new Set(),
   selectPoint() {
     throw Error("selectPoint called outside of context")
   },
@@ -140,8 +142,6 @@ const defaultContext: Context = {
   setSelection() {
     throw Error("setSelection called outside of context")
   },
-  transformedRegions: new Map(),
-  transformedSelection: new Set(),
   updateRegion() {
     throw Error("updateRegion called outside of context")
   },
@@ -156,12 +156,12 @@ type InitialState<T> = T | (() => T)
 
 export type ProviderProps = {
   canCreate?: Context["canCreate"]
-  canDelete?: Context["canDelete"]
-  canRead?: Context["canRead"]
-  canUpdate?: Context["canUpdate"]
   children: R.ReactNode
   initRegions?: InitialState<Context["regions"]>
   initSelection?: InitialState<Context["selection"]>
+  canDelete?: Context["canDelete"]
+  canRead?: Context["canRead"]
+  canUpdate?: Context["canUpdate"]
 }
 
 export function Provider(props: ProviderProps) {
@@ -241,25 +241,16 @@ export function Provider(props: ProviderProps) {
   )
 
   // commands
-  const annotate: Context["annotate"] = R.useCallback(
-    (rect, xaxis, yaxis, userData, autoSelect) => {
+  const create: Context["create"] = R.useCallback(
+    (region, options) => {
       if (!canCreate) return
-      const id = Format.randomBytes(10)
-      setRegions(prev =>
-        new Map(prev).set(id, {
-          ...userData,
-          id,
-          ...rect,
-          xunit: xaxis.unit,
-          yunit: yaxis.unit,
-        }),
-      )
-      if (autoSelect) setSelection(new Set([id]))
+      setRegions(prev => new Map(prev).set(region.id, region))
+      if (options?.autoSelect) setSelection(new Set([region.id]))
     },
     [canCreate],
   )
 
-  const delete_: Context["delete"] = R.useCallback(() => {
+  const deleteSelection: Context["deleteSelection"] = R.useCallback(() => {
     setRegions(prev => {
       const next = new Map()
       for (const [id, region] of prev) {
@@ -456,18 +447,20 @@ export function Provider(props: ProviderProps) {
     <Context.Provider
       children={props.children}
       value={{
-        annotate,
         canCreate,
+        regions,
+        selection,
+        transformedRegions,
+        transformedSelection,
         canDelete,
         canRead,
         canUpdate,
-        delete: delete_,
+        create,
+        deleteSelection,
         deselect,
         moveSelection,
-        regions,
         selectArea,
         selectId,
-        selection,
         selectPoint,
         setRectX,
         setRectX1,
@@ -477,8 +470,6 @@ export function Provider(props: ProviderProps) {
         setRectY2,
         setRegions,
         setSelection,
-        transformedRegions,
-        transformedSelection,
         updateRegion,
         updateSelectedRegions,
       }}
@@ -532,12 +523,48 @@ export function Transform(props: TransformProps) {
   return <Context.Provider children={props.children} value={next} />
 }
 
-export function transformFilter(
-  fn: (region: Region) => boolean,
-): TransformProps["fn"] {
-  return (regions: RegionState) => {
-    const next = new Map()
-    for (const [id, region] of regions) if (fn(region)) next.set(id, region)
-    return next
-  }
+export type AnnotationProps = {
+  children?: typeof Annotation
+  region: Region
+  dimensions: Vector2.Vector2
+  selected?: boolean
+}
+
+export function Annotation(props: AnnotationProps) {
+  const plane = Plane.useContext()
+  const viewport = Viewport.useContext()
+  // compute logical rect
+  const lrect: Rect.Rect = R.useMemo(() => {
+    return Rect.logical(
+      Axis.computeRectInverse(plane.xaxis, plane.yaxis, props.region),
+      plane.xaxis.unit == props.region.xunit,
+      plane.yaxis.unit == props.region.yunit,
+    )
+  }, [plane.xaxis, plane.yaxis, props.region])
+  // rect out of bounds (not on axis)
+  if (Number.isNaN(lrect.x)) return <R.Fragment />
+  if (Number.isNaN(lrect.y)) return <R.Fragment />
+  if (Number.isNaN(lrect.width)) return <R.Fragment />
+  if (Number.isNaN(lrect.height)) return <R.Fragment />
+  // viewbox
+  const width = lrect.width * props.dimensions.x * viewport.state.zoom.x
+  const height = lrect.height * props.dimensions.y * viewport.state.zoom.y
+  const viewBox = `0 0 ${width} ${height}`
+  return (
+    <svg
+      key={props.region.id}
+      className={
+        props.selected ? "annotation annotation-selected" : "annotation"
+      }
+      x={String(lrect.x)}
+      y={String(lrect.y)}
+      width={String(lrect.width)}
+      height={String(lrect.height)}
+      viewBox={viewBox}
+      preserveAspectRatio="none"
+    >
+      <rect width="100%" height="100%" />
+      {props.children?.(props)}
+    </svg>
+  )
 }

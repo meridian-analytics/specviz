@@ -303,8 +303,6 @@ export function Vertical(props: AxisProps) {
   )
 }
 
-export type Axes = Context
-
 export type Context = Record<string, undefined | Axis>
 
 const defaultContext: Context = {}

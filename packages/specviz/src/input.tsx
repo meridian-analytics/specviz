@@ -1,14 +1,9 @@
 import * as R from "react"
 import type * as Axis from "./axis"
-import * as Hooks from "./hooks"
+import * as Coord from "./coord"
 import * as Vector2 from "./vector2"
 
-export type Coord = {
-  abs: Vector2.Vector2
-  rel: Vector2.Vector2
-}
-
-type InputState = {
+type State = {
   alt: boolean
   buttons: number
   focus: null | (EventTarget & Element)
@@ -17,9 +12,9 @@ type InputState = {
 }
 
 export type Context = {
-  input: InputState
-  mousedown: Coord
-  mouseup: Coord
+  input: State
+  mousedown: Coord.Coord
+  mouseup: Coord.Coord
   unitDown: Vector2.Vector2
   unitUp: Vector2.Vector2
 }
@@ -85,10 +80,10 @@ export function Provider(props: ProviderProps) {
     }
   }, [])
 
-  const mousedown: Context["mousedown"] = Hooks.useMutableCoord()
-  const mouseup: Context["mouseup"] = Hooks.useMutableCoord()
-  const unitDown: Context["unitDown"] = Hooks.useMutableVector2()
-  const unitUp: Context["unitUp"] = Hooks.useMutableVector2()
+  const mousedown: Context["mousedown"] = R.useMemo(Coord.mutable, [])
+  const mouseup: Context["mouseup"] = R.useMemo(Coord.mutable, [])
+  const unitDown: Context["unitDown"] = R.useMemo(Vector2.mutable, [])
+  const unitUp: Context["unitUp"] = R.useMemo(Vector2.mutable, [])
 
   const value: Context = {
     input,

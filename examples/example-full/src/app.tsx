@@ -12,7 +12,7 @@ export const loader = RRT.makeLoader(async () => {
     waveform: "./waveform.png",
     offset: 0,
   }
-  const audioBuffer = await Specviz.AudioContext.load(sample.audio)
+  const audioBuffer = await Specviz.Audio.load(sample.audio)
   return {
     sample,
     audioBuffer,
@@ -26,7 +26,7 @@ type Sample = {
   offset: number
 }
 
-const initRegions: Specviz.RegionState = new Map([
+const initRegions: Specviz.Note.RegionState = new Map([
   [
     "df10e63bc928a9850b6f",
     {
@@ -110,22 +110,22 @@ export function AppProvider(props: { children: React.ReactNode }) {
   )
   return (
     <Context.Provider value={context}>
-      <Specviz.AudioProvider buffer={loaderData.audioBuffer}>
-        <Specviz.InputProvider>
+      <Specviz.Audio.Provider buffer={loaderData.audioBuffer}>
+        <Specviz.Input.Provider>
           <AxisProvider>
-            <Specviz.RegionProvider
+            <Specviz.Note.Provider
               initRegions={initRegions}
               initSelection={() => new Set(initRegions.keys())}
             >
               <FxProvider>
                 <BaseToolProvider>
-                  <Specviz.ViewportProvider children={props.children} />
+                  <Specviz.Viewport.Provider children={props.children} />
                 </BaseToolProvider>
               </FxProvider>
-            </Specviz.RegionProvider>
+            </Specviz.Note.Provider>
           </AxisProvider>
-        </Specviz.InputProvider>
-      </Specviz.AudioProvider>
+        </Specviz.Input.Provider>
+      </Specviz.Audio.Provider>
     </Context.Provider>
   )
 }
@@ -138,7 +138,7 @@ export default function App() {
       <Annotations />
       <Controls />
       <Keybinds />
-      <Specviz.AudioEffect />
+      <Specviz.Audio.Effect />
     </div>
   )
 }
@@ -149,15 +149,15 @@ export function AnnotationTool() {
   const showSelection = app.tool != "move"
   return (
     <div className={`annotation-tool tool-${app.tool}`}>
-      <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
+      <Specviz.Plane.Provider xaxis="seconds" yaxis="hertz">
         <div className="axis-x">
           <HorizontalAxisToolProvider>
-            <Specviz.AxisContext.Horizontal />
+            <Specviz.Axis.Horizontal />
           </HorizontalAxisToolProvider>
         </div>
         <div className="spectrogram axis-y">
           <VerticalAxisToolProvider>
-            <Specviz.AxisContext.Vertical />
+            <Specviz.Axis.Vertical />
           </VerticalAxisToolProvider>
         </div>
         <div className="spectrogram navigator">
@@ -174,17 +174,17 @@ export function AnnotationTool() {
             />
           </VisualizationToolProvider>
         </div>
-      </Specviz.PlaneProvider>
-      <Specviz.ViewportContext.Transform
+      </Specviz.Plane.Provider>
+      <Specviz.Viewport.Transform
         fn={state => ({
           scroll: { x: state.scroll.x, y: 0 },
           zoom: { x: state.zoom.x, y: 1 },
         })}
       >
-        <Specviz.PlaneProvider xaxis="seconds" yaxis="percent">
+        <Specviz.Plane.Provider xaxis="seconds" yaxis="percent">
           <div className="waveform axis-y">
             <VerticalAxisToolProvider>
-              <Specviz.AxisContext.Vertical />
+              <Specviz.Axis.Vertical />
             </VerticalAxisToolProvider>
           </div>
           <div className="waveform navigator">
@@ -201,18 +201,18 @@ export function AnnotationTool() {
               />
             </VisualizationToolProvider>
           </div>
-        </Specviz.PlaneProvider>
-      </Specviz.ViewportContext.Transform>
+        </Specviz.Plane.Provider>
+      </Specviz.Viewport.Transform>
     </div>
   )
 }
 
 function Annotations() {
-  const region = Specviz.useRegion()
+  const note = Specviz.Note.useContext()
   return (
     <div className="annotations">
-      {Array.from(region.selection).map(id => {
-        const r = region.regions.get(id)
+      {Array.from(note.selection).map(id => {
+        const r = note.regions.get(id)
         if (r == null) return <AnnotationFormStaleSelection id={id} />
         return <AnnotationForm key={id} {...r} />
       })}
@@ -230,9 +230,9 @@ function AnnotationFormStaleSelection(props: { id: string }) {
   )
 }
 
-function AnnotationForm(region: Specviz.Region) {
+function AnnotationForm(region: Specviz.Note.Region) {
   const app = React.useContext(Context)
-  const audio = Specviz.useAudio()
+  const audio = Specviz.Audio.useContext()
   return (
     <div className="annotation-form">
       <div className="title">
@@ -292,7 +292,7 @@ function Controls() {
 
 function AudioControls() {
   const app = React.useContext(Context)
-  const audio = Specviz.useAudio()
+  const audio = Specviz.Audio.useContext()
   return (
     <div className="audio-controls">
       <button
@@ -358,27 +358,17 @@ function ToolControls() {
 }
 
 function Duration() {
-  const audio = Specviz.useAudio()
-  const ref = React.useRef<null | HTMLElement>(null)
-  Specviz.useAnimationFrame(
-    React.useCallback(() => {
-      if (ref.current) {
-        ref.current.textContent = Format.timestamp(
-          audio.transport.getSeek(audio.state),
-        )
-      }
-    }, [audio.transport.getSeek, audio.state]),
-  )
+  const audio = Specviz.Audio.useContext()
   return (
     <div className="audio-duration">
-      <span ref={ref}>{Format.timestamp(0)}</span>
+      <Specviz.Audio.Seek />
       <span>/</span>
       <span>{Format.timestamp(audio.buffer.duration)}</span>
     </div>
   )
 }
 
-function AnnotationSvg(props: Specviz.AnnotationProps) {
+function AnnotationSvg(props: Specviz.Note.AnnotationProps) {
   const lines = props.selected
     ? [
         props.region.id,
@@ -408,43 +398,47 @@ function AnnotationSvg(props: Specviz.AnnotationProps) {
 
 function AxisProvider(props: { children: React.ReactNode }) {
   const loaderData = RRT.useLoaderData<typeof loader>()
-  const audio = Specviz.useAudio()
-  const axes: Specviz.Axes = React.useMemo(
+  const audio = Specviz.Audio.useContext()
+  const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.time(
+      seconds: Specviz.Axis.time(
         loaderData.sample.offset + 0,
         loaderData.sample.offset + audio.buffer.duration,
       ),
-      hertz: Specviz.AxisContext.frequency(20000, 0),
-      percent: Specviz.AxisContext.percent(1, -1),
+      hertz: Specviz.Axis.frequency(20000, 0),
+      percent: Specviz.Axis.percent(1, -1),
     }),
     [audio.buffer.duration, loaderData.sample.offset],
   )
-  return <Specviz.AxisProvider value={axes} children={props.children} />
+  return <Specviz.Axis.Provider value={axes} children={props.children} />
 }
 
 function BaseToolProvider(props: { children: React.ReactNode }) {
-  const audio = Specviz.useAudio()
-  const action: Specviz.ActionContext.Context = React.useMemo(
-    () => ({
-      onContextMenu: ({ unit, rel, abs, xaxis, yaxis, event }) => {
+  const audio = Specviz.Audio.useContext()
+  const onContextMenu: Specviz.Action.Handler["onContextMenu"] =
+    React.useCallback(
+      ({ unit, rel, abs, xaxis, yaxis, event }) => {
         // todo: bug if zoomed, when clicking in navigator, gives relative time
         audio.transport.seek(unit.x)
       },
-    }),
-    [audio.transport.seek],
+      [audio.transport.seek],
+    )
+  return (
+    <Specviz.Action.Provider
+      children={props.children}
+      onContextMenu={onContextMenu}
+    />
   )
-  return <Specviz.ActionProvider children={props.children} {...action} />
 }
 
 function FxProvider(props: {
   children: React.ReactNode
 }) {
   const app = React.useContext(Context)
-  const region = Specviz.useRegion()
-  const fn: Specviz.AudioContext.TransformFxProps["fn"] = React.useCallback(
+  const note = Specviz.Note.useContext()
+  const fn: Specviz.Audio.TransformFxProps["fn"] = React.useCallback(
     fxContext => {
-      const target = app.focus ? (region.regions.get(app.focus) ?? null) : null
+      const target = app.focus ? (note.regions.get(app.focus) ?? null) : null
       return target == null
         ? fxContext
         : {
@@ -454,60 +448,69 @@ function FxProvider(props: {
             loop: [target.x, target.x + target.width],
           }
     },
-    [app.focus, region.regions],
+    [app.focus, note.regions],
   )
-  return <Specviz.AudioContext.TransformFx children={props.children} fn={fn} />
+  return <Specviz.Audio.TransformFx children={props.children} fn={fn} />
 }
 
 function NavigatorToolProvider(props: { children: React.ReactNode }) {
   const app = React.useContext(Context)
-  const viewport = Specviz.useViewport()
-  const action: Specviz.ActionContext.Context = React.useMemo(
-    () => ({
-      onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-        switch (app.tool) {
-          case "annotate":
-          case "select":
-          case "move":
-            viewport.scrollTo({
-              x: rel.x * viewport.state.zoom.x - 0.5,
-              y: rel.y * viewport.state.zoom.y - 0.5,
-            })
-            break
-          case "zoom":
-            viewport.resetView()
-            break
-        }
-      },
-      onDrag: ({ dx, dy, event }) => {
-        viewport.scroll(dx * viewport.state.zoom.x, dy * viewport.state.zoom.y)
-      },
-      onWheel: ({ dx, dy, event }) => {
-        if (event.altKey) {
-          viewport.zoomScroll(dx, dy)
-        } else {
-          viewport.scroll(-dx, -dy)
-        }
-      },
-    }),
+  const viewport = Specviz.Viewport.useContext()
+  const onClick: Specviz.Action.Handler["onClick"] = React.useCallback(
+    ({ unit, rel, abs, xaxis, yaxis, event }) => {
+      switch (app.tool) {
+        case "annotate":
+        case "select":
+        case "move":
+          viewport.scrollTo({
+            x: rel.x * viewport.state.zoom.x - 0.5,
+            y: rel.y * viewport.state.zoom.y - 0.5,
+          })
+          break
+        case "zoom":
+          viewport.resetView()
+          break
+      }
+    },
     [
       app.tool,
       viewport.resetView,
-      viewport.scroll,
       viewport.scrollTo,
       viewport.state.zoom.x,
       viewport.state.zoom.y,
-      viewport.zoomScroll,
     ],
   )
-  return <Specviz.ActionProvider children={props.children} {...action} />
+  const onDrag: Specviz.Action.Handler["onDrag"] = React.useCallback(
+    ({ dx, dy, event }) => {
+      viewport.scroll(dx * viewport.state.zoom.x, dy * viewport.state.zoom.y)
+    },
+    [viewport.scroll, viewport.state.zoom.x, viewport.state.zoom.y],
+  )
+  const onWheel: Specviz.Action.Handler["onWheel"] = React.useCallback(
+    ({ dx, dy, event }) => {
+      if (event.altKey) {
+        viewport.zoomScroll(dx, dy)
+      } else {
+        viewport.scroll(-dx, -dy)
+      }
+    },
+    [viewport.zoomScroll, viewport.scroll],
+  )
+  return (
+    <Specviz.Action.Provider
+      children={props.children}
+      onClick={onClick}
+      onDrag={onDrag}
+      onWheel={onWheel}
+    />
+  )
 }
 
 function VisualizationToolProvider(props: { children: React.ReactNode }) {
   const app = React.useContext(Context)
-  const region = Specviz.useRegion()
-  const viewport = Specviz.useViewport()
-  const onWheel: Specviz.Action["onWheel"] = React.useCallback(
+  const note = Specviz.Note.useContext()
+  const viewport = Specviz.Viewport.useContext()
+  const onWheel: Specviz.Action.Handler["onWheel"] = React.useCallback(
     ({ dx, dy, event }) => {
       if (event.altKey) {
         viewport.zoomScroll(-dx, -dy)
@@ -517,25 +520,30 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
     },
     [viewport.zoomScroll, viewport.scroll],
   )
-  const action: Specviz.ActionContext.Context = React.useMemo(() => {
+  const action: Specviz.Action.Context = React.useMemo(() => {
     switch (app.tool) {
       case "annotate":
         return {
           onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-            region.selectPoint(abs, Specviz.RegionContext.selectionMode(event))
+            note.selectPoint(abs, Specviz.Note.selectionMode(event))
           },
           onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-            region.annotate(unit, xaxis, yaxis)
+            note.create({
+              ...unit,
+              id: Format.randomBytes(10),
+              xunit: xaxis.unit,
+              yunit: yaxis.unit,
+            })
           },
           onWheel,
         }
       case "select":
         return {
           onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-            region.selectPoint(abs, Specviz.RegionContext.selectionMode(event))
+            note.selectPoint(abs, Specviz.Note.selectionMode(event))
           },
           onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-            region.selectArea(abs, Specviz.RegionContext.selectionMode(event))
+            note.selectArea(abs, Specviz.Note.selectionMode(event))
           },
           onWheel,
         }
@@ -545,8 +553,8 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
             viewport.zoomPoint(
               abs,
               event.ctrlKey || event.metaKey
-                ? Specviz.ZoomDirection.out
-                : Specviz.ZoomDirection.in,
+                ? Specviz.Viewport.ZoomDirection.out
+                : Specviz.Viewport.ZoomDirection.in,
             )
           },
           onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
@@ -557,10 +565,10 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
       case "move":
         return {
           onDrag: ({ dx, dy, event }) => {
-            if (region.selection.size == 0) {
+            if (note.selection.size == 0) {
               viewport.scroll(-dx, -dy)
             } else {
-              region.moveSelection(
+              note.moveSelection(
                 dx / viewport.state.zoom.x,
                 dy / viewport.state.zoom.y,
               )
@@ -572,88 +580,84 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
   }, [
     onWheel,
     app.tool,
-    region.annotate,
-    region.moveSelection,
-    region.selectArea,
-    region.selectPoint,
-    region.selection,
+    note.create,
+    note.moveSelection,
+    note.selectArea,
+    note.selectPoint,
+    note.selection,
     viewport.scroll,
     viewport.state.zoom.x,
     viewport.state.zoom.y,
     viewport.zoomArea,
     viewport.zoomPoint,
   ])
-  return <Specviz.ActionProvider children={props.children} {...action} />
+  return <Specviz.Action.Provider children={props.children} {...action} />
 }
 
 function HorizontalAxisToolProvider(props: { children: React.ReactNode }) {
-  const viewport = Specviz.useViewport()
-  const action: Specviz.ActionContext.Context = React.useMemo(
-    () => ({
-      onWheel: ({ dx, dy, event }) => {
-        if (event.altKey) {
-          viewport.zoomScroll(dy, 0)
-        } else {
-          viewport.zoomScroll(-dy, 0)
-        }
-      },
-    }),
+  const viewport = Specviz.Viewport.useContext()
+  const onWheel: Specviz.Action.Handler["onWheel"] = React.useCallback(
+    ({ dx, dy, event }) => {
+      if (event.altKey) {
+        viewport.zoomScroll(dy, 0)
+      } else {
+        viewport.zoomScroll(-dy, 0)
+      }
+    },
     [viewport.zoomScroll],
   )
-  return <Specviz.ActionProvider children={props.children} {...action} />
+  return <Specviz.Action.Provider children={props.children} onWheel={onWheel} />
 }
 
 function VerticalAxisToolProvider(props: { children: React.ReactNode }) {
-  const viewport = Specviz.useViewport()
-  const action: Specviz.ActionContext.Context = React.useMemo(
-    () => ({
-      onWheel: ({ dx, dy, event }) => {
-        if (event.altKey) {
-          viewport.zoomScroll(0, dy)
-        } else {
-          viewport.zoomScroll(0, -dy)
-        }
-      },
-    }),
+  const viewport = Specviz.Viewport.useContext()
+  const onWheel: Specviz.Action.Handler["onWheel"] = React.useCallback(
+    ({ dx, dy, event }) => {
+      if (event.altKey) {
+        viewport.zoomScroll(0, dy)
+      } else {
+        viewport.zoomScroll(0, -dy)
+      }
+    },
     [viewport.zoomScroll],
   )
-  return <Specviz.ActionProvider children={props.children} {...action} />
+  return <Specviz.Action.Provider children={props.children} onWheel={onWheel} />
 }
 
 function Keybinds() {
   const app = React.useContext(Context)
-  const audio = Specviz.useAudio()
-  const region = Specviz.useRegion()
+  const audio = Specviz.Audio.useContext()
+  const note = Specviz.Note.useContext()
   return (
     <Specviz.Bindings>
-      <Specviz.Keypress bind="Backspace" onKeyDown={region.delete} />
-      <Specviz.Keypress bind="Escape" onKeyDown={region.deselect} />
+      <Specviz.Keypress bind="Backspace" onKeyDown={note.deleteSelection} />
+      <Specviz.Keypress bind="Escape" onKeyDown={note.deselect} />
       <Specviz.Keypress
         bind="ArrowLeft"
         onKeyDown={e => {
           e.preventDefault()
-          region.moveSelection(-0.01, 0)
+          note.moveSelection(-0.01, 0)
         }}
       />
       <Specviz.Keypress
         bind="ArrowRight"
         onKeyDown={e => {
           e.preventDefault()
-          region.moveSelection(0.01, 0)
+          note.moveSelection(0.01, 0)
         }}
       />
       <Specviz.Keypress
         bind="ArrowUp"
         onKeyDown={e => {
           e.preventDefault()
-          region.moveSelection(0, -0.03)
+          note.moveSelection(0, -0.03)
         }}
       />
       <Specviz.Keypress
         bind="ArrowDown"
         onKeyDown={e => {
           e.preventDefault()
-          region.moveSelection(0, 0.03)
+          note.moveSelection(0, 0.03)
         }}
       />
       <Specviz.Keypress bind="a" onKeyDown={() => app.setTool("annotate")} />

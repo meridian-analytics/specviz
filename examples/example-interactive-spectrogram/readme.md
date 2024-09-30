@@ -2,22 +2,22 @@
 
 This example demonstrates how to create an interactive visualization, allowing the user to zoom, pan, and jump to specific locations.
 
-`Specviz.InputProvider` enables interaction and `Specviz.ViewportProvider` allows viewport state to be shared across components.
+`Specviz.Input.Provider` enables interaction and `Specviz.Viewport.Provider` allows viewport state to be shared across components.
 
 ```tsx
 function AppProvider(props) {
   const loaderData = RRT.useLoaderData<typeof loader>()
   const axes = ...
   return (
-    <Specviz.AxisProvider value={axes}>
-      <Specviz.InputProvider>
-        <Specviz.ViewportProvider>
+    <Specviz.Axis.Provider value={axes}>
+      <Specviz.Input.Provider>
+        <Specviz.Viewport.Provider>
           <...>
             {props.children}
           </...>
-        </Specviz.ViewportProvider>
-      </Specviz.InputProvider>
-    </Specviz.AxisProvider>
+        </Specviz.Viewport.Provider>
+      </Specviz.Input.Provider>
+    </Specviz.Axis.Provider>
   )
 }
 ```
@@ -26,7 +26,7 @@ Define the actions for your application.
 
 ```tsx
 function App() {
-  const viewport = Specviz.useViewport()
+  const viewport = Specviz.Viewport.useContext()
   const zoomX = ({ dx, dy, event }) => {
     viewport.zoomScroll(-dy, 0)
   }
@@ -37,22 +37,21 @@ function App() {
     viewport.scroll(-dx, -dy)
   }
   ...
-  return <... />
 }
 ```
 
-Assign actions to Specviz components using `Specviz.ActionProvider`.
+Assign actions to Specviz components using `Specviz.Action.Provider`.
 
 ```tsx
-<Specviz.ActionProvider onWheel={zoomX}>
-  <Specviz.AxisContext.Horizontal />
-</Specviz.ActionProvider>
+<Specviz.Action.Provider onWheel={zoomX}>
+  <Specviz.Axis.Horizontal />
+</Specviz.Action.Provider>
 
-<Specviz.ActionProvider onWheel={zoomY}>
-  <Specviz.AxisContext.Vertical />
-</Specviz.ActionProvider>
+<Specviz.Action.Provider onWheel={zoomY}>
+  <Specviz.Axis.Vertical />
+</Specviz.Action.Provider>
 
-<Specviz.ActionProvider onDrag={pan}>
+<Specviz.Action.Provider onDrag={pan}>
   <Specviz.Visualization src={...} />
-</Specviz.ActionProvider>
+</Specviz.Action.Provider>
 ```

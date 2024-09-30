@@ -6,8 +6,8 @@
   * [audio](#audio)
   * [axis](#axis)
   * [input](#input)
+  * [note](#note)
   * [plane](#plane)
-  * [region](#region)
   * [viewport](#viewport)
 * [css styling](#css)
 * [utils](#utils)
@@ -15,54 +15,30 @@
 ## <a name="modules"></a> modules
 ### <a name="specviz"></a> specviz
 
-This is the main entry point of the Specviz package. All submodules, components, contexts, hooks and types are accessible through this module. Jump to a submodule: [action](#action), [audio](#audio), [axis](#axis), [input](#input), [plane](#plane), [region](#region), [viewport](#viewport).
+This is the main entry point of the Specviz package. All submodules, components, contexts, hooks and types are accessible through this module. Jump to a submodule: [action](#action), [audio](#audio), [axis](#axis), [input](#input), [note](#note), [plane](#plane), [viewport](#viewport).
 
 ```ts
 // submodules
-module ActionContext
-module AudioContext
-module AxisContext
-module InputContext
-module PlaneContext
-module RegionContext
-module ViewportContext
+module Action
+module Audio
+module Axis
+module Input
+module Note
+module Plane
+module Viewport
 
 // components
-function AudioEffect(): JSX.Element
 function Encoder(props: EncoderProps): JSX.Element
 function Navigator(props: NavigatorProps): JSX.Element
 function Visualization(props: VisualizationProps): JSX.Element
 
-// context providers
-function ActionProvider(props: ActionContext.ProviderProps): JSX.Element
-function AudioProvider(props: AudioContext.ProviderProps): JSX.Element
-function AxisProvider(props: AxisContext.ProviderProps): JSX.Element
-function InputProvider(props: InputContext.ProviderProps): JSX.Element
-function PlaneProvider(props: PlaneContext.ProviderProps): JSX.Element
-function RegionProvider(props: RegionContext.ProviderProps): JSX.Element
-function ViewportProvider(props: ViewportContext.ProviderProps): JSX.Element
-
 // hooks
-function useAction(): ActionContext
 function useAnimationFrame(callback: (frameId: number) => void): void 
-function useAudio(): AudioContext
-function useAxis(): AxisContext
-function useInput(): InputContext
-function usePlane(): PlaneContext
-function useRegion(): RegionContext
-function useViewport(): ViewportContext
 
 // constants
 const version: string
 
 // types
-type AnnotationProps = {
-  children?: typeof Annotation
-  region: Region.Region
-  dimensions: Vector2
-  selected?: boolean
-}
-
 type EncoderProps = {
   state: number
   setState: (nextState: number) => void
@@ -75,70 +51,12 @@ type NavigatorProps = {
   src: string
 }
 
-type UseMouseClickHandler = (useMouseEvent: {
-  unit: Vector2
-  rel: Vector2
-  abs: Vector2
-  xaxis: Axis.Axis
-  yaxis: Axis.Axis
-  event: React.MouseEvent
-}) => void
-
-type UseMouseContextMenuHandler = (useMouseEvent: {
-  unit: Vector2
-  rel: Vector2
-  abs: Vector2
-  xaxis: Axis.Axis
-  yaxis: Axis.Axis
-  event: React.MouseEvent
-}) => void
-
-type UseMouseRectHandler = (useMouseEvent: {
-  unit: Rect
-  rel: Rect
-  abs: Rect
-  xaxis: Axis.Axis
-  yaxis: Axis.Axis
-  event: React.MouseEvent
-}) => void
-
-type UseMouseMoveHandler = (useMouseEvent: {
-  dx: number
-  dy: number
-  event: React.MouseEvent
-}) => void
-
-type UseMouseWheelHandler = (useMouseEvent: {
-  dx: number
-  dy: number
-  event: WheelEvent
-}) => void
-
-type UseMouseProps = {
-  onClick?: UseMouseClickHandler
-  onContextMenu?: UseMouseContextMenuHandler
-  onDrag?: UseMouseMoveHandler
-  onRect?: UseMouseRectHandler
-  onWheel?: UseMouseWheelHandler
-}
-
 type VisualizationProps = {
   children?: typeof Annotation
   ignoreRegionTransform?: boolean
   showSelection?: boolean
   src: string
 }
-
-// aliases
-type Action = ActionContext.Action
-type Axes = AxisContext.Axes
-type Region = Region.Region
-type RegionState = Region.RegionState
-type RegionValue = Region.RegionValue
-type SelectionState = Region.SelectionState
-type UserData = Region.UserData
-type SelectionMode = Region.SelectionMode
-type ZoomDirection = Viewport.ZoomDirection
 ```
 
 <small>[back to top](#top)</small>
@@ -151,7 +69,42 @@ function Provider(props: ProviderProps): JSX.Element
 
 function useContext(): Context
 
-type Action = Required<UseMouseProps>
+type Handler = {
+  onClick: (useMouseEvent: {
+    unit: Vector2.Vector2
+    rel: Vector2.Vector2
+    abs: Vector2.Vector2
+    xaxis: Axis.Axis
+    yaxis: Axis.Axis
+    event: React.MouseEvent
+  }) => void
+  onContextMenu: (useMouseEvent: {
+    unit: Vector2.Vector2
+    rel: Vector2.Vector2
+    abs: Vector2.Vector2
+    xaxis: Axis.Axis
+    yaxis: Axis.Axis
+    event: React.MouseEvent
+  }) => void
+  onDrag: (useMouseEvent: {
+    unit: Rect.Rect
+    rel: Rect.Rect
+    abs: Rect.Rect
+    xaxis: Axis.Axis
+    yaxis: Axis.Axis
+    event: React.MouseEvent
+  }) => void
+  onRect: UseMouseRectHandler(useMouseEvent: {
+    dx: number
+    dy: number
+    event: React.MouseEvent
+  }) => void
+  onWheel: (useMouseEvent: {
+    dx: number
+    dy: number
+    event: React.MouseEvent
+  }) => void
+}
 
 type Context = UseMouseProps
 
@@ -163,11 +116,12 @@ type ProviderProps = Context & {
 <small>[back to top](#top)</small>
 ### <a name="audio"></a> audio
 
-The audio module provides audio playback, transport controls, and an fx context looping and bandpass frequency filters. See the `basic-audio` demo for guidance.
+The audio module provides audio playback, transport controls, and an fx context for looping and bandpass frequency filters. See the `basic-audio` demo for guidance.
 
 ```ts
-function AudioEffect() : JSX.Element
+function Effect() : JSX.Element
 function Provider(props: ProviderProps): JSX.Element
+function Seek(props: SeekProps): JSX.Element
 function TransformFx(props: TransformFxProps): JSX.Element
 
 function load(url: string): Promise<AudioBuffer>
@@ -189,6 +143,10 @@ type Fx = {
 }
 
 type Loop = [number, number]
+
+type SeekProps = {
+  format?: FormatFn
+}
 
 type State = {
   pause: boolean
@@ -261,10 +219,6 @@ function percent(
   format: FormatFn = Format.percent,
 ): Axis
 
-function computeRect(tx: Axis, ty: Axis, rect: Rect): Rect
-function computeRectInverse(tx: Axis, ty: Axis, rect: Rect): Rect
-function computeUnit(t: Axis, q: number): number
-function computeUnitInverse(t: Axis, q: number): number 
 function formatUnit(t: Axis, q: number): string
 function useContext(): Context
 
@@ -292,66 +246,37 @@ function Provider(props: ProviderProps): JSX.Element
 
 function useContext(): Context
 
-type Coord = {
-  abs: Vector2
-  rel: Vector2
+type Context = {
+  input: State
+  mousedown: Coord.Coord
+  mouseup: Coord.Coord
+  unitDown: Vector2.Vector2
+  unitUp: Vector2.Vector2
 }
 
-type InputState = {
+type ProviderProps = {
+  children: React.ReactNode
+}
+
+type State = {
   alt: boolean
   buttons: number
   focus: null | (EventTarget & Element)
   xaxis: null | Axis.Axis
   yaxis: null | Axis.Axis
 }
-
-type Context = {
-  input: InputState
-  mousedown: Coord
-  mouseup: Coord
-  unitDown: Vector2
-  unitUp: Vector2
-}
-
-type ProviderProps = {
-  children: React.ReactNode
-}
 ```
 
 <small>[back to top](#top)</small>
-### <a name="plane"></a> plane
+### <a name="note"></a> note
 
-The [axis](#axis) context declares all axes used in your application. The plane module designates particular axes to their respective visulizers and navigators. See the `basic-png` demo for guidance.
-
-```ts
-function Provider(props: ProviderProps): JSX.Element
-
-function useContext(): Context
-
-type Context = {
-  xaxis: Axis.Axis
-  yaxis: Axis.Axis
-}
-
-type ProviderProps = {
-  children: React.ReactNode
-  xaxis: string
-  yaxis: string
-}
-```
-
-<small>[back to top](#top)</small>
-### <a name="region"></a> region
-
-The region module enables interactive region annotations, selection, modification, and filtering. This module requires [axis](#axis), [input](#input), and [plane](#plane) contexts. See the `full` demo for guidance.
+The note module enables interactive annotations, selection, modification, and filtering. This module requires [axis](#axis), [input](#input), and [plane](#plane) contexts. See the `full` demo for guidance.
 
 ```ts
 function Provider(props: ProviderProps): JSX.Element
 function Transform(props: TransformProps): JSX.Element
 
-function computeRectInverse(region: Region, axes: Axis.Context): Rect
 function selectionMode(event: React.MouseEvent): SelectionMode
-function transformFilter(fn: (region: Region) => boolean): TransformProps["fn"]
 function useContext(): Context
 
 enum SelectionMode {
@@ -362,35 +287,34 @@ enum SelectionMode {
 }
 
 type Context = {
-  annotate: (
-    rect: Rect,
-    xaxis: Axis.Axis,
-    yaxis: Axis.Axis,
-    userData?: UserData,
-    autoSelect?: boolean,
-  ) => void
   canCreate: boolean
+  regions: RegionState
+  selection: SelectionState
+  transformedRegions: RegionState
+  transformedSelection: SelectionState
   canDelete: (region: Region) => boolean
   canRead: (region: Region) => boolean
   canUpdate: (region: Region) => boolean
-  delete: () => void
+  create: (
+    region: Region,
+    options?: {
+      autoSelect?: boolean
+    },
+  ) => void
+  deleteSelection: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
-  regions: RegionState
-  selectArea: (rect: Rect, selectionMode?: SelectionMode) => void
-  selection: SelectionState
-  selectPoint: (pt: Vector2, selectionMode?: SelectionMode) => void
+  selectArea: (rect: Rect.Rect, selectionMode?: SelectionMode) => void
   selectId: (id: string, selectionMode?: SelectionMode) => void
+  selectPoint: (pt: Vector2.Vector2, selectionMode?: SelectionMode) => void
   setRectX: (region: Region, dx: number) => void
   setRectX1: (region: Region, dx: number) => void
   setRectX2: (region: Region, dx: number) => void
   setRectY: (region: Region, dy: number) => void
   setRectY1: (region: Region, dy: number) => void
   setRectY2: (region: Region, dy: number) => void
-  setRegions: React.Dispatch<React.SetStateAction<RegionState>>
-  setSelection: React.Dispatch<React.SetStateAction<SelectionState>>
-  transformedRegions: RegionState
-  transformedSelection: SelectionState
+  setRegions: R.Dispatch<R.SetStateAction<RegionState>>
+  setSelection: R.Dispatch<R.SetStateAction<SelectionState>>
   updateRegion: (id: string, region: Region) => void
   updateSelectedRegions: (fn: (region: Region) => Region) => void
 }
@@ -430,6 +354,28 @@ type UserData = Record<string, RegionValue>
 ```
 
 <small>[back to top](#top)</small>
+### <a name="plane"></a> plane
+
+The plane module designates particular axes to their respective visulizers and navigators. Use the [axis](#axis) context to declares all axes used in your application. See the `basic-png` demo for guidance.
+
+```ts
+function Provider(props: ProviderProps): JSX.Element
+
+function useContext(): Context
+
+type Context = {
+  xaxis: Axis.Axis
+  yaxis: Axis.Axis
+}
+
+type ProviderProps = {
+  children: React.ReactNode
+  xaxis: string
+  yaxis: string
+}
+```
+
+<small>[back to top](#top)</small>
 ### <a name="viewport"></a> viewport
 
 The viewport module enables interactive zoom and pan of visualizers and axes. This module requires the use of an [input](#input) context. See the `interactive-png` demo for guidance.
@@ -451,8 +397,8 @@ type Context = {
   scroll: (dx: number, dy: number) => void
   scrollTo: (scroll: Scroll) => void
   zoom: (dx: number, dy: number) => void
-  zoomArea: (rect: Rect) => void
-  zoomPoint: (point: Vector2, zoomDirection?: ZoomDirection) => void
+  zoomArea: (rect: Rect.Rect) => void
+  zoomPoint: (point: Vector2.Vector2, zoomDirection?: ZoomDirection) => void
   zoomScroll: (dx: number, dy: number) => void
 }
 
@@ -461,8 +407,8 @@ type ProviderProps = {
 }
 
 type State = {
-  scroll: Vector2
-  zoom: Vector2
+  scroll: Vector2.Vector2
+  zoom: Vector2.Vector2
 }
 
 type TransformProps = {

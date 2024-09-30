@@ -1,7 +1,7 @@
 import * as R from "react"
 import * as Axis from "./axis"
 import * as Hooks from "./hooks"
-import * as Region from "./region"
+import * as Note from "./note"
 
 const min = (5 * Math.PI) / 4
 const max = -Math.PI / 4
@@ -58,24 +58,24 @@ export default function Encoder(props: EncoderProps) {
   )
 }
 
-Encoder.X = function EncoderX(region: Region.Region) {
-  const regions = Region.useContext()
+Encoder.X = function EncoderX(region: Note.Region) {
   const axis = Axis.useContext()
-  const rect = Region.computeRectInverse(region, axis)
+  const note = Note.useContext()
+  const rect = Note.computeRectInverse(region, axis)
   return (
     <Encoder
       state={rect.x}
-      setState={v => regions.setRectX(region, v)}
+      setState={v => note.setRectX(region, v)}
       value={region.x}
       unit={region.xunit}
     />
   )
 }
 
-Encoder.X2 = function EncoderX2(region: Region.Region) {
-  const regions = Region.useContext()
+Encoder.X2 = function EncoderX2(region: Note.Region) {
+  const regions = Note.useContext()
   const axis = Axis.useContext()
-  const rect = Region.computeRectInverse(region, axis)
+  const rect = Note.computeRectInverse(region, axis)
   return (
     <Encoder
       state={rect.width}
@@ -86,10 +86,10 @@ Encoder.X2 = function EncoderX2(region: Region.Region) {
   )
 }
 
-Encoder.Y1 = function EncoderY1(region: Region.Region) {
-  const regions = Region.useContext()
+Encoder.Y1 = function EncoderY1(region: Note.Region) {
+  const regions = Note.useContext()
   const axis = Axis.useContext()
-  const rect = Region.computeRectInverse(region, axis)
+  const rect = Note.computeRectInverse(region, axis)
   return (
     <Encoder
       state={1 - rect.y}
@@ -100,10 +100,10 @@ Encoder.Y1 = function EncoderY1(region: Region.Region) {
   )
 }
 
-Encoder.Y2 = function EncoderY2(region: Region.Region) {
-  const regions = Region.useContext()
+Encoder.Y2 = function EncoderY2(region: Note.Region) {
+  const regions = Note.useContext()
   const axis = Axis.useContext()
-  const rect = Region.computeRectInverse(region, axis)
+  const rect = Note.computeRectInverse(region, axis)
   return (
     <Encoder
       state={1 - rect.y - rect.height}

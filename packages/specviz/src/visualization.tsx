@@ -1,18 +1,17 @@
 import * as R from "react"
 import * as Action from "./action"
-import Annotation from "./annotation"
 import Cursor from "./cursor"
 import * as Hooks from "./hooks"
 import * as Input from "./input"
+import * as Note from "./note"
 import * as Plane from "./plane"
 import Playhead from "./playhead"
 import * as Rect from "./rect"
-import * as Region from "./region"
 import * as Svg from "./svg"
 import * as Viewport from "./viewport"
 
 export type VisualizationProps = {
-  children?: typeof Annotation
+  children?: typeof Note.Annotation
   ignoreRegionTransform?: boolean
   showSelection?: boolean
   src: string
@@ -20,7 +19,7 @@ export type VisualizationProps = {
 
 export default function Visualization(props: VisualizationProps) {
   const ref = R.useRef<null | SVGSVGElement>(null)
-  const region = Region.useContext()
+  const note = Note.useContext()
   const action = Action.useContext()
   const viewport = Viewport.useContext()
   const dimensions = Hooks.useDimensions(ref)
@@ -66,18 +65,18 @@ export default function Visualization(props: VisualizationProps) {
           />
           {Array.from(
             (props.ignoreRegionTransform
-              ? region.regions
-              : region.transformedRegions
+              ? note.regions
+              : note.transformedRegions
             ).values(),
             r => (
-              <Annotation
+              <Note.Annotation
                 key={r.id}
                 children={props.children}
                 dimensions={dimensions}
                 region={r}
                 selected={(props.ignoreRegionTransform
-                  ? region.selection
-                  : region.transformedSelection
+                  ? note.selection
+                  : note.transformedSelection
                 ).has(r.id)}
               />
             ),

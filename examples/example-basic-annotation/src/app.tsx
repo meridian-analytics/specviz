@@ -14,12 +14,12 @@ export const loader = RRT.makeLoader(async () => {
     audio: "./audio.wav",
     spectrogram: "./spectrogram.png",
   }
-  const audioBuffer = await Specviz.AudioContext.load(sample.audio)
-  const regions: Specviz.RegionState = new Map([
+  const audioBuffer = await Specviz.Audio.load(sample.audio)
+  const regions: Specviz.Note.RegionState = new Map([
     [
-      "1c88a68879d21eb9e124",
+      "22a3b37a-178b-4f8f-9e01-8f2612be2b0f",
       {
-        id: "1c88a68879d21eb9e124",
+        id: "22a3b37a-178b-4f8f-9e01-8f2612be2b0f",
         x: 5.910473607859945,
         y: 2375,
         width: 0.8597052520523558,
@@ -29,9 +29,9 @@ export const loader = RRT.makeLoader(async () => {
       },
     ],
     [
-      "e0659b87ed3464710c0f",
+      "b56c65fd-c0fc-44c4-9540-90ca509f5bb3",
       {
-        id: "e0659b87ed3464710c0f",
+        id: "b56c65fd-c0fc-44c4-9540-90ca509f5bb3",
         x: 12.60901036343455,
         y: 2425,
         width: 1.9701578692866484,
@@ -41,9 +41,9 @@ export const loader = RRT.makeLoader(async () => {
       },
     ],
     [
-      "72c2cc16ea8f8b902491",
+      "85e5a2b2-ca8b-4e4d-9e19-458f3cbb1de4",
       {
-        id: "72c2cc16ea8f8b902491",
+        id: "85e5a2b2-ca8b-4e4d-9e19-458f3cbb1de4",
         x: 16.012010319475124,
         y: 1675,
         width: 1.6835894519358625,
@@ -62,24 +62,24 @@ export const loader = RRT.makeLoader(async () => {
 
 function AppProvider(props: { children: React.ReactNode }) {
   const loaderData = RRT.useLoaderData<typeof loader>()
-  const axes: Specviz.Axes = React.useMemo(
+  const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.time(0, loaderData.audioBuffer.duration),
-      hertz: Specviz.AxisContext.frequency(20000, 0),
+      seconds: Specviz.Axis.time(0, loaderData.audioBuffer.duration),
+      hertz: Specviz.Axis.frequency(20000, 0),
     }),
     [loaderData.audioBuffer.duration],
   )
   return (
-    <Specviz.AudioProvider buffer={loaderData.audioBuffer}>
-      <Specviz.AxisProvider value={axes}>
-        <Specviz.InputProvider>
-          <Specviz.RegionProvider
+    <Specviz.Audio.Provider buffer={loaderData.audioBuffer}>
+      <Specviz.Axis.Provider value={axes}>
+        <Specviz.Input.Provider>
+          <Specviz.Note.Provider
             children={props.children}
             initRegions={loaderData.regions}
           />
-        </Specviz.InputProvider>
-      </Specviz.AxisProvider>
-    </Specviz.AudioProvider>
+        </Specviz.Input.Provider>
+      </Specviz.Axis.Provider>
+    </Specviz.Audio.Provider>
   )
 }
 
@@ -102,13 +102,13 @@ function App() {
       <AudioControls />
       <Visualizer />
       <Annotations />
-      <Specviz.AudioEffect />
+      <Specviz.Audio.Effect />
     </div>
   )
 }
 
 function AudioControls() {
-  const audio = Specviz.useAudio()
+  const audio = Specviz.Audio.useContext()
   return (
     <div style={{ gridArea: "controls" }}>
       <button
@@ -136,35 +136,41 @@ function AudioControls() {
 
 function Visualizer() {
   const loaderData = RRT.useLoaderData<typeof loader>()
-  const region = Specviz.useRegion()
-  const viewport = Specviz.useViewport()
-  const annotate: Specviz.Action["onRect"] = React.useCallback(
+  const note = Specviz.Note.useContext()
+  const viewport = Specviz.Viewport.useContext()
+  const annotate: Specviz.Action.Handler["onRect"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
-      if (region.selection.size == 0) region.annotate(unit, xaxis, yaxis)
+      if (note.selection.size == 0)
+        note.create({
+          ...unit,
+          id: crypto.randomUUID(),
+          xunit: xaxis.unit,
+          yunit: yaxis.unit,
+        })
     },
-    [region.annotate, region.selection],
+    [note.create, note.selection],
   )
-  const select: Specviz.Action["onClick"] = React.useCallback(
+  const select: Specviz.Action.Handler["onClick"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
-      region.selectPoint(abs, Specviz.RegionContext.selectionMode(event))
+      note.selectPoint(abs, Specviz.Note.selectionMode(event))
     },
-    [region.selectPoint],
+    [note.selectPoint],
   )
-  const move: Specviz.Action["onDrag"] = React.useCallback(
+  const move: Specviz.Action.Handler["onDrag"] = React.useCallback(
     ({ dx, dy, event }) => {
-      if (region.selection.size > 0)
-        region.moveSelection(
+      if (note.selection.size > 0)
+        note.moveSelection(
           dx / viewport.state.zoom.x,
           dy / viewport.state.zoom.y,
         )
     },
-    [region.moveSelection, region.selection, viewport.state.zoom],
+    [note.moveSelection, note.selection, viewport.state.zoom],
   )
-  const remove: Specviz.Action["onContextMenu"] = React.useCallback(
+  const remove: Specviz.Action.Handler["onContextMenu"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
-      region.delete()
+      note.deleteSelection()
     },
-    [region.delete],
+    [note.deleteSelection],
   )
   return (
     <div
@@ -183,33 +189,33 @@ function Visualizer() {
         padding: "1rem",
       }}
     >
-      <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
+      <Specviz.Plane.Provider xaxis="seconds" yaxis="hertz">
         <div style={{ gridArea: "x", overflow: "hidden" }}>
-          <Specviz.AxisContext.Horizontal />
+          <Specviz.Axis.Horizontal />
         </div>
         <div style={{ gridArea: "y", overflow: "hidden" }}>
-          <Specviz.AxisContext.Vertical />
+          <Specviz.Axis.Vertical />
         </div>
         <div style={{ gridArea: "spec" }}>
-          <Specviz.ActionProvider
+          <Specviz.Action.Provider
             onClick={select}
             onContextMenu={remove}
             onDrag={move}
             onRect={annotate}
           >
             <Specviz.Visualization
-              showSelection={region.selection.size == 0}
+              showSelection={note.selection.size == 0}
               src={loaderData.sample.spectrogram}
             />
-          </Specviz.ActionProvider>
+          </Specviz.Action.Provider>
         </div>
-      </Specviz.PlaneProvider>
+      </Specviz.Plane.Provider>
     </div>
   )
 }
 
 function Annotations() {
-  const region = Specviz.useRegion()
+  const note = Specviz.Note.useContext()
   return (
     <pre
       style={{
@@ -221,8 +227,8 @@ function Annotations() {
     >
       {JSON.stringify(
         {
-          regions: Array.from(region.regions),
-          selection: Array.from(region.selection),
+          regions: Array.from(note.regions),
+          selection: Array.from(note.selection),
         },
         null,
         2,

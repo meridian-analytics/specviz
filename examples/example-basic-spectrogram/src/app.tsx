@@ -18,15 +18,15 @@ const sample: Sample = {
 }
 
 function App() {
-  const axes: Specviz.Axes = React.useMemo(
+  const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.time(0, sample.duration),
-      hertz: Specviz.AxisContext.frequency(20000, 0),
+      seconds: Specviz.Axis.time(0, sample.duration),
+      hertz: Specviz.Axis.frequency(20000, 0),
     }),
     [],
   )
   return (
-    <Specviz.AxisProvider value={axes}>
+    <Specviz.Axis.Provider value={axes}>
       <div
         style={{
           backgroundColor: "cornsilk",
@@ -42,18 +42,18 @@ function App() {
           padding: "1rem",
         }}
       >
-        <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
+        <Specviz.Plane.Provider xaxis="seconds" yaxis="hertz">
           <div style={{ gridArea: "x" }}>
-            <Specviz.AxisContext.Horizontal />
+            <Specviz.Axis.Horizontal />
           </div>
           <div style={{ gridArea: "y" }}>
-            <Specviz.AxisContext.Vertical />
+            <Specviz.Axis.Vertical />
           </div>
           <div style={{ gridArea: "viz" }}>
             <Specviz.Visualization src={sample.spectrogram} />
           </div>
-        </Specviz.PlaneProvider>
+        </Specviz.Plane.Provider>
       </div>
-    </Specviz.AxisProvider>
+    </Specviz.Axis.Provider>
   )
 }

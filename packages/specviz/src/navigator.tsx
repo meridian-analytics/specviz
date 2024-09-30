@@ -1,9 +1,8 @@
 import * as R from "react"
 import * as Action from "./action"
-import Annotation from "./annotation"
 import * as Hooks from "./hooks"
+import * as Note from "./note"
 import Playhead from "./playhead"
-import * as Region from "./region"
 import * as Viewport from "./viewport"
 
 export type NavigatorProps = {
@@ -12,8 +11,8 @@ export type NavigatorProps = {
 }
 
 export default function Navigator(props: NavigatorProps) {
-  const region = Region.useContext()
   const action = Action.useContext()
+  const note = Note.useContext()
   const ref = R.useRef<null | SVGSVGElement>(null)
   const maskRef = R.useRef<SVGPathElement>(null)
   const viewport = Viewport.useContext()
@@ -51,11 +50,15 @@ export default function Navigator(props: NavigatorProps) {
       />
       {Array.from(
         (props.ignoreRegionTransform
-          ? region.regions
-          : region.transformedRegions
+          ? note.regions
+          : note.transformedRegions
         ).values(),
         region => (
-          <Annotation dimensions={dimensions} key={region.id} region={region} />
+          <Note.Annotation
+            dimensions={dimensions}
+            key={region.id}
+            region={region}
+          />
         ),
       )}
       <path ref={maskRef} className="mask" d={maskPath} />

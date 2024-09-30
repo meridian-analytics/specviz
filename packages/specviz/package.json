@@ -11,19 +11,19 @@
     "vitest": "^2.1.1"
   },
   "exports": {
-    ".": "./src/react.ts",
+    ".": "./src/index.ts",
     "./action": "./src/action.tsx",
     "./audio": "./src/audio.tsx",
     "./axis": "./src/axis.tsx",
+    "./coord": "./src/coord.ts",
     "./format": "./src/format.ts",
     "./hooks": "./src/hooks.tsx",
     "./input": "./src/input.tsx",
     "./keybinds": "./src/keybinds.tsx",
     "./math": "./src/math.ts",
+    "./note": "./src/note.tsx",
     "./plane": "./src/plane.tsx",
-    "./react": "./src/react.ts",
     "./rect": "./src/rect.ts",
-    "./region": "./src/region.tsx",
     "./svg": "./src/svg.ts",
     "./vector2": "./src/vector2.ts",
     "./viewport": "./src/viewport.tsx"

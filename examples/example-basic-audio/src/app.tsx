@@ -14,7 +14,7 @@ export const loader = RRT.makeLoader(async () => {
     audio: "./count_10.flac",
     spectrogram: "./spectrogram_10.png",
   }
-  const audioBuffer = await Specviz.AudioContext.load(sample.audio)
+  const audioBuffer = await Specviz.Audio.load(sample.audio)
   return {
     sample,
     audioBuffer,
@@ -23,17 +23,17 @@ export const loader = RRT.makeLoader(async () => {
 
 function AppProvider(props: { children: React.ReactNode }) {
   const loaderData = RRT.useLoaderData<typeof loader>()
-  const axes: Specviz.Axes = React.useMemo(
+  const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.AxisContext.time(0, loaderData.audioBuffer.duration),
-      hertz: Specviz.AxisContext.frequency(20000, 0),
+      seconds: Specviz.Axis.time(0, loaderData.audioBuffer.duration),
+      hertz: Specviz.Axis.frequency(20000, 0),
     }),
     [loaderData.audioBuffer.duration],
   )
   return (
-    <Specviz.AudioProvider buffer={loaderData.audioBuffer}>
-      <Specviz.AxisProvider children={props.children} value={axes} />
-    </Specviz.AudioProvider>
+    <Specviz.Audio.Provider buffer={loaderData.audioBuffer}>
+      <Specviz.Axis.Provider children={props.children} value={axes} />
+    </Specviz.Audio.Provider>
   )
 }
 
@@ -42,13 +42,13 @@ function App() {
     <>
       <Visualizer />
       <AudioControls />
-      <Specviz.AudioEffect />
+      <Specviz.Audio.Effect />
     </>
   )
 }
 
 function AudioControls() {
-  const audio = Specviz.useAudio()
+  const audio = Specviz.Audio.useContext()
   return (
     <div
       style={{
@@ -94,17 +94,17 @@ function Visualizer() {
         padding: "1rem",
       }}
     >
-      <Specviz.PlaneProvider xaxis="seconds" yaxis="hertz">
+      <Specviz.Plane.Provider xaxis="seconds" yaxis="hertz">
         <div style={{ gridArea: "x", overflow: "hidden" }}>
-          <Specviz.AxisContext.Horizontal />
+          <Specviz.Axis.Horizontal />
         </div>
         <div style={{ gridArea: "y", overflow: "hidden" }}>
-          <Specviz.AxisContext.Vertical />
+          <Specviz.Axis.Vertical />
         </div>
         <div style={{ gridArea: "spec" }}>
           <Specviz.Visualization src={loaderData.sample.spectrogram} />
         </div>
-      </Specviz.PlaneProvider>
+      </Specviz.Plane.Provider>
     </div>
   )
 }
