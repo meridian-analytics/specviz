@@ -25,8 +25,8 @@ type Scroll = Vector2.Vector2
 type Zoom = Vector2.Vector2
 
 export enum ZoomDirection {
-  in = "in",
-  out = "out",
+  out = 0,
+  in = 1,
 }
 
 const defaultContext: Context = {
@@ -120,7 +120,7 @@ export function Provider(props: ProviderProps) {
   const zoomPoint: Context["zoomPoint"] = React.useCallback(
     (point, zoomDirection) => {
       setState(prev => {
-        const step = zoomDirection == "out" ? -0.5 : 0.5
+        const step = zoomDirection == ZoomDirection.out ? -0.5 : 0.5
         const rx = point.x * prev.zoom.x - prev.scroll.x
         const ry = point.y * prev.zoom.y - prev.scroll.y
         const zx = Mathx.clamp(prev.zoom.x + step, 1, ZOOM_MAX.x)
