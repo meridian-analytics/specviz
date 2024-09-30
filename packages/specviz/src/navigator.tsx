@@ -6,6 +6,8 @@ import Playhead from "./playhead"
 import * as Viewport from "./viewport"
 
 export type NavigatorProps = {
+  children?: typeof Note.Annotation
+  id?: string
   ignoreRegionTransform?: boolean
   src: string
 }
@@ -55,9 +57,15 @@ export default function Navigator(props: NavigatorProps) {
         ).values(),
         region => (
           <Note.Annotation
+            children={props.children}
             dimensions={dimensions}
             key={region.id}
             region={region}
+            selected={(props.ignoreRegionTransform
+              ? note.selection
+              : note.transformedSelection
+            ).has(region.id)}
+            viewerId={props.id}
           />
         ),
       )}

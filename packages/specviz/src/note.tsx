@@ -7,7 +7,9 @@ import * as Rect from "./rect"
 import type * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
-export type Region = {
+export type Properties = Record<string, unknown>
+
+export type Region<T = Properties> = {
   id: string
   x: number
   y: number
@@ -15,11 +17,10 @@ export type Region = {
   height: number
   xunit: string
   yunit: string
-} & UserData
+  properties?: T
+}
 
-export type RegionState = Map<Region["id"], Region>
-
-export type RegionValue = boolean | number | string | string[]
+export type RegionState<T = Properties> = Map<Region["id"], Region<T>>
 
 export type SelectionState = Set<Region["id"]>
 
@@ -29,8 +30,6 @@ export enum SelectionMode {
   replace = "replace",
   subtract = "subtract",
 }
-
-export type UserData = Record<string, RegionValue>
 
 function concatSelection(
   prev: SelectionState,
@@ -49,17 +48,17 @@ function concatSelection(
   }
 }
 
-export type Context = {
+export type Context<T = Properties> = {
   canCreate: boolean
-  regions: RegionState
+  regions: RegionState<T>
   selection: SelectionState
-  transformedRegions: RegionState
+  transformedRegions: RegionState<T>
   transformedSelection: SelectionState
-  canDelete: (region: Region) => boolean
-  canRead: (region: Region) => boolean
-  canUpdate: (region: Region) => boolean
+  canDelete: (region: Region<T>) => boolean
+  canRead: (region: Region<T>) => boolean
+  canUpdate: (region: Region<T>) => boolean
   create: (
-    region: Region,
+    region: Region<T>,
     options?: {
       autoSelect?: boolean
     },
@@ -67,19 +66,24 @@ export type Context = {
   deleteSelection: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
+  render?: (props: AnnotationProps<T>) => JSX.Element
   selectArea: (rect: Rect.Rect, selectionMode?: SelectionMode) => void
   selectId: (id: string, selectionMode?: SelectionMode) => void
   selectPoint: (pt: Vector2.Vector2, selectionMode?: SelectionMode) => void
-  setRectX: (region: Region, dx: number) => void
-  setRectX1: (region: Region, dx: number) => void
-  setRectX2: (region: Region, dx: number) => void
-  setRectY: (region: Region, dy: number) => void
-  setRectY1: (region: Region, dy: number) => void
-  setRectY2: (region: Region, dy: number) => void
-  setRegions: R.Dispatch<R.SetStateAction<RegionState>>
+  setRectX: (region: Region<T>, dx: number) => void
+  setRectX1: (region: Region<T>, dx: number) => void
+  setRectX2: (region: Region<T>, dx: number) => void
+  setRectY: (region: Region<T>, dy: number) => void
+  setRectY1: (region: Region<T>, dy: number) => void
+  setRectY2: (region: Region<T>, dy: number) => void
+  setRegions: R.Dispatch<R.SetStateAction<RegionState<T>>>
   setSelection: R.Dispatch<R.SetStateAction<SelectionState>>
-  updateRegion: (id: string, region: Region) => void
-  updateSelectedRegions: (fn: (region: Region) => Region) => void
+  updateRegion: (id: string, fn: R.SetStateAction<Region<T>>) => void
+  updateRegionProperties: (
+    id: string,
+    fn: R.SetStateAction<undefined | T>,
+  ) => void
+  updateSelectedRegions: (fn: R.SetStateAction<Region<T>>) => void
 }
 
 const defaultContext: Context = {
@@ -145,6 +149,9 @@ const defaultContext: Context = {
   updateRegion() {
     throw Error("updateRegion called outside of context")
   },
+  updateRegionProperties() {
+    throw Error("updateRegionProperties called outside of context")
+  },
   updateSelectedRegions() {
     throw Error("updateSelectedRegions called outside of context")
   },
@@ -162,6 +169,7 @@ export type ProviderProps = {
   canDelete?: Context["canDelete"]
   canRead?: Context["canRead"]
   canUpdate?: Context["canUpdate"]
+  render?: Context["render"]
 }
 
 export function Provider(props: ProviderProps) {
@@ -420,25 +428,40 @@ export function Provider(props: ProviderProps) {
   )
 
   const updateRegion: Context["updateRegion"] = R.useCallback(
-    (id, region) => {
-      if (!canUpdate(region)) return
-      setRegions(prev => new Map(prev).set(id, region))
+    (id, fn) => {
+      setRegions(prev => {
+        const region = prev.get(id)
+        if (!region) return prev
+        if (!canUpdate(region)) return prev
+        return new Map(prev).set(id, typeof fn === "function" ? fn(region) : fn)
+      })
     },
     [canUpdate],
   )
 
+  const updateRegionProperties: Context["updateRegionProperties"] =
+    R.useCallback(
+      (id, fn) => {
+        updateRegion(id, region => ({
+          ...region,
+          properties: typeof fn === "function" ? fn(region.properties) : fn,
+        }))
+      },
+      [updateRegion],
+    )
+
   const updateSelectedRegions: Context["updateSelectedRegions"] = R.useCallback(
-    updateFn => {
-      setRegions(
-        prev =>
-          new Map(
-            Array.from(prev, ([id, region]) => {
-              if (!transformedSelection.has(id) || !canUpdate(region))
-                return [id, region]
-              return [id, updateFn(region)]
-            }),
-          ),
-      )
+    fn => {
+      setRegions(prev => {
+        const next = new Map(prev)
+        for (const id of transformedSelection) {
+          const region = prev.get(id)
+          if (!region) continue
+          if (!canUpdate(region)) continue
+          next.set(id, typeof fn === "function" ? fn(region) : fn)
+        }
+        return next
+      })
     },
     [canUpdate, transformedSelection],
   )
@@ -459,6 +482,7 @@ export function Provider(props: ProviderProps) {
         deleteSelection,
         deselect,
         moveSelection,
+        render: props.render,
         selectArea,
         selectId,
         selectPoint,
@@ -471,14 +495,15 @@ export function Provider(props: ProviderProps) {
         setRegions,
         setSelection,
         updateRegion,
+        updateRegionProperties,
         updateSelectedRegions,
       }}
     />
   )
 }
 
-export function useContext() {
-  return R.useContext(Context)
+export function useContext<T = Properties>() {
+  return R.useContext(Context) as Context<T>
 }
 
 export function computeRectInverse(region: Region, axes: Axis.Context) {
@@ -523,48 +548,56 @@ export function Transform(props: TransformProps) {
   return <Context.Provider children={props.children} value={next} />
 }
 
-export type AnnotationProps = {
-  children?: typeof Annotation
-  region: Region
+export type AnnotationProps<T = Properties> = {
+  children?: (props: AnnotationProps<T>) => JSX.Element
   dimensions: Vector2.Vector2
+  region: Region<T>
   selected?: boolean
+  svgProps?: R.SVGProps<SVGSVGElement>
+  viewerId?: string
 }
 
-export function Annotation(props: AnnotationProps) {
+export function Annotation(props: AnnotationProps): JSX.Element {
+  const note = useContext()
   const plane = Plane.useContext()
   const viewport = Viewport.useContext()
-  // compute logical rect
-  const lrect: Rect.Rect = R.useMemo(() => {
-    return Rect.logical(
+  const render = props.children ?? note.render
+  const svgProps = R.useMemo(() => {
+    // compute logical rect
+    const lrect = Rect.logical(
       Axis.computeRectInverse(plane.xaxis, plane.yaxis, props.region),
       plane.xaxis.unit == props.region.xunit,
       plane.yaxis.unit == props.region.yunit,
     )
-  }, [plane.xaxis, plane.yaxis, props.region])
-  // rect out of bounds (not on axis)
-  if (Number.isNaN(lrect.x)) return <R.Fragment />
-  if (Number.isNaN(lrect.y)) return <R.Fragment />
-  if (Number.isNaN(lrect.width)) return <R.Fragment />
-  if (Number.isNaN(lrect.height)) return <R.Fragment />
-  // viewbox
-  const width = lrect.width * props.dimensions.x * viewport.state.zoom.x
-  const height = lrect.height * props.dimensions.y * viewport.state.zoom.y
-  const viewBox = `0 0 ${width} ${height}`
-  return (
-    <svg
-      key={props.region.id}
-      className={
-        props.selected ? "annotation annotation-selected" : "annotation"
-      }
-      x={String(lrect.x)}
-      y={String(lrect.y)}
-      width={String(lrect.width)}
-      height={String(lrect.height)}
-      viewBox={viewBox}
-      preserveAspectRatio="none"
-    >
-      <rect width="100%" height="100%" />
-      {props.children?.(props)}
-    </svg>
-  )
+    // rect out of bounds (not on axis)
+    if (Number.isNaN(lrect.x)) return null
+    if (Number.isNaN(lrect.y)) return null
+    if (Number.isNaN(lrect.width)) return null
+    if (Number.isNaN(lrect.height)) return null
+    // viewbox
+    const width = lrect.width * props.dimensions.x * viewport.state.zoom.x
+    const height = lrect.height * props.dimensions.y * viewport.state.zoom.y
+    const viewBox = `0 0 ${width} ${height}`
+    // computed result
+    return {
+      className: props.selected
+        ? "annotation annotation-selected"
+        : "annotation",
+      fontSize: "12pt",
+      height: String(lrect.height),
+      preserveAspectRatio: "none",
+      viewBox,
+      width: String(lrect.width),
+      x: String(lrect.x),
+      y: String(lrect.y),
+    }
+  }, [
+    plane.xaxis,
+    plane.yaxis,
+    props.dimensions,
+    props.region,
+    props.selected,
+    viewport.state.zoom,
+  ])
+  return <>{svgProps && render?.({ ...props, svgProps })}</>
 }

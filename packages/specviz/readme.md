@@ -47,12 +47,15 @@ type EncoderProps = {
 }
 
 type NavigatorProps = {
+  children?: (props: Note.AnnotationProps) => JSX.Element
+  id?: string
   ignoreRegionTransform?: boolean
   src: string
 }
 
 type VisualizationProps = {
-  children?: typeof Annotation
+  children?: (props: Note.AnnotationProps) => JSX.Element
+  id?: string
   ignoreRegionTransform?: boolean
   showSelection?: boolean
   src: string
@@ -277,7 +280,7 @@ function Provider(props: ProviderProps): JSX.Element
 function Transform(props: TransformProps): JSX.Element
 
 function selectionMode(event: React.MouseEvent): SelectionMode
-function useContext(): Context
+function useContext<T = Properties>(): Context<T>
 
 enum SelectionMode {
   add = "add",
@@ -286,17 +289,26 @@ enum SelectionMode {
   subtract = "subtract",
 }
 
-type Context = {
+type AnnotationProps<T = Properties> = {
+  children?: (props: AnnotationProps<T>) => JSX.Element
+  dimensions: Vector2.Vector2
+  region: Region<T>
+  selected?: boolean
+  svgProps?: R.SVGProps<SVGSVGElement>
+  viewerId?: string
+}
+
+type Context<T = Properties> = {
   canCreate: boolean
-  regions: RegionState
+  regions: RegionState<T>
   selection: SelectionState
-  transformedRegions: RegionState
+  transformedRegions: RegionState<T>
   transformedSelection: SelectionState
-  canDelete: (region: Region) => boolean
-  canRead: (region: Region) => boolean
-  canUpdate: (region: Region) => boolean
+  canDelete: (region: Region<T>) => boolean
+  canRead: (region: Region<T>) => boolean
+  canUpdate: (region: Region<T>) => boolean
   create: (
-    region: Region,
+    region: Region<T>,
     options?: {
       autoSelect?: boolean
     },
@@ -304,20 +316,27 @@ type Context = {
   deleteSelection: () => void
   deselect: () => void
   moveSelection: (dx: number, dy: number) => void
+  render?: (props: AnnotationProps<T>) => JSX.Element
   selectArea: (rect: Rect.Rect, selectionMode?: SelectionMode) => void
   selectId: (id: string, selectionMode?: SelectionMode) => void
   selectPoint: (pt: Vector2.Vector2, selectionMode?: SelectionMode) => void
-  setRectX: (region: Region, dx: number) => void
-  setRectX1: (region: Region, dx: number) => void
-  setRectX2: (region: Region, dx: number) => void
-  setRectY: (region: Region, dy: number) => void
-  setRectY1: (region: Region, dy: number) => void
-  setRectY2: (region: Region, dy: number) => void
-  setRegions: R.Dispatch<R.SetStateAction<RegionState>>
+  setRectX: (region: Region<T>, dx: number) => void
+  setRectX1: (region: Region<T>, dx: number) => void
+  setRectX2: (region: Region<T>, dx: number) => void
+  setRectY: (region: Region<T>, dy: number) => void
+  setRectY1: (region: Region<T>, dy: number) => void
+  setRectY2: (region: Region<T>, dy: number) => void
+  setRegions: R.Dispatch<R.SetStateAction<RegionState<T>>>
   setSelection: R.Dispatch<R.SetStateAction<SelectionState>>
-  updateRegion: (id: string, region: Region) => void
-  updateSelectedRegions: (fn: (region: Region) => Region) => void
+  updateRegion: (id: string, fn: R.SetStateAction<Region<T>>) => void
+  updateRegionProperties: (
+    id: string,
+    fn: R.SetStateAction<undefined | T>,
+  ) => void
+  updateSelectedRegions: (fn: R.SetStateAction<Region<T>>) => void
 }
+
+type Properties = Record<string, unknown>
 
 type ProviderProps = {
   canCreate?: Context["canCreate"]
@@ -327,9 +346,10 @@ type ProviderProps = {
   children: React.ReactNode
   initRegions?: InitialState<Context["regions"]>
   initSelection?: InitialState<Context["selection"]>
+  render?: Context["render"]
 }
 
-type Region = {
+type Region<T = Properties> = {
   id: string
   x: number
   y: number
@@ -337,11 +357,10 @@ type Region = {
   height: number
   xunit: string
   yunit: string
-} & UserData
+  properties?: T
+}
 
-type RegionState = Map<Region["id"], Region>
-
-type RegionValue = boolean | number | string | string[]
+type RegionState<T = Properties> = Map<Region["id"], Region<T>>
 
 type SelectionState = Set<Region["id"]>
 
@@ -349,8 +368,6 @@ type TransformProps = {
   children: React.ReactNode
   fn: (regionState: RegionState) => RegionState
 }
-
-type UserData = Record<string, RegionValue>
 ```
 
 <small>[back to top](#top)</small>

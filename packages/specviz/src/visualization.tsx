@@ -12,6 +12,7 @@ import * as Viewport from "./viewport"
 
 export type VisualizationProps = {
   children?: typeof Note.Annotation
+  id?: string
   ignoreRegionTransform?: boolean
   showSelection?: boolean
   src: string
@@ -78,6 +79,7 @@ export default function Visualization(props: VisualizationProps) {
                   ? note.selection
                   : note.transformedSelection
                 ).has(r.id)}
+                viewerId={props.id}
               />
             ),
           )}
