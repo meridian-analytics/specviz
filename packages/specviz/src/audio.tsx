@@ -29,7 +29,7 @@ export type State = {
 export type Transport = {
   play: (seek?: number) => void
   stop: (seek?: number) => void
-  seek: (seek: number) => void
+  seek: (seek: React.SetStateAction<number>) => void
   getSeek: (state: State) => number
 }
 
@@ -99,8 +99,19 @@ export function Provider(props: ProviderProps) {
           }
         })
       },
-      seek: seek => {
+      seek: fn => {
         setState(prev => {
+          const seek = clamp(
+            typeof fn === "function"
+              ? fn(
+                  prev.pause
+                    ? prev.seek
+                    : defaultContext.audioContext.currentTime - prev.timecode,
+                )
+              : fn,
+            0,
+            props.buffer.duration,
+          )
           const timecode = defaultContext.audioContext.currentTime - seek
           return { ...prev, seek, timecode }
         })
@@ -125,7 +136,7 @@ export function Provider(props: ProviderProps) {
           : defaultContext.audioContext.currentTime - state.timecode
       },
     }),
-    [],
+    [props.buffer.duration],
   )
   return (
     <Context.Provider

@@ -157,7 +157,7 @@ type State = {
 type Transport = {
   play: (seek?: number) => void
   stop: (seek?: number) => void
-  seek: (seek: number) => void
+  seek: (seek: React.SetStateAction<number>) => void
   getSeek: (state: State) => number
 }
 
