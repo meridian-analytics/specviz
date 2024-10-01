@@ -10,6 +10,7 @@ export type NavigatorProps = {
   id?: string
   ignoreRegionTransform?: boolean
   src: string
+  svgProps?: React.SVGProps<SVGSVGElement>
 }
 
 export default function Navigator(props: NavigatorProps) {
@@ -37,12 +38,14 @@ export default function Navigator(props: NavigatorProps) {
   `
   return (
     <svg
-      ref={ref}
-      width="100%"
+      className="navigator"
       height="100%"
-      viewBox="0 0 1 1"
+      width="100%"
       preserveAspectRatio="none"
+      viewBox="0 0 1 1"
       {...onMouse}
+      {...props.svgProps}
+      ref={ref}
     >
       <image
         href={props.src}

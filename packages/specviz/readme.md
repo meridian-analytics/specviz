@@ -51,6 +51,7 @@ type NavigatorProps = {
   id?: string
   ignoreRegionTransform?: boolean
   src: string
+  svgProps?: React.SVGProps<SVGSVGElement>
 }
 
 type VisualizationProps = {
@@ -59,6 +60,7 @@ type VisualizationProps = {
   ignoreRegionTransform?: boolean
   showSelection?: boolean
   src: string
+  svgProps?: React.SVGProps<SVGSVGElement>
 }
 ```
 

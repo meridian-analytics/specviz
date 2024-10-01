@@ -16,6 +16,7 @@ export type VisualizationProps = {
   ignoreRegionTransform?: boolean
   showSelection?: boolean
   src: string
+  svgProps?: React.SVGProps<SVGSVGElement>
 }
 
 export default function Visualization(props: VisualizationProps) {
@@ -32,7 +33,14 @@ export default function Visualization(props: VisualizationProps) {
   const scale = `scale(${viewport.state.zoom.x}, ${viewport.state.zoom.y})`
   const transform = `${translate} ${scale}`
   return (
-    <svg ref={ref} width="100%" height="100%" {...onMouse}>
+    <svg
+      className="visualization"
+      height="100%"
+      width="100%"
+      {...onMouse}
+      {...props.svgProps}
+      ref={ref}
+    >
       <defs>
         <pattern
           id="dotted-grid"
