@@ -1,5 +1,7 @@
 # Basic Audio
 
+![resources/example-basic-audio.webp](../../resources/example-basic-audio.webp)
+
 This example demonstrates how to load and control playback of an audio file. 
 Specviz expects a fully decoded audio buffer and a React loading pattern of 
 your choice. The `Audio.load` helper is provided for convenience.

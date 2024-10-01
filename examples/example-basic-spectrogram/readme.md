@@ -1,5 +1,7 @@
 # Basic Spectrogram
 
+![resources/example-basic-spectrogram.webp](../../resources/example-basic-spectrogram.webp)
+
 This example demonstrates how to render an image and axes.
 
 In your application provider, use `Specviz.Axis.Provider` to provide the axes.

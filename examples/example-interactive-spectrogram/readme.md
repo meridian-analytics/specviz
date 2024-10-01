@@ -1,5 +1,7 @@
 # Interactive Spectrogram
 
+![resources/example-interactive-spectrogram.webp](../../resources/example-interactive-spectrogram.webp)
+
 This example demonstrates how to create an interactive visualization, allowing the user to zoom, pan, and jump to specific locations.
 
 `Specviz.Input.Provider` enables interaction and `Specviz.Viewport.Provider` allows viewport state to be shared across components.
