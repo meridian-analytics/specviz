@@ -29,6 +29,10 @@ module Viewport
 
 // components
 function Encoder(props: EncoderProps): JSX.Element
+function Encoder.X(props: FieldEncoderProps): JSX.Element
+function Encoder.X2(props: FieldEncoderProps): JSX.Element
+function Encoder.Y1(props: FieldEncoderProps): JSX.Element
+function Encoder.Y2(props: FieldEncoderProps): JSX.Element
 function Navigator(props: NavigatorProps): JSX.Element
 function Visualization(props: VisualizationProps): JSX.Element
 
@@ -39,11 +43,26 @@ function useAnimationFrame(callback: (frameId: number) => void): void
 const version: string
 
 // types
+export enum EncodeDirection {
+  CounterClockwise = -1,
+  Clockwise = 1,
+}
+
 type EncoderProps = {
-  state: number
+  direction?: EncodeDirection
+  format?: Format.FormatFn
+  label?: boolean | string
   setState: (nextState: number) => void
-  value: number
+  state: number
   unit: string
+  value: number
+}
+
+type FieldEncoderProps = {
+  format?: EncoderProps["format"]
+  label?: EncoderProps["label"]
+  region: Note.Region
+  direction?: EncoderProps["direction"]
 }
 
 type NavigatorProps = {

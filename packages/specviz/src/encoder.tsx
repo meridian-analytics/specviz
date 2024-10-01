@@ -1,16 +1,32 @@
 import * as R from "react"
 import * as Axis from "./axis"
+import type * as Format from "./format"
 import * as Hooks from "./hooks"
 import * as Note from "./note"
 
 const min = (5 * Math.PI) / 4
 const max = -Math.PI / 4
 
+export enum EncodeDirection {
+  CounterClockwise = -1,
+  Clockwise = 1,
+}
+
 export type EncoderProps = {
-  state: number
+  direction?: EncodeDirection
+  format?: Format.FormatFn
+  label?: boolean | string
   setState: (nextState: number) => void
-  value: number
+  state: number
   unit: string
+  value: number
+}
+
+export type FieldEncoderProps = {
+  format?: EncoderProps["format"]
+  label?: EncoderProps["label"]
+  region: Note.Region
+  direction?: EncoderProps["direction"]
 }
 
 export default function Encoder(props: EncoderProps) {
@@ -23,9 +39,12 @@ export default function Encoder(props: EncoderProps) {
 
   const onWheel: Hooks.UseMouseWheelHandler = R.useCallback(
     ({ dy, event }) => {
-      props.setState(dy / (event.ctrlKey || event.metaKey ? 1000 : 100))
+      props.setState(
+        (dy * (props.direction ?? EncodeDirection.Clockwise)) /
+          (event.ctrlKey || event.metaKey ? 1000 : 100),
+      )
     },
-    [props.setState],
+    [props.setState, props.direction],
   )
 
   Hooks.useWheel(ref, onWheel)
@@ -45,71 +64,85 @@ export default function Encoder(props: EncoderProps) {
         textAnchor="middle"
         x="0"
         y="0.15"
-        children={props.value.toFixed(2)}
+        children={props.format?.(props.value) ?? props.value.toFixed(2)}
       />
-      <text
-        className="encoder-text"
-        textAnchor="middle"
-        x="0"
-        y="0.45"
-        children={props.unit}
-      />
+      {props.label && (
+        <text
+          className="encoder-text"
+          textAnchor="middle"
+          x="0"
+          y="0.45"
+          children={props.label == true ? props.unit : props.label}
+        />
+      )}
     </svg>
   )
 }
 
-Encoder.X = function EncoderX(region: Note.Region) {
+Encoder.X = function EncoderX(props: FieldEncoderProps) {
   const axis = Axis.useContext()
   const note = Note.useContext()
-  const rect = Note.computeRectInverse(region, axis)
+  const rect = Note.computeRectInverse(props.region, axis)
   return (
     <Encoder
+      direction={props.direction}
+      format={props.format}
+      label={props.label}
+      setState={v => note.setRectX(props.region, v)}
       state={rect.x}
-      setState={v => note.setRectX(region, v)}
-      value={region.x}
-      unit={region.xunit}
+      unit={props.region.xunit}
+      value={props.region.x}
     />
   )
 }
 
-Encoder.X2 = function EncoderX2(region: Note.Region) {
+Encoder.X2 = function EncoderX2(props: FieldEncoderProps) {
   const regions = Note.useContext()
   const axis = Axis.useContext()
-  const rect = Note.computeRectInverse(region, axis)
+  const rect = Note.computeRectInverse(props.region, axis)
   return (
     <Encoder
+      direction={props.direction}
+      format={props.format}
+      label={props.label}
+      setState={v => regions.setRectX2(props.region, v)}
       state={rect.width}
-      setState={v => regions.setRectX2(region, v)}
-      value={region.width}
-      unit={region.xunit}
+      unit={props.region.xunit}
+      value={props.region.width}
     />
   )
 }
 
-Encoder.Y1 = function EncoderY1(region: Note.Region) {
+Encoder.Y1 = function EncoderY1(props: FieldEncoderProps) {
   const regions = Note.useContext()
   const axis = Axis.useContext()
-  const rect = Note.computeRectInverse(region, axis)
+  const rect = Note.computeRectInverse(props.region, axis)
   return (
     <Encoder
+      direction={props.direction}
+      format={props.format}
+      label={props.label}
+      setState={v => regions.setRectY1(props.region, v)}
       state={1 - rect.y}
-      setState={v => regions.setRectY1(region, v)}
-      value={region.y + region.height}
-      unit={region.yunit}
+      unit={props.region.yunit}
+      value={props.region.y + props.region.height}
     />
   )
 }
 
-Encoder.Y2 = function EncoderY2(region: Note.Region) {
+Encoder.Y2 = function EncoderY2(props: FieldEncoderProps) {
   const regions = Note.useContext()
   const axis = Axis.useContext()
-  const rect = Note.computeRectInverse(region, axis)
+  const rect = Note.computeRectInverse(props.region, axis)
   return (
     <Encoder
+      direction={props.direction}
+      format={props.format}
+      label={props.label}
+      setState={v => regions.setRectY2(props.region, v)}
       state={1 - rect.y - rect.height}
-      setState={v => regions.setRectY2(region, v)}
-      value={region.y}
-      unit={region.yunit}
+      unit={props.region.yunit}
+      value={props.region.y}
     />
   )
 }
