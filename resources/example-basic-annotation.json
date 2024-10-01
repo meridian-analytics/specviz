@@ -1,0 +1,104 @@
+[
+  [
+    "fbc8c89f-ea1e-49a3-bda4-afd81a799e42",
+    {
+      "x": 6.161220973041882,
+      "y": 1050,
+      "width": 2.1492631301308887,
+      "height": 10700,
+      "id": "fbc8c89f-ea1e-49a3-bda4-afd81a799e42",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐋"
+      }
+    }
+  ],
+  [
+    "c712cc1a-7d73-46e3-a01f-2a46aacc2dbe",
+    {
+      "x": 8.811978833536646,
+      "y": 1650,
+      "width": 2.5791157561570657,
+      "height": 9300,
+      "id": "c712cc1a-7d73-46e3-a01f-2a46aacc2dbe",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐋"
+      }
+    }
+  ],
+  [
+    "da46b672-c922-491d-91a8-e0cd515c9cea",
+    {
+      "x": 12.00005247656413,
+      "y": 2450,
+      "width": 2.400010495312827,
+      "height": 7550,
+      "id": "da46b672-c922-491d-91a8-e0cd515c9cea",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐋"
+      }
+    }
+  ],
+  [
+    "94a8ad2e-eaba-48e5-84b5-74a9392cb55f",
+    {
+      "x": 15.976189267306275,
+      "y": 2100,
+      "width": 2.5343368171177993,
+      "height": 10000,
+      "id": "94a8ad2e-eaba-48e5-84b5-74a9392cb55f",
+      "xunit": "seconds",
+      "yunit": "hertz"
+    }
+  ],
+  [
+    "a4d0ff06-7678-4ffc-9ff3-ec74c5ac6549",
+    {
+      "x": 25.074736518193706,
+      "y": 2700,
+      "width": 3.976136790742146,
+      "height": 6600,
+      "id": "a4d0ff06-7678-4ffc-9ff3-ec74c5ac6549",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐠"
+      }
+    }
+  ],
+  [
+    "60f589f3-5948-434b-b626-a43b0abe3757",
+    {
+      "x": 29.30162067411779,
+      "y": 3350,
+      "width": 4.585094677612563,
+      "height": 6950,
+      "id": "60f589f3-5948-434b-b626-a43b0abe3757",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐠"
+      }
+    }
+  ],
+  [
+    "84561c44-1fcd-4c32-986b-d8e11d1c67d5",
+    {
+      "x": 34.495673238600766,
+      "y": 2450,
+      "width": 4.656736781950265,
+      "height": 7000,
+      "id": "84561c44-1fcd-4c32-986b-d8e11d1c67d5",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐠"
+      }
+    }
+  ]
+]

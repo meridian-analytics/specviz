@@ -11,7 +11,7 @@ import * as ReactRouter from "react-router-dom"
 
 const loader = async () => {
   return {
-    audioBuffer: await Specviz.Audio.load("./audio.wav")
+    audioBuffer: await Specviz.Audio.load("./audio.flac")
   }
 }
 ```

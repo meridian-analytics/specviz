@@ -1,0 +1,30 @@
+body {
+  background-color: mintcream;
+  color: #555;
+  font-family: monospace;
+  margin: 0;
+}
+
+button {
+  font-family: monospace;
+  padding: 0.5rem;
+  cursor: pointer;
+  border: 1px solid #aaa;
+  background-color: #eee;
+}
+
+:disabled {
+  opacity: 0.5;
+}
+
+#root {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1200px) {
+  #root {
+    max-width: 1200px;
+  }
+}

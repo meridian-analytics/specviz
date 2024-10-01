@@ -1,61 +1,58 @@
 #app {
-  background-color: mintcream;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 60px auto;
-  grid-template-areas:
-    "controls controls ."
-    "annotation-tool annotation-tool annotations";
-  grid-gap: 1rem;
-  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .active {
   color: orchid;
 }
 
-.annotation-form {
-  background-color: lavenderblush;
-  border: 1px solid thistle;
-  margin-bottom: 1rem;
+.annotation rect {
+  fill: rgba(50, 50, 50, 50);
+  mix-blend-mode: difference;
 }
 
-.annotation-form button {
+.annotation text {
+  fill: rgba(255, 255, 255, 1);
+  mix-blend-mode: difference;
+}
+
+.annotation-selected rect {
+  fill: rgba(200, 200, 200, 1);
+}
+
+.annotation-table {
+  background-color: lavenderblush;
+  border: 1px solid thistle;
+  max-height: 400px;
+  overflow: auto;
+  padding: 1rem;
+  text-align: left;
+}
+
+.annotation-table input {
+  font-family: monospace;
+  font-size: 0.75rem;
   padding: 0.25rem;
 }
 
-.annotation-form h3 {
-  flex-grow: 1;
-}
-
-.annotation-form pre {
-  margin: 0;
-  padding: 1rem;
-}
-
-.annotation-form .title {
-  align-items: center;
-  background-color: thistle;
-  display: flex;
-  padding: 0.5rem;
-}
-
-.annotation-form .encoders {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.75rem;
+.annotation-table td:nth-child(5),
+.annotation-table td:nth-child(6),
+.annotation-table td:nth-child(7),
+.annotation-table td:nth-child(8),
+.annotation-table th:nth-child(5),
+.annotation-table th:nth-child(6),
+.annotation-table th:nth-child(7),
+.annotation-table th:nth-child(8) {
   text-align: center;
-}
-
-.annotation-form .encoders svg {
-  display: block;
 }
 
 .annotation-tool {
   background-color: cornsilk;
   border: 1px solid burlywood;
   display: grid;
-  grid-area: annotation-tool;
   grid-gap: 0.5rem;
   grid-template-areas:
     ". n1"
@@ -68,21 +65,10 @@
   padding: 0.5rem;
 }
 
-.annotations {
-  grid-area: annotations;
-}
-
-.audio-controls {
-  display: flex;
-  flex-direction: row;
-  justify-self: end;
-}
-
 .audio-duration {
   background-color: cornsilk;
   border: 1px solid burlywood;
   display: flex;
-  flex-direction: row;
   font-family: monospace;
   font-size: 1.25rem;
   justify-content: space-between;
@@ -95,11 +81,20 @@
 
 .controls {
   align-items: center;
-  display: grid;
-  grid-area: controls;
-  grid-gap: 1rem;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
+  gap: 1rem;
   justify-content: center;
+}
+
+.controls-audio {
+  display: flex;
+  gap: 1rem;
+  justify-self: end;
+}
+
+.controls-tool {
+  display: flex;
+  gap: 1rem;
 }
 
 .navigator {
@@ -119,21 +114,16 @@
   grid-area: v1;
 }
 
-.tool-controls {
-  display: flex;
-  flex-direction: row;
-}
-
 .tool-annotate .visualization {
-  cursor: crosshair;
+  cursor: context-menu;
 }
 
-.tool-pan .visualization {
+.tool-move .visualization {
   cursor: move;
 }
 
 .tool-select .visualization {
-  cursor: context-menu;
+  cursor: crosshair;
 }
 
 .tool-zoom .navigator {

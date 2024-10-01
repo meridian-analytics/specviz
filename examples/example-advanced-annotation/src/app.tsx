@@ -7,15 +7,19 @@ export const element = <AppProvider children={<App />} />
 
 export const loader = RRT.makeLoader(async () => {
   const sample: Sample = {
-    audio: "./audio.wav",
+    audio: "./audio.flac",
     spectrogram: "./spectrogram.png",
     waveform: "./waveform.png",
     offset: 0,
   }
   const audioBuffer = await Specviz.Audio.load(sample.audio)
+  const regions: Specviz.Note.RegionState<UserData> = new Map(
+    await fetch("./example-advanced-annotation.json").then(r => r.json()),
+  )
   return {
     sample,
     audioBuffer,
+    regions,
   }
 })
 
@@ -26,63 +30,35 @@ type Sample = {
   offset: number
 }
 
-const initRegions: Specviz.Note.RegionState = new Map([
-  [
-    "df10e63bc928a9850b6f",
-    {
-      id: "df10e63bc928a9850b6f",
-      x: 5.096308207705192,
-      y: 10743.75,
-      width: 2.5295544388609716,
-      height: 6200,
-      xunit: "seconds",
-      yunit: "hertz",
-      additional: "sample one",
-      someField: 1,
-    },
-  ],
+type UserData = {
+  label?: Label
+  comment?: string
+}
 
-  [
-    "b77d59d5089b139b2f49",
-    {
-      id: "b77d59d5089b139b2f49",
-      x: 11.233969507191292,
-      y: 4943.75,
-      width: 6.138781151470651,
-      height: 9200,
-      xunit: "seconds",
-      yunit: "hertz",
-      additional: "sample two",
-      someField: 2,
-    },
-  ],
+enum Label {
+  Whale = "🐋",
+  Shark = "🦈",
+  Pufferfish = "🐡",
+  Fish = "🐠",
+}
 
-  [
-    "81f3bab0f30023a82aa4",
-    {
-      id: "81f3bab0f30023a82aa4",
-      x: 20.81046810348551,
-      y: 9543.75,
-      width: 4.849637109661813,
-      height: 6100,
-      xunit: "seconds",
-      yunit: "hertz",
-      additional: "sample three",
-      someField: 3,
-    },
-  ],
-])
+enum Tool {
+  Annotate = "annotate",
+  Select = "select",
+  Zoom = "zoom",
+  Move = "move",
+}
 
 type AppContext = {
-  focus: null | string
-  tool: "annotate" | "select" | "zoom" | "move"
-  setFocus: (regionId: null | string) => void
+  focus: null | Specviz.Note.Region["id"]
+  tool: Tool
+  setFocus: (regionId: AppContext["focus"]) => void
   setTool: (t: AppContext["tool"]) => void
 }
 
 const defaultContext: AppContext = {
   focus: null,
-  tool: "annotate",
+  tool: Tool.Annotate,
   setFocus() {
     throw Error("setFocus called outside of context")
   },
@@ -96,7 +72,7 @@ const Context = React.createContext(defaultContext)
 export function AppProvider(props: { children: React.ReactNode }) {
   const loaderData = RRT.useLoaderData<typeof loader>()
   const [focus, _setFocus] = React.useState<AppContext["focus"]>(null)
-  const [tool, setTool] = React.useState<AppContext["tool"]>("annotate")
+  const [tool, setTool] = React.useState(defaultContext.tool)
   const context: AppContext = React.useMemo(
     () => ({
       focus,
@@ -114,8 +90,8 @@ export function AppProvider(props: { children: React.ReactNode }) {
         <Specviz.Input.Provider>
           <AxisProvider>
             <Specviz.Note.Provider
-              initRegions={initRegions}
-              initSelection={() => new Set(initRegions.keys())}
+              initRegions={loaderData.regions}
+              render={AnnotationSvg}
             >
               <FxProvider>
                 <BaseToolProvider>
@@ -133,10 +109,9 @@ export function AppProvider(props: { children: React.ReactNode }) {
 export default function App() {
   return (
     <div id="app">
-      <link rel="stylesheet" href="./demo-full.css" />
-      <AnnotationTool />
-      <Annotations />
       <Controls />
+      <AnnotationTool />
+      <AnnotationTable />
       <Keybinds />
       <Specviz.Audio.Effect />
     </div>
@@ -168,7 +143,7 @@ export function AnnotationTool() {
         <div className="spectrogram visualization">
           <VisualizationToolProvider>
             <Specviz.Visualization
-              children={AnnotationSvg}
+              id="spec"
               showSelection={showSelection}
               src={loaderData.sample.spectrogram}
             />
@@ -195,7 +170,7 @@ export function AnnotationTool() {
           <div className="waveform visualization">
             <VisualizationToolProvider>
               <Specviz.Visualization
-                children={AnnotationSvg}
+                id="wav"
                 showSelection={showSelection}
                 src={loaderData.sample.waveform}
               />
@@ -207,37 +182,131 @@ export function AnnotationTool() {
   )
 }
 
-function Annotations() {
-  const note = Specviz.Note.useContext()
+function AnnotationTable() {
+  const note = Specviz.Note.useContext<UserData>()
   return (
-    <div className="annotations">
-      {Array.from(note.selection).map(id => {
-        const r = note.regions.get(id)
-        if (r == null) return <AnnotationFormStaleSelection id={id} />
-        return <AnnotationForm key={id} {...r} />
-      })}
-    </div>
+    <table className="annotation-table">
+      <thead>
+        <tr>
+          <th>
+            <Checkbox
+              checked={note.selection.size == note.regions.size}
+              indeterminate={
+                note.selection.size > 0 &&
+                note.selection.size != note.regions.size
+              }
+              onChange={event =>
+                note.setSelection(
+                  event.target.checked
+                    ? new Set(note.regions.keys())
+                    : new Set(),
+                )
+              }
+            />
+          </th>
+          <th>Id</th>
+          <th>Label</th>
+          <th>Comment</th>
+          <th>Offset</th>
+          <th>Duration</th>
+          <th>
+            Freq
+            <br />
+            (min)
+          </th>
+          <th>
+            Freq
+            <br />
+            (max)
+          </th>
+          <th>Listen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Array.from(note.regions.values(), region => (
+          <AnnotationRow key={region.id} region={region} />
+        ))}
+      </tbody>
+    </table>
   )
 }
 
-function AnnotationFormStaleSelection(props: { id: string }) {
-  return (
-    <div className="annotation-form">
-      <div className="title">
-        {props.id} is selected but not found in the region context
-      </div>
-    </div>
-  )
-}
-
-function AnnotationForm(region: Specviz.Note.Region) {
+function AnnotationRow(props: { region: Specviz.Note.Region<UserData> }) {
   const app = React.useContext(Context)
   const audio = Specviz.Audio.useContext()
+  const note = Specviz.Note.useContext<UserData>()
   return (
-    <div className="annotation-form">
-      <div className="title">
-        <h3>{region.id}</h3>
-        {!audio.state.pause && app.focus && app.focus == region.id ? (
+    <tr>
+      <td>
+        <Checkbox
+          checked={note.selection.has(props.region.id)}
+          onChange={event =>
+            note.setSelection(prev => {
+              const next = new Set(prev)
+              if (event.target.checked) next.add(props.region.id)
+              else next.delete(props.region.id)
+              return next
+            })
+          }
+        />
+      </td>
+      <td children={props.region.id} />
+      <td>
+        <select
+          value={props.region.properties?.label ?? "-"}
+          onChange={event =>
+            note.updateRegionProperties(props.region.id, p => ({
+              ...p,
+              label:
+                event.target.value == "-"
+                  ? undefined
+                  : (event.target.value as Label),
+            }))
+          }
+          style={{ fontSize: "1rem" }}
+        >
+          <option value="-" children="-" />
+          {Object.values(Label).map(label => (
+            <option key={label} value={label} children={label} />
+          ))}
+        </select>
+      </td>
+      <td>
+        <input
+          value={props.region.properties?.comment ?? ""}
+          onChange={event =>
+            note.updateRegionProperties(props.region.id, p => ({
+              ...p,
+              comment: event.target.value,
+            }))
+          }
+          style={{ width: "90%" }}
+        />
+      </td>
+      <td>
+        <Specviz.Encoder.X region={props.region} label="s" />
+      </td>
+      <td>
+        <Specviz.Encoder.X2 region={props.region} label="s" />
+      </td>
+      <td>
+        <Specviz.Encoder.Y2
+          direction={-1}
+          format={v => (v / 1000).toFixed(3)}
+          label="kHz"
+          region={props.region}
+        />
+      </td>
+      <td>
+        <Specviz.Encoder.Y1
+          direction={-1}
+          format={v => (v / 1000).toFixed(3)}
+          label="kHz"
+          region={props.region}
+        />
+      </td>
+      <td>
+        {!audio.state.pause && app.focus && app.focus == props.region.id ? (
           <button
             type="button"
             onClick={() => {
@@ -250,33 +319,14 @@ function AnnotationForm(region: Specviz.Note.Region) {
           <button
             type="button"
             onClick={() => {
-              app.setFocus(region.id)
+              app.setFocus(props.region.id)
               audio.transport.play()
             }}
             children="play"
           />
         )}
-      </div>
-      <div className="encoders">
-        <div>
-          <Specviz.Encoder.X {...region} />
-          Offset
-        </div>
-        <div>
-          <Specviz.Encoder.X2 {...region} />
-          Duration
-        </div>
-        <div>
-          <Specviz.Encoder.Y1 {...region} />
-          LPF
-        </div>
-        <div>
-          <Specviz.Encoder.Y2 {...region} />
-          HPF
-        </div>
-      </div>
-      <pre>{JSON.stringify(region, null, 2)}</pre>
-    </div>
+      </td>
+    </tr>
   )
 }
 
@@ -294,21 +344,19 @@ function AudioControls() {
   const app = React.useContext(Context)
   const audio = Specviz.Audio.useContext()
   return (
-    <div className="audio-controls">
+    <div className="controls-audio">
       <button
         type="button"
         onClick={_ => audio.transport.seek(0)}
         children="Rewind"
       />
       <button
-        title="Z"
         type="button"
         onClick={_ => audio.transport.play()}
         className={!audio.state.pause ? "active" : ""}
         children="Play"
       />
       <button
-        title="X"
         type="button"
         onClick={_ => {
           audio.transport.stop()
@@ -324,35 +372,16 @@ function AudioControls() {
 function ToolControls() {
   const app = React.useContext(Context)
   return (
-    <div className="tool-controls">
-      <button
-        title="A"
-        type="button"
-        onClick={_ => app.setTool("annotate")}
-        className={app.tool === "annotate" ? "active" : ""}
-        children="Annotate"
-      />
-      <button
-        title="S"
-        type="button"
-        onClick={_ => app.setTool("select")}
-        className={app.tool === "select" ? "active" : ""}
-        children="Select"
-      />
-      <button
-        title="D"
-        type="button"
-        onClick={_ => app.setTool("zoom")}
-        className={app.tool === "zoom" ? "active" : ""}
-        children="Zoom"
-      />
-      <button
-        title="F"
-        type="button"
-        onClick={_ => app.setTool("move")}
-        className={app.tool === "move" ? "active" : ""}
-        children="Move"
-      />
+    <div className="controls-tool">
+      {Object.entries(Tool).map(([children, tool]) => (
+        <button
+          key={tool}
+          type="button"
+          onClick={_ => app.setTool(tool)}
+          className={app.tool == tool ? "active" : ""}
+          children={children}
+        />
+      ))}
     </div>
   )
 }
@@ -368,22 +397,17 @@ function Duration() {
   )
 }
 
-function AnnotationSvg(props: Specviz.Note.AnnotationProps) {
-  const lines = props.selected
-    ? [
-        props.region.id,
-        `${Format.timestamp(props.region.x)} - ${Format.timestamp(
-          props.region.x + props.region.width,
-        )}`,
-        props.region.yunit == "hertz"
-          ? `${Format.hz(props.region.y)} - ${Format.hz(
-              props.region.y + props.region.height,
-            )}`
-          : "",
-      ]
-    : [`${props.region.id.substring(0, 4)}...`]
+function AnnotationSvg(props: Specviz.Note.AnnotationProps<UserData>) {
+  const lines =
+    props.viewerId == "spec" || props.viewerId == "wav"
+      ? [
+          props.region.properties?.label ?? "UNK",
+          props.region.properties?.comment ?? "",
+        ]
+      : []
   return (
-    <React.Fragment>
+    <svg {...props.svgProps}>
+      <rect />
       {lines.map((line, lineno) => (
         <text
           key={String(lineno)}
@@ -392,7 +416,7 @@ function AnnotationSvg(props: Specviz.Note.AnnotationProps) {
           children={line}
         />
       ))}
-    </React.Fragment>
+    </svg>
   )
 }
 
@@ -506,7 +530,9 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
   )
 }
 
-function VisualizationToolProvider(props: { children: React.ReactNode }) {
+function VisualizationToolProvider(props: {
+  children: React.ReactNode
+}) {
   const app = React.useContext(Context)
   const note = Specviz.Note.useContext()
   const viewport = Specviz.Viewport.useContext()
@@ -522,22 +548,33 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
   )
   const action: Specviz.Action.Context = React.useMemo(() => {
     switch (app.tool) {
-      case "annotate":
+      case Tool.Annotate:
         return {
           onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
             note.selectPoint(abs, Specviz.Note.selectionMode(event))
           },
           onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-            note.create({
-              ...unit,
-              id: Format.randomBytes(10),
-              xunit: xaxis.unit,
-              yunit: yaxis.unit,
-            })
+            note.create(
+              yaxis.unit === "hertz"
+                ? {
+                    ...unit,
+                    id: Format.randomBytes(10),
+                    xunit: xaxis.unit,
+                    yunit: yaxis.unit,
+                  }
+                : {
+                    ...unit,
+                    y: 0,
+                    height: 20000,
+                    id: Format.randomBytes(10),
+                    xunit: xaxis.unit,
+                    yunit: "hertz",
+                  },
+            )
           },
           onWheel,
         }
-      case "select":
+      case Tool.Select:
         return {
           onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
             note.selectPoint(abs, Specviz.Note.selectionMode(event))
@@ -547,7 +584,7 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
           },
           onWheel,
         }
-      case "zoom":
+      case Tool.Zoom:
         return {
           onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
             viewport.zoomPoint(
@@ -562,7 +599,7 @@ function VisualizationToolProvider(props: { children: React.ReactNode }) {
           },
           onWheel,
         }
-      case "move":
+      case Tool.Move:
         return {
           onDrag: ({ dx, dy, event }) => {
             if (note.selection.size == 0) {
@@ -625,12 +662,9 @@ function VerticalAxisToolProvider(props: { children: React.ReactNode }) {
 }
 
 function Keybinds() {
-  const app = React.useContext(Context)
-  const audio = Specviz.Audio.useContext()
   const note = Specviz.Note.useContext()
   return (
     <Specviz.Bindings>
-      <Specviz.Keypress bind="Backspace" onKeyDown={note.deleteSelection} />
       <Specviz.Keypress bind="Escape" onKeyDown={note.deselect} />
       <Specviz.Keypress
         bind="ArrowLeft"
@@ -660,18 +694,20 @@ function Keybinds() {
           note.moveSelection(0, 0.03)
         }}
       />
-      <Specviz.Keypress bind="a" onKeyDown={() => app.setTool("annotate")} />
-      <Specviz.Keypress bind="s" onKeyDown={() => app.setTool("select")} />
-      <Specviz.Keypress bind="d" onKeyDown={() => app.setTool("zoom")} />
-      <Specviz.Keypress bind="f" onKeyDown={() => app.setTool("move")} />
-      <Specviz.Keypress bind="z" onKeyDown={() => audio.transport.play()} />
-      <Specviz.Keypress
-        bind="x"
-        onKeyDown={() => {
-          audio.transport.stop()
-          app.setFocus(null)
-        }}
-      />
     </Specviz.Bindings>
   )
+}
+
+type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  indeterminate?: boolean
+}
+
+function Checkbox({ indeterminate, ...props }: CheckboxProps) {
+  const ref = React.useRef<null | HTMLInputElement>(null)
+  React.useEffect(() => {
+    if (ref.current) {
+      ref.current.indeterminate = indeterminate ?? false
+    }
+  }, [indeterminate])
+  return <input ref={ref} type="checkbox" {...props} />
 }

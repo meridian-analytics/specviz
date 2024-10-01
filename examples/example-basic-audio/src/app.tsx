@@ -39,11 +39,18 @@ function AppProvider(props: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "1rem",
+        padding: "1rem",
+      }}
+    >
       <Visualizer />
       <AudioControls />
       <Specviz.Audio.Effect />
-    </>
+    </div>
   )
 }
 
@@ -52,7 +59,8 @@ function AudioControls() {
   return (
     <div
       style={{
-        marginTop: "1rem",
+        display: "flex",
+        gap: "1rem",
       }}
     >
       <button

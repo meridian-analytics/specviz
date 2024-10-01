@@ -13,7 +13,7 @@ export const element = <AppProvider children={<App />} />
 
 export const loader = RRT.makeLoader(async () => {
   const sample: Sample = {
-    audio: "./audio.wav",
+    audio: "./audio.flac",
     spectrogram: "./spectrogram.png",
     waveform: "./waveform.png",
     duration: 44.346,
@@ -91,6 +91,7 @@ function App() {
           "y viz"
           ". x"
         `,
+        marginTop: "1rem",
         padding: "1rem",
       }}
     >

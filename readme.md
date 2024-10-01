@@ -17,7 +17,7 @@ Specviz is a customizable javascript library to display pre-computed spectrogram
 
 Note that this library does not currently handle the spectrogram computation. This must be handled by the user in the backend or frontend and supplied to Specviz with a URL. It was originally inspired by [wavesurfer.js](https://wavesurfer-js.org/) and APLOSE.
 
-![resources/example-full.webp](resources/example-full.webp)
+![resources/example-advanced-annotation.webp](resources/example-advanced-annotation.webp)
 
 <small>[back to top](#top)</small>
 ## <a name="examples"></a> examples
@@ -27,14 +27,14 @@ This repo contains several example packages to demostrate various features and c
 * `example-basic-annotation`
 * `example-basic-audio`
 * `example-basic-spectrogram`
-* `example-full`
 * `example-interactive-spectrogram`
+* `example-advanced-annotation`
 
 To run the examples, install the development dependencies, change to the example's directory, and run the `dev` script.
 
 ```sh
 > bun install
-> cd examples/example-full
+> cd examples/example-advanced-annotation
 > bun dev
 ```
 
@@ -74,7 +74,7 @@ Run linter and formatter.
 @meridian_cfi/specviz-example-interactive-spectrogram check $ biome check --write .
 │ Checked 5 files in 4ms. No fixes applied.
 └─ Done in 66 ms
-@meridian_cfi/specviz-example-full check $ biome check --write .
+@meridian_cfi/specviz-example-advanced-annotation check $ biome check --write .
 │ Checked 5 files in 24ms. No fixes applied.
 └─ Done in 74 ms
 @meridian_cfi/specviz-example-basic-annotation check $ biome check --write .
@@ -98,7 +98,7 @@ Run typescript compiler for all packages.
 └─ Done in 1.38 s
 @meridian_cfi/specviz-example-interactive-spectrogram tsc $ tsc
 └─ Done in 1.07 s
-@meridian_cfi/specviz-example-full tsc $ tsc
+@meridian_cfi/specviz-example-advanced-annotation tsc $ tsc
 └─ Done in 1.42 s
 @meridian_cfi/specviz-example-basic-annotation tsc $ tsc
 └─ Done in 1.39 s

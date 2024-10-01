@@ -1,0 +1,110 @@
+[
+  [
+    "56b674fd241e395abd5d",
+    {
+      "x": 6.161220973041882,
+      "y": 1050,
+      "width": 2.1492631301308887,
+      "height": 10700,
+      "id": "56b674fd241e395abd5d",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐋",
+        "comment": "whale 1"
+      }
+    }
+  ],
+  [
+    "be3414f8c416963c1fe2",
+    {
+      "x": 8.811978833536646,
+      "y": 1650,
+      "width": 2.5791157561570657,
+      "height": 9300,
+      "id": "be3414f8c416963c1fe2",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐋",
+        "comment": "whale 2"
+      }
+    }
+  ],
+  [
+    "a7d005e584e94730c271",
+    {
+      "x": 12.00005247656413,
+      "y": 2450,
+      "width": 2.400010495312827,
+      "height": 7550,
+      "id": "a7d005e584e94730c271",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐋",
+        "comment": "whale 3"
+      }
+    }
+  ],
+  [
+    "c3e0bb10246762950dda",
+    {
+      "x": 15.976189267306275,
+      "y": 2100,
+      "width": 2.5343368171177993,
+      "height": 10000,
+      "id": "c3e0bb10246762950dda",
+      "xunit": "seconds",
+      "yunit": "hertz"
+    }
+  ],
+  [
+    "f178b2129f57523a5515",
+    {
+      "x": 25.074736518193706,
+      "y": 2700,
+      "width": 3.976136790742146,
+      "height": 6600,
+      "id": "f178b2129f57523a5515",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐠",
+        "comment": "fish 1"
+      }
+    }
+  ],
+  [
+    "df1ef7e855014451681e",
+    {
+      "x": 29.30162067411779,
+      "y": 3350,
+      "width": 4.585094677612563,
+      "height": 6950,
+      "id": "df1ef7e855014451681e",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐠",
+        "comment": "fish 2"
+      }
+    }
+  ],
+  [
+    "a0bd9a7c722b38b9bddc",
+    {
+      "x": 34.495673238600766,
+      "y": 2450,
+      "width": 4.656736781950265,
+      "height": 7000,
+      "id": "a0bd9a7c722b38b9bddc",
+      "xunit": "seconds",
+      "yunit": "hertz",
+      "properties": {
+        "label": "🐠",
+        "comment": "fish 3"
+      }
+    }
+  ]
+]

@@ -1,4 +1,5 @@
 import * as Specviz from "@meridian_cfi/specviz"
+import * as Format from "@meridian_cfi/specviz/format"
 import * as React from "react"
 import * as RRT from "react-router-typesafe"
 
@@ -7,52 +8,28 @@ type Sample = {
   spectrogram: string
 }
 
+type UserData = {
+  label?: Label
+}
+
+enum Label {
+  Whale = "🐋",
+  Shark = "🦈",
+  Pufferfish = "🐡",
+  Fish = "🐠",
+}
+
 export const element = <AppProvider children={<App />} />
 
 export const loader = RRT.makeLoader(async () => {
   const sample: Sample = {
-    audio: "./audio.wav",
+    audio: "./audio.flac",
     spectrogram: "./spectrogram.png",
   }
   const audioBuffer = await Specviz.Audio.load(sample.audio)
-  const regions: Specviz.Note.RegionState = new Map([
-    [
-      "22a3b37a-178b-4f8f-9e01-8f2612be2b0f",
-      {
-        id: "22a3b37a-178b-4f8f-9e01-8f2612be2b0f",
-        x: 5.910473607859945,
-        y: 2375,
-        width: 0.8597052520523558,
-        height: 4050,
-        xunit: "seconds",
-        yunit: "hertz",
-      },
-    ],
-    [
-      "b56c65fd-c0fc-44c4-9540-90ca509f5bb3",
-      {
-        id: "b56c65fd-c0fc-44c4-9540-90ca509f5bb3",
-        x: 12.60901036343455,
-        y: 2425,
-        width: 1.9701578692866484,
-        height: 8050.000000000002,
-        xunit: "seconds",
-        yunit: "hertz",
-      },
-    ],
-    [
-      "85e5a2b2-ca8b-4e4d-9e19-458f3cbb1de4",
-      {
-        id: "85e5a2b2-ca8b-4e4d-9e19-458f3cbb1de4",
-        x: 16.012010319475124,
-        y: 1675,
-        width: 1.6835894519358625,
-        height: 12650,
-        xunit: "seconds",
-        yunit: "hertz",
-      },
-    ],
-  ])
+  const regions: Specviz.Note.RegionState<UserData> = new Map(
+    await fetch("./example-basic-annotation.json").then(r => r.json()),
+  )
   return {
     audioBuffer,
     sample,
@@ -60,8 +37,23 @@ export const loader = RRT.makeLoader(async () => {
   }
 })
 
+type Context = {
+  label: Label
+  setLabel: (label: Label) => void
+}
+
+const defaultContext: Context = {
+  label: Label.Whale,
+  setLabel: () => {
+    throw Error("setLabel not implemented")
+  },
+}
+
+const Context = React.createContext(defaultContext)
+
 function AppProvider(props: { children: React.ReactNode }) {
   const loaderData = RRT.useLoaderData<typeof loader>()
+  const [label, setLabel] = React.useState(defaultContext.label)
   const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
       seconds: Specviz.Axis.time(0, loaderData.audioBuffer.duration),
@@ -70,16 +62,21 @@ function AppProvider(props: { children: React.ReactNode }) {
     [loaderData.audioBuffer.duration],
   )
   return (
-    <Specviz.Audio.Provider buffer={loaderData.audioBuffer}>
-      <Specviz.Axis.Provider value={axes}>
-        <Specviz.Input.Provider>
-          <Specviz.Note.Provider
-            children={props.children}
-            initRegions={loaderData.regions}
-          />
-        </Specviz.Input.Provider>
-      </Specviz.Axis.Provider>
-    </Specviz.Audio.Provider>
+    <Context.Provider value={{ label, setLabel }}>
+      <Specviz.Bindings>
+        <Specviz.Audio.Provider buffer={loaderData.audioBuffer}>
+          <Specviz.Axis.Provider value={axes}>
+            <Specviz.Input.Provider>
+              <Specviz.Note.Provider
+                children={props.children}
+                initRegions={loaderData.regions}
+                render={AnnotationSvg}
+              />
+            </Specviz.Input.Provider>
+          </Specviz.Axis.Provider>
+        </Specviz.Audio.Provider>
+      </Specviz.Bindings>
+    </Context.Provider>
   )
 }
 
@@ -87,55 +84,24 @@ function App() {
   return (
     <div
       style={{
-        backgroundColor: "mintcream",
-        display: "grid",
-        gridGap: "1rem",
-        gridTemplateRows: "60 auto",
-        gridTemplateAreas: `
-          "controls"
-          "viz"
-          "annotations"
-        `,
+        display: "flex",
+        flexDirection: "column",
+        gap: "1rem",
         padding: "1rem",
       }}
     >
-      <AudioControls />
       <Visualizer />
-      <Annotations />
+      <Controls />
+      <AnnotationTable />
       <Specviz.Audio.Effect />
-    </div>
-  )
-}
-
-function AudioControls() {
-  const audio = Specviz.Audio.useContext()
-  return (
-    <div style={{ gridArea: "controls" }}>
-      <button
-        children="Rewind"
-        onClick={_ => audio.transport.seek(0)}
-        type="button"
-      />
-      <button
-        children="Play"
-        style={audio.state.pause ? {} : { color: "orchid" }}
-        onClick={_ => audio.transport.play()}
-        title="Z"
-        type="button"
-      />
-      <button
-        children="Stop"
-        style={audio.state.pause ? { color: "orchid" } : {}}
-        onClick={_ => audio.transport.stop()}
-        title="X"
-        type="button"
-      />
     </div>
   )
 }
 
 function Visualizer() {
   const loaderData = RRT.useLoaderData<typeof loader>()
+  const app = React.useContext(Context)
+  const audio = Specviz.Audio.useContext()
   const note = Specviz.Note.useContext()
   const viewport = Specviz.Viewport.useContext()
   const annotate: Specviz.Action.Handler["onRect"] = React.useCallback(
@@ -146,9 +112,10 @@ function Visualizer() {
           id: crypto.randomUUID(),
           xunit: xaxis.unit,
           yunit: yaxis.unit,
+          properties: { label: app.label },
         })
     },
-    [note.create, note.selection],
+    [app.label, note.create, note.selection],
   )
   const select: Specviz.Action.Handler["onClick"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
@@ -166,11 +133,11 @@ function Visualizer() {
     },
     [note.moveSelection, note.selection, viewport.state.zoom],
   )
-  const remove: Specviz.Action.Handler["onContextMenu"] = React.useCallback(
+  const seek: Specviz.Action.Handler["onContextMenu"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
-      note.deleteSelection()
+      audio.transport.seek(unit.x)
     },
-    [note.deleteSelection],
+    [audio.transport.seek],
   )
   return (
     <div
@@ -178,7 +145,6 @@ function Visualizer() {
         backgroundColor: "cornsilk",
         border: "1px solid burlywood",
         display: "grid",
-        gridArea: "viz",
         gridGap: "1rem",
         gridTemplateColumns: "80px 1fr",
         gridTemplateRows: "400px 20px",
@@ -199,7 +165,7 @@ function Visualizer() {
         <div style={{ gridArea: "spec" }}>
           <Specviz.Action.Provider
             onClick={select}
-            onContextMenu={remove}
+            onContextMenu={seek}
             onDrag={move}
             onRect={annotate}
           >
@@ -214,25 +180,168 @@ function Visualizer() {
   )
 }
 
-function Annotations() {
+function Controls() {
+  const app = React.useContext(Context)
+  const audio = Specviz.Audio.useContext()
   const note = Specviz.Note.useContext()
   return (
-    <pre
+    <div
+      style={{
+        display: "flex",
+        gap: "1rem",
+      }}
+    >
+      <Button
+        children="<<"
+        onClick={() => audio.transport.seek(t => t - 5)}
+        title="z"
+      />
+      {audio.state.pause ? (
+        <Button
+          children="Play"
+          onClick={() => audio.transport.play()}
+          title="x"
+        />
+      ) : (
+        <Button
+          children="Stop"
+          onClick={() => audio.transport.stop()}
+          title="x"
+        />
+      )}
+      <Button
+        children=">>"
+        onClick={() => audio.transport.seek(t => t + 5)}
+        title="c"
+      />
+      <div style={{ flexGrow: 1 }} />
+      <Button
+        children="Clear Selection"
+        disabled={note.selection.size == 0}
+        onClick={() => note.setSelection(new Set())}
+        title="Escape"
+      />
+      <Button
+        children="Delete"
+        disabled={note.selection.size == 0}
+        onClick={() => note.deleteSelection()}
+        title="Backspace"
+      />
+      <div style={{ flexGrow: 1 }} />
+      {Object.values(Label).map((label, n) => (
+        <Button
+          key={label}
+          children={label}
+          onClick={() => app.setLabel(label)}
+          style={{
+            fontSize: "1.5rem",
+            borderColor: app.label == label ? "orchid" : undefined,
+          }}
+          title={String(n + 1)}
+        />
+      ))}
+    </div>
+  )
+}
+
+function AnnotationSvg(props: Specviz.Note.AnnotationProps<UserData>) {
+  return (
+    <svg {...props.svgProps} cursor="pointer">
+      <rect
+        width="100%"
+        height="100%"
+        fill={props.selected ? "chartreuse" : "violet"}
+        fillOpacity="0.7"
+        style={{ mixBlendMode: "hue" }}
+      />
+      <text
+        x="8"
+        y="8"
+        children={props.region.properties?.label ?? "🤷🏽"}
+        fontSize="30"
+      />
+    </svg>
+  )
+}
+
+function AnnotationTable() {
+  const note = Specviz.Note.useContext<UserData>()
+  return (
+    <table
       style={{
         backgroundColor: "lavenderblush",
         border: "1px solid thistle",
-        gridArea: "annotations",
+        maxHeight: "400px",
+        overflow: "auto",
         padding: "1rem",
       }}
     >
-      {JSON.stringify(
-        {
-          regions: Array.from(note.regions),
-          selection: Array.from(note.selection),
-        },
-        null,
-        2,
+      <thead>
+        <tr style={{ textAlign: "left" }}>
+          <th />
+          <th>Id</th>
+          <th>Label</th>
+          <th>Hz (min)</th>
+          <th>Hz (max)</th>
+          <th>Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Array.from(note.regions.values(), region => (
+          <tr key={region.id}>
+            <td>
+              <input
+                type="checkbox"
+                checked={note.selection.has(region.id)}
+                onChange={event =>
+                  note.setSelection(prev => {
+                    const next = new Set(prev)
+                    if (event.target.checked) next.add(region.id)
+                    else next.delete(region.id)
+                    return next
+                  })
+                }
+              />
+            </td>
+            <td>{region.id}</td>
+            <td>
+              <select
+                value={region.properties?.label ?? "🤷🏽"}
+                onChange={event =>
+                  note.updateRegionProperties(region.id, p => ({
+                    ...p,
+                    label: event.target.value as Label,
+                  }))
+                }
+                style={{ fontSize: "1rem" }}
+              >
+                <option value="🤷🏽" children="🤷🏽" />
+                {Object.values(Label).map(label => (
+                  <option key={label} value={label} children={label} />
+                ))}
+              </select>
+            </td>
+            <td>{Format.hz(region.y)}</td>
+            <td>{Format.hz(region.y + region.height)}</td>
+            <td>{Format.timestamp(region.width)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+function Button(
+  props: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "onClick"> & {
+    onClick: () => void
+  },
+) {
+  return (
+    <>
+      <button {...props} title={props.title?.toUpperCase()} type="button" />
+      {props.title && props.onClick && (
+        <Specviz.Keypress bind={props.title} onKeyDown={props.onClick} />
       )}
-    </pre>
+    </>
   )
 }
