@@ -1,0 +1,73 @@
+---
+tags: ["axis", "plane"]
+---
+
+# Axis
+
+The axis module supplies axes to the visualizers and are essential for almost all Specviz applications. See the [Basic Spectrogram](../examples/basic-spectrogram.mdx) demo for guidance.
+
+### Components
+```ts
+const Provider: React.Provider<Context>
+
+function Horizontal(props: AxisProps): JSX.Element
+function Vertical(props: AxisProps): JSX.Element
+```
+
+### Functions
+
+```ts
+function linear(
+  min: number,
+  max: number,
+  unit?: string,
+  format?: FormatFn,
+): Axis
+
+function nonlinear(
+  intervals: Array<[number, number]>,
+  unit?: string,
+  format?: FormatFn,
+): Axis
+
+function time(
+  min: number,
+  max: number,
+  unit = "seconds",
+  format: FormatFn = Format.timestamp,
+): Axis 
+
+function frequency(
+  min: number,
+  max: number,
+  unit = "hertz",
+  format: FormatFn = Format.hz,
+): Axis 
+
+function percent(
+  min: number,
+  max: number,
+  unit = "percent",
+  format: FormatFn = Format.percent,
+): Axis
+
+function formatUnit(t: Axis, q: number): string
+function useContext(): Context
+```
+
+### Types
+
+```ts
+type Axis = {
+  unit: string
+  format: FormatFn
+  intervals: Array<[number, number]>
+}
+
+type AxisProps = {
+  tickHeight?: number
+  tickWidth?: number
+}
+
+type Context = Record<string, undefined | Axis>
+```

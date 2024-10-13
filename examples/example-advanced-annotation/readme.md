@@ -1,3 +1,3 @@
 # Advanced Annotation
 
-![resources/example-advanced-annotation.webp](../../resources/example-advanced-annotation.webp)
+![packages/website/static/example-advanced-annotation.webp](../../packages/website/static/example-advanced-annotation.webp)

@@ -26,5 +26,5 @@ export default Vite.defineConfig({
     },
   },
   plugins: [react()],
-  publicDir: "../../resources",
+  publicDir: "../../packages/website/static",
 })

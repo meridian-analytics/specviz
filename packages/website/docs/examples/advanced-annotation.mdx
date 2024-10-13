@@ -1,0 +1,24 @@
+---
+sidebar_position: 5
+tags: ["action", "audio", "axis", "input", "note", "plane", "viewport"]
+---
+
+# Advanced Annotation
+
+Explore advanced features of Specviz.
+
+import * as Ex from "@meridian_cfi/specviz-example-advanced-annotation"
+import BrowserOnly from "../../src/browser-only"
+import "../../static/specviz.css"
+import "../../static/example-advanced-annotation.css"
+
+<BrowserOnly fallback={<div>Loading...</div>}>
+  {url => 
+    <Ex.default
+      audio={url("/audio.flac")}
+      annotation={url("/example-advanced-annotation.json")}
+      spectrogram={url("/spectrogram.png")}
+      waveform={url("/waveform.png")}
+    />
+  }
+</BrowserOnly>

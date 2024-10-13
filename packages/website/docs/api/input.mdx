@@ -1,0 +1,43 @@
+---
+tags: ["input"]
+---
+
+# Input
+
+The input module is required to create interactive applications that rely on user input. See the [Interactive Spectrogram](../examples/interactive-spectrogram.mdx) demo for guidance.
+
+### Components
+
+```ts
+function Provider(props: ProviderProps): JSX.Element
+```
+
+### Functions
+
+```ts
+function useContext(): Context
+```
+
+### Types
+
+```ts
+type Context = {
+  input: State
+  mousedown: Coord.Coord
+  mouseup: Coord.Coord
+  unitDown: Vector2.Vector2
+  unitUp: Vector2.Vector2
+}
+
+type ProviderProps = {
+  children: React.ReactNode
+}
+
+type State = {
+  alt: boolean
+  buttons: number
+  focus: null | (EventTarget & Element)
+  xaxis: null | Axis.Axis
+  yaxis: null | Axis.Axis
+}
+```

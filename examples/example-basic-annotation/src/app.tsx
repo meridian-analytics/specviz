@@ -259,7 +259,7 @@ function AnnotationSvg(props: Specviz.Note.AnnotationProps<UserData>) {
         height="100%"
         fill={props.selected ? "chartreuse" : "violet"}
         fillOpacity="0.7"
-        style={{ mixBlendMode: "hue" }}
+        style={{ mixBlendMode: "overlay" }}
       />
       <text
         x="8"
@@ -310,7 +310,7 @@ function AnnotationTable() {
                 }
               />
             </td>
-            <td>{region.id}</td>
+            <td>{region.id.slice(0, 8)}...</td>
             <td>
               <select
                 value={region.properties?.label ?? "🤷🏽"}

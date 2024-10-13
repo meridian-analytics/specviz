@@ -248,7 +248,7 @@ function AnnotationRow(props: { region: Specviz.Note.Region<UserData> }) {
           }
         />
       </td>
-      <td children={props.region.id} />
+      <td>{props.region.id.slice(0, 8)}...</td>
       <td>
         <select
           value={props.region.properties?.label ?? "-"}
