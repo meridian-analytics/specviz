@@ -26,6 +26,7 @@
     "./vector2": "./src/vector2.ts",
     "./viewport": "./src/viewport.tsx"
   },
+  "license": "LGPL-3.0-only",
   "name": "@meridian_cfi/specviz",
   "peerDependencies": {
     "react": "^18.3.1",
