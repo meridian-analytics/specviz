@@ -4,10 +4,9 @@ import * as Hooks from "./hooks"
 import { clamp } from "./math"
 
 export type Context = {
-  audioContext: AudioContext
-  buffer: AudioBuffer
+  audioContext: null | AudioContext
+  buffer: null | AudioBuffer
   fx: Fx
-  hasAudio: boolean
   state: State
   transport: Transport
 }
@@ -44,13 +43,9 @@ export function load(url: string): Promise<AudioBuffer> {
 }
 
 const defaultContext: Context = {
-  audioContext: new AudioContext(),
-  buffer: new AudioBuffer({
-    length: 1,
-    sampleRate: 44100,
-  }),
+  audioContext: null,
+  buffer: null,
   fx: {},
-  hasAudio: false,
   state: {
     pause: true,
     seek: 0,
@@ -82,6 +77,10 @@ export type ProviderProps = {
 }
 
 export function Provider(props: ProviderProps) {
+  const audioContext = React.useMemo(
+    () => props.audioContext ?? new AudioContext(),
+    [props.audioContext],
+  )
   const [state, setState] = React.useState(defaultContext.state)
   const transport: Transport = React.useMemo(
     () => ({
@@ -89,13 +88,11 @@ export function Provider(props: ProviderProps) {
         setState(prev => {
           const nextSeek =
             seek ?? // seek or getSeek (inlined)
-            (prev.pause
-              ? prev.seek
-              : defaultContext.audioContext.currentTime - prev.timecode)
+            (prev.pause ? prev.seek : audioContext.currentTime - prev.timecode)
           return {
             pause: false,
             seek: nextSeek,
-            timecode: defaultContext.audioContext.currentTime - nextSeek,
+            timecode: audioContext.currentTime - nextSeek,
           }
         })
       },
@@ -106,13 +103,13 @@ export function Provider(props: ProviderProps) {
               ? fn(
                   prev.pause
                     ? prev.seek
-                    : defaultContext.audioContext.currentTime - prev.timecode,
+                    : audioContext.currentTime - prev.timecode,
                 )
               : fn,
             0,
             props.buffer.duration,
           )
-          const timecode = defaultContext.audioContext.currentTime - seek
+          const timecode = audioContext.currentTime - seek
           return { ...prev, seek, timecode }
         })
       },
@@ -120,32 +117,29 @@ export function Provider(props: ProviderProps) {
         setState(prev => {
           const nextSeek =
             seek ?? // seek or getSeek (inlined)
-            (prev.pause
-              ? prev.seek
-              : defaultContext.audioContext.currentTime - prev.timecode)
+            (prev.pause ? prev.seek : audioContext.currentTime - prev.timecode)
           return {
             pause: true,
             seek: nextSeek,
-            timecode: defaultContext.audioContext.currentTime - nextSeek,
+            timecode: audioContext.currentTime - nextSeek,
           }
         })
       },
       getSeek: state => {
         return state.pause
           ? state.seek
-          : defaultContext.audioContext.currentTime - state.timecode
+          : audioContext.currentTime - state.timecode
       },
     }),
-    [props.buffer.duration],
+    [audioContext, props.buffer.duration],
   )
   return (
     <Context.Provider
       children={props.children}
       value={{
-        audioContext: defaultContext.audioContext,
+        audioContext,
         buffer: props.buffer,
         fx: props.fx ?? defaultContext.fx,
-        hasAudio: true,
         state,
         transport,
       }}
@@ -197,6 +191,12 @@ export function Effect() {
 function PlayEffect() {
   const { audioContext, buffer, fx, state, transport } = useContext()
   React.useEffect(() => {
+    // invariant
+    if (audioContext == null || buffer == null) {
+      return console.warn(
+        "Audio.Effect requires an AudioContext and AudioBuffer",
+      )
+    }
     // mutable refs
     let source: null | AudioBufferSourceNode = null
     let hpf: null | BiquadFilterNode = null
