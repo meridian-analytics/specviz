@@ -21,5 +21,6 @@
     "dev": "bun run --bun vite",
     "tsc": "tsc"
   },
-  "type": "module"
+  "type": "module",
+  "version": "0.0.1"
 }
