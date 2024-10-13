@@ -11,7 +11,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "react-router-dom": "^6.26.2",
     "react-router-typesafe": "^1.5.0",
-    "typescript": "^5.6.2",
+    "typescript": "5.6.3",
     "vite": "^5.4.8"
   },
   "name": "@meridian_cfi/specviz-example-basic-annotation",
