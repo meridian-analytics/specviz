@@ -1,29 +1,18 @@
 import * as Specviz from "@meridian_cfi/specviz"
 import * as React from "react"
 
-export const element = <App />
-
-type Sample = {
-  audio: string
+type Props = {
   spectrogram: string
-  waveform: string
   duration: number
 }
 
-const sample: Sample = {
-  audio: "./audio.flac",
-  spectrogram: "./spectrogram.png",
-  waveform: "./waveform.png",
-  duration: 44.346,
-}
-
-function App() {
+export default function (props: Props) {
   const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.Axis.time(0, sample.duration),
+      seconds: Specviz.Axis.time(0, props.duration),
       hertz: Specviz.Axis.frequency(20000, 0),
     }),
-    [],
+    [props.duration],
   )
   return (
     <Specviz.Axis.Provider value={axes}>
@@ -39,7 +28,7 @@ function App() {
             "y viz"
             ". x"
           `,
-          marginTop: "1rem",
+          margin: "1.5rem 0",
           padding: "1rem",
         }}
       >
@@ -51,7 +40,7 @@ function App() {
             <Specviz.Axis.Vertical />
           </div>
           <div style={{ gridArea: "viz" }}>
-            <Specviz.Visualization src={sample.spectrogram} />
+            <Specviz.Visualization src={props.spectrogram} />
           </div>
         </Specviz.Plane.Provider>
       </div>

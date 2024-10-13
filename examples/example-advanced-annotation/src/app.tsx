@@ -1,34 +1,6 @@
 import * as Specviz from "@meridian_cfi/specviz"
 import * as Format from "@meridian_cfi/specviz/format"
 import * as React from "react"
-import * as RRT from "react-router-typesafe"
-
-export const element = <AppProvider children={<App />} />
-
-export const loader = RRT.makeLoader(async () => {
-  const sample: Sample = {
-    audio: "./audio.flac",
-    spectrogram: "./spectrogram.png",
-    waveform: "./waveform.png",
-    offset: 0,
-  }
-  const audioBuffer = await Specviz.Audio.load(sample.audio)
-  const regions: Specviz.Note.RegionState<UserData> = new Map(
-    await fetch("./example-advanced-annotation.json").then(r => r.json()),
-  )
-  return {
-    sample,
-    audioBuffer,
-    regions,
-  }
-})
-
-type Sample = {
-  audio: string
-  spectrogram: string
-  waveform: string
-  offset: number
-}
 
 type UserData = {
   label?: Label
@@ -42,6 +14,22 @@ enum Label {
   Fish = "🐠",
 }
 
+type Props = {
+  audio: string
+  spectrogram: string
+  waveform: string
+  annotation: string
+}
+
+type Context = {
+  focus: null | Specviz.Note.Region["id"]
+  spectrogram: string
+  tool: Tool
+  waveform: string
+  setFocus: React.Dispatch<React.SetStateAction<Context["focus"]>>
+  setTool: React.Dispatch<React.SetStateAction<Context["tool"]>>
+}
+
 enum Tool {
   Annotate = "annotate",
   Select = "select",
@@ -49,64 +37,75 @@ enum Tool {
   Move = "move",
 }
 
-type AppContext = {
-  focus: null | Specviz.Note.Region["id"]
-  tool: Tool
-  setFocus: (regionId: AppContext["focus"]) => void
-  setTool: (t: AppContext["tool"]) => void
-}
-
-const defaultContext: AppContext = {
-  focus: null,
-  tool: Tool.Annotate,
-  setFocus() {
-    throw Error("setFocus called outside of context")
-  },
-  setTool() {
-    throw Error("setTool called outside of context")
-  },
-}
-
-const Context = React.createContext(defaultContext)
-
-export function AppProvider(props: { children: React.ReactNode }) {
-  const loaderData = RRT.useLoaderData<typeof loader>()
-  const [focus, _setFocus] = React.useState<AppContext["focus"]>(null)
-  const [tool, setTool] = React.useState(defaultContext.tool)
-  const context: AppContext = React.useMemo(
-    () => ({
-      focus,
-      tool,
-      setFocus: (regionId: null | string) => {
-        _setFocus(prev => (prev == regionId ? null : regionId))
-      },
-      setTool,
-    }),
-    [focus, tool],
-  )
+export default function (props: Props) {
   return (
-    <Context.Provider value={context}>
-      <Specviz.Audio.Provider buffer={loaderData.audioBuffer}>
+    <AppProvider {...props}>
+      <App />
+    </AppProvider>
+  )
+}
+
+const Context = React.createContext<null | Context>(null)
+
+function useContext() {
+  const context = React.useContext(Context)
+  if (context == null) throw Error("useContext must be used within a Provider")
+  return context
+}
+
+function AppProvider(props: Props & { children: React.ReactNode }) {
+  const [focus, setFocus] = React.useState<Context["focus"]>(null)
+  const [tool, setTool] = React.useState(Tool.Annotate)
+  const [audioBuffer, setAudioBuffer] = React.useState<null | AudioBuffer>(null)
+  const [regions, setRegions] =
+    React.useState<null | Specviz.Note.RegionState<UserData>>(null)
+  const axes: Specviz.Axis.Context = React.useMemo(
+    () => ({
+      seconds: Specviz.Axis.time(0, audioBuffer?.duration ?? 0),
+      hertz: Specviz.Axis.frequency(20000, 0),
+      percent: Specviz.Axis.percent(1, -1),
+    }),
+    [audioBuffer],
+  )
+  React.useEffect(() => {
+    Specviz.Audio.load(props.audio).then(setAudioBuffer)
+  }, [props.audio])
+  React.useEffect(() => {
+    fetch(props.annotation)
+      .then(r => r.json())
+      .then(entries => setRegions(new Map(entries)))
+  }, [props.annotation])
+  if (audioBuffer == null) return "Loading audio..."
+  if (regions == null) return "Loading regions..."
+  return (
+    <Context.Provider
+      value={{
+        focus,
+        spectrogram: props.spectrogram,
+        tool,
+        waveform: props.waveform,
+        setFocus,
+        setTool,
+      }}
+    >
+      <Specviz.Audio.Provider buffer={audioBuffer}>
         <Specviz.Input.Provider>
-          <AxisProvider>
-            <Specviz.Note.Provider
-              initRegions={loaderData.regions}
-              render={AnnotationSvg}
-            >
+          <Specviz.Axis.Provider value={axes}>
+            <Specviz.Note.Provider initRegions={regions} render={AnnotationSvg}>
               <FxProvider>
                 <BaseToolProvider>
                   <Specviz.Viewport.Provider children={props.children} />
                 </BaseToolProvider>
               </FxProvider>
             </Specviz.Note.Provider>
-          </AxisProvider>
+          </Specviz.Axis.Provider>
         </Specviz.Input.Provider>
       </Specviz.Audio.Provider>
     </Context.Provider>
   )
 }
 
-export default function App() {
+function App() {
   return (
     <div id="app">
       <Controls />
@@ -118,9 +117,8 @@ export default function App() {
   )
 }
 
-export function AnnotationTool() {
-  const loaderData = RRT.useLoaderData<typeof loader>()
-  const app = React.useContext(Context)
+function AnnotationTool() {
+  const app = useContext()
   const showSelection = app.tool != "move"
   return (
     <div className={`annotation-tool tool-${app.tool}`}>
@@ -137,7 +135,7 @@ export function AnnotationTool() {
         </div>
         <div className="spectrogram navigator">
           <NavigatorToolProvider>
-            <Specviz.Navigator src={loaderData.sample.spectrogram} />
+            <Specviz.Navigator src={app.spectrogram} />
           </NavigatorToolProvider>
         </div>
         <div className="spectrogram visualization">
@@ -145,7 +143,7 @@ export function AnnotationTool() {
             <Specviz.Visualization
               id="spec"
               showSelection={showSelection}
-              src={loaderData.sample.spectrogram}
+              src={app.spectrogram}
             />
           </VisualizationToolProvider>
         </div>
@@ -164,7 +162,7 @@ export function AnnotationTool() {
           </div>
           <div className="waveform navigator">
             <NavigatorToolProvider>
-              <Specviz.Navigator src={loaderData.sample.waveform} />
+              <Specviz.Navigator src={app.waveform} />
             </NavigatorToolProvider>
           </div>
           <div className="waveform visualization">
@@ -172,7 +170,7 @@ export function AnnotationTool() {
               <Specviz.Visualization
                 id="wav"
                 showSelection={showSelection}
-                src={loaderData.sample.waveform}
+                src={app.waveform}
               />
             </VisualizationToolProvider>
           </div>
@@ -232,7 +230,7 @@ function AnnotationTable() {
 }
 
 function AnnotationRow(props: { region: Specviz.Note.Region<UserData> }) {
-  const app = React.useContext(Context)
+  const app = useContext()
   const audio = Specviz.Audio.useContext()
   const note = Specviz.Note.useContext<UserData>()
   return (
@@ -341,7 +339,7 @@ function Controls() {
 }
 
 function AudioControls() {
-  const app = React.useContext(Context)
+  const app = useContext()
   const audio = Specviz.Audio.useContext()
   return (
     <div className="controls-audio">
@@ -370,7 +368,7 @@ function AudioControls() {
 }
 
 function ToolControls() {
-  const app = React.useContext(Context)
+  const app = useContext()
   return (
     <div className="controls-tool">
       {Object.entries(Tool).map(([children, tool]) => (
@@ -392,7 +390,7 @@ function Duration() {
     <div className="audio-duration">
       <Specviz.Audio.Seek />
       <span>/</span>
-      <span>{Format.timestamp(audio.buffer.duration)}</span>
+      <span>{Format.timestamp(audio.buffer?.duration ?? 0)}</span>
     </div>
   )
 }
@@ -420,23 +418,6 @@ function AnnotationSvg(props: Specviz.Note.AnnotationProps<UserData>) {
   )
 }
 
-function AxisProvider(props: { children: React.ReactNode }) {
-  const loaderData = RRT.useLoaderData<typeof loader>()
-  const audio = Specviz.Audio.useContext()
-  const axes: Specviz.Axis.Context = React.useMemo(
-    () => ({
-      seconds: Specviz.Axis.time(
-        loaderData.sample.offset + 0,
-        loaderData.sample.offset + audio.buffer.duration,
-      ),
-      hertz: Specviz.Axis.frequency(20000, 0),
-      percent: Specviz.Axis.percent(1, -1),
-    }),
-    [audio.buffer.duration, loaderData.sample.offset],
-  )
-  return <Specviz.Axis.Provider value={axes} children={props.children} />
-}
-
 function BaseToolProvider(props: { children: React.ReactNode }) {
   const audio = Specviz.Audio.useContext()
   const onContextMenu: Specviz.Action.Handler["onContextMenu"] =
@@ -458,7 +439,7 @@ function BaseToolProvider(props: { children: React.ReactNode }) {
 function FxProvider(props: {
   children: React.ReactNode
 }) {
-  const app = React.useContext(Context)
+  const app = useContext()
   const note = Specviz.Note.useContext()
   const fn: Specviz.Audio.TransformFxProps["fn"] = React.useCallback(
     fxContext => {
@@ -478,7 +459,7 @@ function FxProvider(props: {
 }
 
 function NavigatorToolProvider(props: { children: React.ReactNode }) {
-  const app = React.useContext(Context)
+  const app = useContext()
   const viewport = Specviz.Viewport.useContext()
   const onClick: Specviz.Action.Handler["onClick"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
@@ -533,7 +514,7 @@ function NavigatorToolProvider(props: { children: React.ReactNode }) {
 function VisualizationToolProvider(props: {
   children: React.ReactNode
 }) {
-  const app = React.useContext(Context)
+  const app = useContext()
   const note = Specviz.Note.useContext()
   const viewport = Specviz.Viewport.useContext()
   const onWheel: Specviz.Action.Handler["onWheel"] = React.useCallback(
@@ -709,5 +690,5 @@ function Checkbox({ indeterminate, ...props }: CheckboxProps) {
       ref.current.indeterminate = indeterminate ?? false
     }
   }, [indeterminate])
-  return <input ref={ref} type="checkbox" {...props} />
+  return <input {...props} ref={ref} type="checkbox" />
 }

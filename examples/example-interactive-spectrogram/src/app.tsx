@@ -1,46 +1,52 @@
 import * as Specviz from "@meridian_cfi/specviz"
 import * as React from "react"
-import * as RRT from "react-router-typesafe"
 
-type Sample = {
-  audio: string
+type Props = {
   spectrogram: string
-  waveform: string
   duration: number
 }
 
-export const element = <AppProvider children={<App />} />
+type Context = {
+  spectrogram: string
+}
 
-export const loader = RRT.makeLoader(async () => {
-  const sample: Sample = {
-    audio: "./audio.flac",
-    spectrogram: "./spectrogram.png",
-    waveform: "./waveform.png",
-    duration: 44.346,
-  }
-  return { sample }
-})
+const Context = React.createContext<Context | null>(null)
 
-function AppProvider(props: { children: React.ReactNode }) {
-  const loaderData = RRT.useLoaderData<typeof loader>()
+function useContext() {
+  const context = React.useContext(Context)
+  if (context == null) throw Error("useContext must be used within a Provider")
+  return context
+}
+
+export default function (props: Props) {
+  return (
+    <AppProvider {...props}>
+      <App />
+    </AppProvider>
+  )
+}
+
+function AppProvider(props: Props & { children: React.ReactNode }) {
   const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.Axis.time(0, loaderData.sample.duration),
+      seconds: Specviz.Axis.time(0, props.duration),
       hertz: Specviz.Axis.frequency(20000, 0),
     }),
-    [loaderData.sample.duration],
+    [props.duration],
   )
   return (
-    <Specviz.Axis.Provider value={axes}>
-      <Specviz.Input.Provider>
-        <Specviz.Viewport.Provider children={props.children} />
-      </Specviz.Input.Provider>
-    </Specviz.Axis.Provider>
+    <Context.Provider value={{ spectrogram: props.spectrogram }}>
+      <Specviz.Axis.Provider value={axes}>
+        <Specviz.Input.Provider>
+          <Specviz.Viewport.Provider children={props.children} />
+        </Specviz.Input.Provider>
+      </Specviz.Axis.Provider>
+    </Context.Provider>
   )
 }
 
 function App() {
-  const loaderData = RRT.useLoaderData<typeof loader>()
+  const app = useContext()
   const viewport = Specviz.Viewport.useContext()
   const zoomX: Specviz.Action.Handler["onWheel"] = React.useCallback(
     ({ dx, dy, event }) => {
@@ -91,14 +97,14 @@ function App() {
           "y viz"
           ". x"
         `,
-        marginTop: "1rem",
+        margin: "1.5rem 0",
         padding: "1rem",
       }}
     >
       <Specviz.Plane.Provider xaxis="seconds" yaxis="hertz">
         <div style={{ gridArea: "nav" }}>
           <Specviz.Action.Provider onClick={jump}>
-            <Specviz.Navigator src={loaderData.sample.spectrogram} />
+            <Specviz.Navigator src={app.spectrogram} />
           </Specviz.Action.Provider>
         </div>
         <div style={{ gridArea: "x", overflow: "hidden" }}>
@@ -113,7 +119,7 @@ function App() {
         </div>
         <div style={{ gridArea: "viz" }}>
           <Specviz.Action.Provider onDrag={pan}>
-            <Specviz.Visualization src={loaderData.sample.spectrogram} />
+            <Specviz.Visualization src={app.spectrogram} />
           </Specviz.Action.Provider>
         </div>
       </Specviz.Plane.Provider>

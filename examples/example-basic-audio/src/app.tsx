@@ -1,39 +1,51 @@
 import * as Specviz from "@meridian_cfi/specviz"
 import * as React from "react"
-import * as RRT from "react-router-typesafe"
 
-type Sample = {
+type Props = {
   audio: string
   spectrogram: string
 }
 
-export const element = <AppProvider children={<App />} />
+type Context = {
+  spectrogram: string
+}
 
-export const loader = RRT.makeLoader(async () => {
-  const sample: Sample = {
-    audio: "./count_10.flac",
-    spectrogram: "./spectrogram_10.png",
-  }
-  const audioBuffer = await Specviz.Audio.load(sample.audio)
-  return {
-    sample,
-    audioBuffer,
-  }
-})
+export default function (props: Props) {
+  return (
+    <AppProvider {...props}>
+      <App />
+    </AppProvider>
+  )
+}
 
-function AppProvider(props: { children: React.ReactNode }) {
-  const loaderData = RRT.useLoaderData<typeof loader>()
+const Context = React.createContext<Context | null>(null)
+
+function useContext() {
+  const context = React.useContext(Context)
+  if (context == null)
+    throw Error("useContext must be called within a Provider")
+  return context
+}
+
+function AppProvider(props: Props & { children: React.ReactNode }) {
+  const [audioBuffer, setAudioBuffer] = React.useState<null | AudioBuffer>(null)
   const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.Axis.time(0, loaderData.audioBuffer.duration),
+      seconds: Specviz.Axis.time(0, audioBuffer?.duration ?? 0),
       hertz: Specviz.Axis.frequency(20000, 0),
     }),
-    [loaderData.audioBuffer.duration],
+    [audioBuffer],
   )
+  React.useEffect(() => {
+    Specviz.Audio.load(props.audio).then(setAudioBuffer)
+  }, [props.audio])
+  if (audioBuffer == null) return "Loading audio..."
   return (
-    <Specviz.Audio.Provider buffer={loaderData.audioBuffer}>
-      <Specviz.Axis.Provider children={props.children} value={axes} />
-    </Specviz.Audio.Provider>
+    <Context.Provider value={{ spectrogram: props.spectrogram }}>
+      <Specviz.Audio.Provider buffer={audioBuffer}>
+        <Specviz.Axis.Provider children={props.children} value={axes} />
+      </Specviz.Audio.Provider>
+    </Context.Provider>
   )
 }
 
@@ -44,7 +56,7 @@ function App() {
         display: "flex",
         flexDirection: "column",
         gap: "1rem",
-        padding: "1rem",
+        margin: "1.5rem 0",
       }}
     >
       <Visualizer />
@@ -85,7 +97,7 @@ function AudioControls() {
 }
 
 function Visualizer() {
-  const loaderData = RRT.useLoaderData<typeof loader>()
+  const app = useContext()
   return (
     <div
       style={{
@@ -110,7 +122,7 @@ function Visualizer() {
           <Specviz.Axis.Vertical />
         </div>
         <div style={{ gridArea: "spec" }}>
-          <Specviz.Visualization src={loaderData.sample.spectrogram} />
+          <Specviz.Visualization src={app.spectrogram} />
         </div>
       </Specviz.Plane.Provider>
     </div>

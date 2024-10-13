@@ -1,12 +1,6 @@
 import * as Specviz from "@meridian_cfi/specviz"
 import * as Format from "@meridian_cfi/specviz/format"
 import * as React from "react"
-import * as RRT from "react-router-typesafe"
-
-type Sample = {
-  audio: string
-  spectrogram: string
-}
 
 type UserData = {
   label?: Label
@@ -19,57 +13,71 @@ enum Label {
   Fish = "🐠",
 }
 
-export const element = <AppProvider children={<App />} />
-
-export const loader = RRT.makeLoader(async () => {
-  const sample: Sample = {
-    audio: "./audio.flac",
-    spectrogram: "./spectrogram.png",
-  }
-  const audioBuffer = await Specviz.Audio.load(sample.audio)
-  const regions: Specviz.Note.RegionState<UserData> = new Map(
-    await fetch("./example-basic-annotation.json").then(r => r.json()),
-  )
-  return {
-    audioBuffer,
-    sample,
-    regions,
-  }
-})
+type Props = {
+  audio: string
+  spectrogram: string
+  annotation: string
+}
 
 type Context = {
+  spectrogram: string
   label: Label
   setLabel: (label: Label) => void
 }
 
-const defaultContext: Context = {
-  label: Label.Whale,
-  setLabel: () => {
-    throw Error("setLabel not implemented")
-  },
+export default function (props: Props) {
+  return (
+    <AppProvider {...props}>
+      <App />
+    </AppProvider>
+  )
 }
 
-const Context = React.createContext(defaultContext)
+const Context = React.createContext<null | Context>(null)
 
-function AppProvider(props: { children: React.ReactNode }) {
-  const loaderData = RRT.useLoaderData<typeof loader>()
-  const [label, setLabel] = React.useState(defaultContext.label)
+function useContext() {
+  const context = React.useContext(Context)
+  if (context == null) throw Error("useContext must be used within a Provider")
+  return context
+}
+
+function AppProvider(props: Props & { children: React.ReactNode }) {
+  const [audioBuffer, setAudioBuffer] = React.useState<null | AudioBuffer>(null)
+  const [label, setLabel] = React.useState(Label.Whale)
+  const [regions, setRegions] =
+    React.useState<null | Specviz.Note.RegionState<UserData>>(null)
   const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.Axis.time(0, loaderData.audioBuffer.duration),
+      seconds: Specviz.Axis.time(0, audioBuffer?.duration ?? 0),
       hertz: Specviz.Axis.frequency(20000, 0),
     }),
-    [loaderData.audioBuffer.duration],
+    [audioBuffer],
   )
+  React.useEffect(() => {
+    Specviz.Audio.load(props.audio).then(setAudioBuffer)
+  }, [props.audio])
+  React.useEffect(() => {
+    fetch(props.annotation)
+      .then(r => r.json())
+      .then(entries => setRegions(new Map(entries)))
+  }, [props.annotation])
+  if (audioBuffer == null) return "Loading audio..."
+  if (regions == null) return "Loading regions..."
   return (
-    <Context.Provider value={{ label, setLabel }}>
+    <Context.Provider
+      value={{
+        label,
+        spectrogram: props.spectrogram,
+        setLabel,
+      }}
+    >
       <Specviz.Bindings>
-        <Specviz.Audio.Provider buffer={loaderData.audioBuffer}>
+        <Specviz.Audio.Provider buffer={audioBuffer}>
           <Specviz.Axis.Provider value={axes}>
             <Specviz.Input.Provider>
               <Specviz.Note.Provider
                 children={props.children}
-                initRegions={loaderData.regions}
+                initRegions={regions}
                 render={AnnotationSvg}
               />
             </Specviz.Input.Provider>
@@ -87,7 +95,7 @@ function App() {
         display: "flex",
         flexDirection: "column",
         gap: "1rem",
-        padding: "1rem",
+        margin: "1.5rem 0",
       }}
     >
       <Visualizer />
@@ -99,8 +107,7 @@ function App() {
 }
 
 function Visualizer() {
-  const loaderData = RRT.useLoaderData<typeof loader>()
-  const app = React.useContext(Context)
+  const app = useContext()
   const audio = Specviz.Audio.useContext()
   const note = Specviz.Note.useContext()
   const viewport = Specviz.Viewport.useContext()
@@ -171,7 +178,7 @@ function Visualizer() {
           >
             <Specviz.Visualization
               showSelection={note.selection.size == 0}
-              src={loaderData.sample.spectrogram}
+              src={app.spectrogram}
             />
           </Specviz.Action.Provider>
         </div>
@@ -181,7 +188,7 @@ function Visualizer() {
 }
 
 function Controls() {
-  const app = React.useContext(Context)
+  const app = useContext()
   const audio = Specviz.Audio.useContext()
   const note = Specviz.Note.useContext()
   return (
