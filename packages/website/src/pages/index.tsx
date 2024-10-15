@@ -44,7 +44,7 @@ type FeatureProps = {
 const features: FeatureProps[] = [
   {
     title: "Visualize & Listen",
-    Svg: require("@site/static/undraw_fish_bowl.svg").default,
+    Svg: require("@site/static/undraw/fish-bowl.svg").default,
     description: (
       <>
         Load pre-computed spectrograms and waveforms and visualize them using
@@ -54,7 +54,7 @@ const features: FeatureProps[] = [
   },
   {
     title: "Annotate & Analyze",
-    Svg: require("@site/static/undraw_engineers.svg").default,
+    Svg: require("@site/static/undraw/engineers.svg").default,
     description: (
       <>
         Designed for the annotation of audio and spectrogram data, with support
@@ -64,7 +64,7 @@ const features: FeatureProps[] = [
   },
   {
     title: "Modular Design",
-    Svg: require("@site/static/undraw_design_components.svg").default,
+    Svg: require("@site/static/undraw/design-components.svg").default,
     description: (
       <>
         Pick only the features you need. Customize the appearance and behavior
@@ -74,7 +74,7 @@ const features: FeatureProps[] = [
   },
   {
     title: "Build Collaborative Apps",
-    Svg: require("@site/static/undraw_real_time_collaboration.svg").default,
+    Svg: require("@site/static/undraw/collaboration.svg").default,
     description: (
       <>
         Create rich, interactive user experiences tailored to your
@@ -84,7 +84,7 @@ const features: FeatureProps[] = [
   },
   {
     title: "Powered by React",
-    Svg: require("@site/static/undraw_react.svg").default,
+    Svg: require("@site/static/undraw/react.svg").default,
     description: (
       <>
         Modern React components and hooks make it easy to build simple and
@@ -94,7 +94,7 @@ const features: FeatureProps[] = [
   },
   {
     title: "Peace of Mind",
-    Svg: require("@site/static/undraw_meditation.svg").default,
+    Svg: require("@site/static/undraw/meditation.svg").default,
     description: (
       <>
         Specviz is written in TypeScript, improving developer experience and
@@ -104,7 +104,7 @@ const features: FeatureProps[] = [
   },
   {
     title: "Free & Open Source",
-    Svg: require("@site/static/undraw_connected_world.svg").default,
+    Svg: require("@site/static/undraw/connected-world.svg").default,
     description: (
       <>
         Specviz is open source and comes with a LGPL license. Contribute to the
@@ -114,7 +114,7 @@ const features: FeatureProps[] = [
   },
   {
     title: "Starter Applications",
-    Svg: require("@site/static/undraw_questions.svg").default,
+    Svg: require("@site/static/undraw/questions.svg").default,
     description: (
       <>
         Get started quickly with a set of example apps that showcase the

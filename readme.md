@@ -13,23 +13,23 @@ Specviz is a customizable javascript library to display pre-computed spectrogram
 
 Note that this library does not currently handle the spectrogram computation. This must be handled by the user in the backend or frontend and supplied to Specviz with a URL. It was originally inspired by [wavesurfer.js](https://wavesurfer-js.org/) and APLOSE.
 
-![packages/website/static/example-advanced-annotation.webp](packages/website/static/example-advanced-annotation.webp)
+![packages/website/static/screenshot/advanced-annotation.webp](packages/website/static/screenshot/advanced-annotation.webp)
 
 ## Examples
 
 This repo contains several example packages to demostrate various features and configurations of Specviz.
 
-* `example-basic-annotation`
-* `example-basic-audio`
-* `example-basic-spectrogram`
-* `example-interactive-spectrogram`
-* `example-advanced-annotation`
+* `basic-annotation`
+* `basic-audio`
+* `basic-spectrogram`
+* `interactive-spectrogram`
+* `advanced-annotation`
 
 To run the examples, install the development dependencies, change to the example's directory, and run the `dev` script.
 
 ```sh
 $ bun install
-$ cd examples/example-advanced-annotation
+$ cd examples/advanced-annotation
 $ bun dev
 ```
 

@@ -10,13 +10,13 @@ Explore advanced features of Specviz.
 import * as Ex from "@meridian_cfi/specviz-example-advanced-annotation"
 import BrowserOnly from "../../src/browser-only"
 import "../../static/specviz.css"
-import "../../static/example-advanced-annotation.css"
+import "../../static/advanced-annotation.css"
 
 <BrowserOnly fallback={<div>Loading...</div>}>
   {url => 
     <Ex.default
       audio={url("/audio.flac")}
-      annotation={url("/example-advanced-annotation.json")}
+      annotation={url("/advanced-annotation.json")}
       spectrogram={url("/spectrogram.png")}
       waveform={url("/waveform.png")}
     />

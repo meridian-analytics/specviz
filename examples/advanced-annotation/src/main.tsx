@@ -10,7 +10,7 @@ RDC.createRoot(root).render(
   <R.StrictMode>
     <App.default
       audio="/audio.flac"
-      annotation="/example-advanced-annotation.json"
+      annotation="/advanced-annotation.json"
       spectrogram="/spectrogram.png"
       waveform="/waveform.png"
     />

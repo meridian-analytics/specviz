@@ -16,7 +16,7 @@ import "../../static/specviz.css"
     <Ex.default
       audio={url("/audio.flac")}
       spectrogram={url("/spectrogram.png")}
-      annotation={url("/example-basic-annotation.json")}
+      annotation={url("/basic-annotation.json")}
     />
   }
 </BrowserOnly>
@@ -89,7 +89,7 @@ function AppProvider(props: { children: React.ReactNode }) {
   const [regions, setRegions] =
     React.useState<null | Specviz.Note.RegionState<UserData>>(null)
   React.useEffect(() => {
-    fetch("./example-basic-annotation.json")
+    fetch("./basic-annotation.json")
       .then(r => r.json())
       .then(entries => setRegions(new Map(entries)))
   }, [])
