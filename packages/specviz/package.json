@@ -6,26 +6,76 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "5.6.3",
+    "vite": "^5.4.9",
     "vitest": "^2.1.1"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./action": "./src/action.tsx",
-    "./audio": "./src/audio.tsx",
-    "./axis": "./src/axis.tsx",
-    "./coord": "./src/coord.ts",
-    "./format": "./src/format.ts",
-    "./hooks": "./src/hooks.tsx",
-    "./input": "./src/input.tsx",
-    "./keybinds": "./src/keybinds.tsx",
-    "./math": "./src/math.ts",
-    "./note": "./src/note.tsx",
-    "./plane": "./src/plane.tsx",
-    "./rect": "./src/rect.ts",
-    "./svg": "./src/svg.ts",
-    "./vector2": "./src/vector2.ts",
-    "./viewport": "./src/viewport.tsx"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./action": {
+      "import": "./dist/action.js",
+      "types": "./dist/action.d.ts"
+    },
+    "./audio": {
+      "import": "./dist/audio.js",
+      "types": "./dist/audio.d.ts"
+    },
+    "./axis": {
+      "import": "./dist/axis.js",
+      "types": "./dist/axis.d.ts"
+    },
+    "./coord": {
+      "import": "./dist/coord.js",
+      "types": "./dist/coord.d.ts"
+    },
+    "./format": {
+      "import": "./dist/format.js",
+      "types": "./dist/format.d.ts"
+    },
+    "./hooks": {
+      "import": "./dist/hooks.js",
+      "types": "./dist/hooks.d.ts"
+    },
+    "./input": {
+      "import": "./dist/input.js",
+      "types": "./dist/input.d.ts"
+    },
+    "./keybinds": {
+      "import": "./dist/keybinds.js",
+      "types": "./dist/keybinds.d.ts"
+    },
+    "./math": {
+      "import": "./dist/math.js",
+      "types": "./dist/math.d.ts"
+    },
+    "./note": {
+      "import": "./dist/note.js",
+      "types": "./dist/note.d.ts"
+    },
+    "./plane": {
+      "import": "./dist/plane.js",
+      "types": "./dist/plane.d.ts"
+    },
+    "./rect": {
+      "import": "./dist/rect.js",
+      "types": "./dist/rect.d.ts"
+    },
+    "./svg": {
+      "import": "./dist/svg.js",
+      "types": "./dist/svg.d.ts"
+    },
+    "./vector2": {
+      "import": "./dist/vector2.js",
+      "types": "./dist/vector2.d.ts"
+    },
+    "./viewport": {
+      "import": "./dist/viewport.js",
+      "types": "./dist/viewport.d.ts"
+    }
   },
+  "files": ["./dist/*"],
   "license": "LGPL-3.0-only",
   "name": "@meridian_cfi/specviz",
   "peerDependencies": {
@@ -33,6 +83,7 @@
     "react-dom": "^18.3.1"
   },
   "scripts": {
+    "build": "vite build && tsc --project tsconfig.build.json",
     "check": "biome check --write .",
     "test": "bun run --bun vitest run",
     "tsc": "tsc"

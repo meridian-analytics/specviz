@@ -26,7 +26,7 @@ function Header() {
           {siteConfig.title}
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <p className="hero__subtitle">zero dependencies, __ kb</p>
+        <p className="hero__subtitle">zero dependencies, 66 kB</p>
         <pre className={clsx("hero__subtitle", styles.heroInstall)}>
           npm install @meridian_cfi/specviz
         </pre>

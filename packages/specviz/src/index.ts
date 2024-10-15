@@ -22,5 +22,4 @@ export * as Viewport from "./viewport"
 export { useAnimationFrame } from "./hooks"
 
 // package
-import pkg from "../package.json"
-export const version = pkg.version
+export { version } from "../package.json"
