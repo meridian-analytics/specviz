@@ -6,34 +6,81 @@ import * as Plane from "./plane"
 import * as Rect from "./rect"
 import * as Viewport from "./viewport"
 
+const notFound = Number.NEGATIVE_INFINITY
+
 export type Axis = {
   unit: string
   format: Format.FormatFn
-  intervals: Array<[number, number]>
+  stops: [number, number][]
+  min: number
+  max: number
+  invert: boolean
+}
+
+function create(
+  stops: [number, number][],
+  unit = "units",
+  format: Format.FormatFn = String,
+): Axis {
+  const min = stops.at(0)
+  const max = stops.at(-1)
+  if (min == null || max == null || min === max) {
+    throw Error("Axis must have at least two stops")
+  }
+  // if create is exported, this check is needed
+  // if (
+  //   stops.reduce(
+  //     (acc, s) => (acc <= s[0] ? s[0] : Number.POSITIVE_INFINITY),
+  //     0,
+  //   ) !== 1
+  // ) {
+  //   throw Error("Axis stops must be in increasing order from 0. to 1.")
+  // }
+  return min[1] > max[1]
+    ? {
+        format: format ?? String,
+        invert: true,
+        max: min[1],
+        min: max[1],
+        stops: stops
+          .slice()
+          .reverse()
+          .map(([q, u]) => [1 - q, u]),
+        unit,
+      }
+    : {
+        format: format ?? String,
+        invert: false,
+        max: max[1],
+        min: min[1],
+        stops,
+        unit,
+      }
+}
+
+function interpolate(axis: Axis, q: number, xy: 0 | 1): number {
+  function binarySearch(min: number, max: number) {
+    if (min > max) return notFound
+    const mid = Math.floor((min + max) / 2)
+    const a = axis.stops[mid]
+    const b = axis.stops[mid + 1]
+    if (a == null || b == null) return notFound
+    if (q < a[xy]) return binarySearch(min, mid - 1)
+    if (q > b[xy]) return binarySearch(mid + 1, max)
+    return xy == 0
+      ? a[1] + ((b[1] - a[1]) * (q - a[0])) / (b[0] - a[0]) // y
+      : a[0] + ((b[0] - a[0]) * (q - a[1])) / (b[1] - a[1]) // x
+  }
+  return binarySearch(0, axis.stops.length - 2)
 }
 
 /**
  * computeUnit
  * map value from unit space to user space
  */
-export function computeUnit(t: Axis, q: number): number {
-  if (t == null) return Number.NEGATIVE_INFINITY
-  const { intervals: s } = t
-  if (s.length < 2) return Number.NEGATIVE_INFINITY
-  let ax: number
-  let ay: number
-  let bx: number
-  let by: number
-  let i = 0
-  while (i < s.length - 1) {
-    // biome-ignore lint/style/noNonNullAssertion: s[i] is not null
-    ;[ax, ay] = s[i]!
-    // biome-ignore lint/style/noNonNullAssertion: s[i + 1] is not null
-    ;[bx, by] = s[i + 1]!
-    if (ax <= q && q <= bx) return ay + ((by - ay) * (q - ax)) / (bx - ax)
-    i += 1
-  }
-  return Number.NEGATIVE_INFINITY
+export function computeUnit(axis: Axis, q: number): number {
+  const _q = axis.invert ? 1 - q : q
+  return interpolate(axis, _q, 0)
 }
 
 /**
@@ -41,23 +88,8 @@ export function computeUnit(t: Axis, q: number): number {
  * map value from user space to unit space
  */
 export function computeUnitInverse(t: Axis, q: number): number {
-  if (t == null) return Number.NEGATIVE_INFINITY
-  const s = [...t.intervals].sort(([ax, ay], [bx, by]) => ay - by) // todo: memoize
-  if (s.length < 2) return Number.NEGATIVE_INFINITY
-  let ax: number
-  let ay: number
-  let bx: number
-  let by: number
-  let i = 0
-  while (i < s.length - 1) {
-    // biome-ignore lint/style/noNonNullAssertion: s[i] is not null
-    ;[ax, ay] = s[i]!
-    // biome-ignore lint/style/noNonNullAssertion: s[i + 1] is not null
-    ;[bx, by] = s[i + 1]!
-    if (ay <= q && q <= by) return ax + ((bx - ax) * (q - ay)) / (by - ay)
-    i += 1
-  }
-  return Number.NEGATIVE_INFINITY
+  const u = interpolate(t, q, 1)
+  return u == notFound ? notFound : t.invert ? 1 - u : u
 }
 
 type ComputeRectFn = (tx: Axis, ty: Axis, rect: Rect.Rect) => Rect.Rect
@@ -100,12 +132,8 @@ export const computeRectInverse: ComputeRectFn =
 function computeTicks(axis: Axis, count: number): [number, number][] {
   const r: [number, number][] = []
   if (count <= 0) return r
-  const a = axis.intervals.at(0)
-  const b = axis.intervals.at(-1)
-  if (a == null || b == null) return r
   // magnitude
-  const [min, max] = a[1] < b[1] ? [a[1], b[1]] : [b[1], a[1]]
-  const units = Math.abs(max - min)
+  const units = Math.abs(axis.max - axis.min)
   const magnitude = Math.log10(units / count)
   const integer = Math.floor(magnitude)
   const decimal = magnitude - integer
@@ -114,40 +142,38 @@ function computeTicks(axis: Axis, count: number): [number, number][] {
   // 0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001...
   const step = decimal <= 0.69 ? 5 * 10 ** integer : 1 * 10 ** (integer + 1)
   // ticks
-  for (let q = min; q < max; q += step) r.push([computeUnitInverse(axis, q), q])
+  for (let q = axis.min; q < axis.max; q += step)
+    r.push([computeUnitInverse(axis, q), q])
   return r
-}
-
-export function formatUnit(t: Axis, q: number): string {
-  return t.format(q)
 }
 
 export function linear(
   min: number,
   max: number,
-  unit?: string,
-  format?: Format.FormatFn,
+  unit = "units",
+  format: Format.FormatFn = String,
 ): Axis {
-  return {
-    unit: unit ?? "units",
-    format: format ?? String,
-    intervals: [
+  return create(
+    [
       [0, min],
       [1, max],
     ],
-  }
+    unit,
+    format,
+  )
 }
 
 export function nonlinear(
-  intervals: Array<[number, number]>,
-  unit?: string,
-  format?: Format.FormatFn,
+  units: number[],
+  unit = "units",
+  format: Format.FormatFn = String,
 ): Axis {
-  return {
-    unit: unit ?? "units",
-    format: format ?? String,
-    intervals,
-  }
+  const k = units.length - 1
+  return create(
+    units.map((u, i) => [i / k, u]),
+    unit,
+    format,
+  )
 }
 
 export function time(
@@ -218,7 +244,7 @@ export function Horizontal(props: AxisProps) {
           preserveAspectRatio="none"
         >
           <line x1="1" y1="0" x2="1" y2={String(Y)} />
-          <text x="5" y="5" children={formatUnit(plane.xaxis, q)} />
+          <text x="5" y="5" children={plane.xaxis.format(q)} />
         </svg>
       )),
     [
@@ -275,7 +301,7 @@ export function Vertical(props: AxisProps) {
           preserveAspectRatio="none"
         >
           <line x1={String(X * 0.9)} y1="0" x2={String(X)} y2="0" />
-          <text x="5" y="0" children={formatUnit(plane.yaxis, q)} />
+          <text x="5" y="0" children={plane.yaxis.format(q)} />
         </svg>
       )),
     [

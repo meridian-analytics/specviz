@@ -31,7 +31,7 @@ function AppProvider(props: Props & { children: React.ReactNode }) {
   const [audioBuffer, setAudioBuffer] = React.useState<null | AudioBuffer>(null)
   const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.Axis.time(0, audioBuffer?.duration ?? 0),
+      seconds: Specviz.Axis.time(0, audioBuffer?.duration ?? 60),
       hertz: Specviz.Axis.frequency(20000, 0),
     }),
     [audioBuffer],

@@ -61,7 +61,7 @@ function AppProvider(props: Props & { children: React.ReactNode }) {
     React.useState<null | Specviz.Note.RegionState<UserData>>(null)
   const axes: Specviz.Axis.Context = React.useMemo(
     () => ({
-      seconds: Specviz.Axis.time(0, audioBuffer?.duration ?? 0),
+      seconds: Specviz.Axis.time(0, audioBuffer?.duration ?? 60),
       hertz: Specviz.Axis.frequency(20000, 0),
       percent: Specviz.Axis.percent(1, -1),
     }),

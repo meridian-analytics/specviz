@@ -39,7 +39,7 @@ export default function Cursor(props: CursorProps) {
             props.parent.current == input.focus ||
             plane.xaxis == input.xaxis
           ) {
-            x = Axis.formatUnit(plane.xaxis, unitUp.x)
+            x = plane.xaxis.format(unitUp.x)
             Svg.setX(xline, mouseup.rel.x, undefined, Format.percent)
             Svg.show(xline)
           } else {
@@ -51,7 +51,7 @@ export default function Cursor(props: CursorProps) {
             props.parent.current == input.focus ||
             plane.yaxis == input.yaxis
           ) {
-            y = Axis.formatUnit(plane.yaxis, unitUp.y)
+            y = plane.yaxis.format(unitUp.y)
             Svg.setY(yline, mouseup.rel.y, undefined, Format.percent)
             Svg.show(yline)
           } else {
