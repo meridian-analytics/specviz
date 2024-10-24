@@ -1,4 +1,4 @@
-# @meridian_cfi/specviz-monorepo
+# @meridiancfi/specviz-monorepo
 
 ## Intro
 

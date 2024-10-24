@@ -1,4 +1,4 @@
-# @meridian_cfi/specviz-website
+# @meridiancfi/specviz-website
 
 This website is built using [Docusaurus](https://docusaurus.io/), a static website generator.
 

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@meridian_cfi/specviz": "workspace:*",
+    "@meridiancfi/specviz": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -15,7 +15,7 @@
   "exports": {
     ".": "./src/app.tsx"
   },
-  "name": "@meridian_cfi/specviz-example-advanced-annotation",
+  "name": "@meridiancfi/specviz-example-advanced-annotation",
   "scripts": {
     "check": "biome check --write .",
     "dev": "bun run --bun vite",

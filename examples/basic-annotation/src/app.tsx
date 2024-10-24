@@ -1,5 +1,5 @@
-import * as Specviz from "@meridian_cfi/specviz"
-import * as Format from "@meridian_cfi/specviz/format"
+import * as Specviz from "@meridiancfi/specviz"
+import * as Format from "@meridiancfi/specviz/format"
 import * as React from "react"
 
 type UserData = {

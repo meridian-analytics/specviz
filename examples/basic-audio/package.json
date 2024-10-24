@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@meridian_cfi/specviz": "workspace:*",
+    "@meridiancfi/specviz": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -15,7 +15,7 @@
   "exports": {
     ".": "./src/app.tsx"
   },
-  "name": "@meridian_cfi/specviz-example-basic-audio",
+  "name": "@meridiancfi/specviz-example-basic-audio",
   "scripts": {
     "check": "biome check --write .",
     "dev": "bun run --bun vite",

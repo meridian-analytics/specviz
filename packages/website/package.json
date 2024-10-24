@@ -8,12 +8,12 @@
     ]
   },
   "dependencies": {
-    "@meridian_cfi/specviz": "workspace:*",
-    "@meridian_cfi/specviz-example-advanced-annotation": "workspace:*",
-    "@meridian_cfi/specviz-example-basic-audio": "workspace:*",
-    "@meridian_cfi/specviz-example-basic-annotation": "workspace:*",
-    "@meridian_cfi/specviz-example-basic-spectrogram": "workspace:*",
-    "@meridian_cfi/specviz-example-interactive-spectrogram": "workspace:*",
+    "@meridiancfi/specviz": "workspace:*",
+    "@meridiancfi/specviz-example-advanced-annotation": "workspace:*",
+    "@meridiancfi/specviz-example-basic-audio": "workspace:*",
+    "@meridiancfi/specviz-example-basic-annotation": "workspace:*",
+    "@meridiancfi/specviz-example-basic-spectrogram": "workspace:*",
+    "@meridiancfi/specviz-example-interactive-spectrogram": "workspace:*",
     "@docusaurus/core": "3.5.2",
     "@docusaurus/preset-classic": "3.5.2",
     "@mdx-js/react": "^3.0.0",
@@ -32,7 +32,7 @@
   "engines": {
     "node": ">=18.0"
   },
-  "name": "@meridian_cfi/specviz-website",
+  "name": "@meridiancfi/specviz-website",
   "scripts": {
     "build": "docusaurus build",
     "check": "biome check --write .",
