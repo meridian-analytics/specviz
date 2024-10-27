@@ -152,3 +152,41 @@ $ bun run test
 │    Duration  212ms (transform 31ms, setup 0ms, collect 30ms, tests 4ms, environment 0ms, prepare 32ms)
 └─ Done in 833 ms
 ```
+
+### Build
+
+To build the specviz package, run the `build` script.
+
+```sh
+$ cd packages/specviz
+$ bun run build
+```
+
+```none
+$ vite build && tsc --project tsconfig.build.json
+vite v5.4.10 building for production...
+✓ 22 modules transformed.
+dist/math.js                0.14 kB │ gzip: 0.13 kB │ map:  0.31 kB
+dist/plane.js               0.17 kB │ gzip: 0.15 kB │ map:  0.09 kB
+dist/action.js              0.17 kB │ gzip: 0.15 kB │ map:  0.09 kB
+dist/input.js               0.21 kB │ gzip: 0.16 kB │ map:  0.09 kB
+dist/viewport.js            0.27 kB │ gzip: 0.20 kB │ map:  0.10 kB
+dist/audio.js               0.31 kB │ gzip: 0.22 kB │ map:  0.10 kB
+dist/hooks.js               0.35 kB │ gzip: 0.23 kB │ map:  0.10 kB
+dist/note.js                0.42 kB │ gzip: 0.27 kB │ map:  0.10 kB
+dist/vector2.js             0.49 kB │ gzip: 0.27 kB │ map:  1.23 kB
+dist/axis.js                0.52 kB │ gzip: 0.30 kB │ map:  0.10 kB
+dist/coord.js               0.61 kB │ gzip: 0.23 kB │ map:  1.37 kB
+dist/format.js              0.63 kB │ gzip: 0.36 kB │ map:  1.30 kB
+dist/action-D-gLVGuD.js     0.71 kB │ gzip: 0.39 kB │ map:  1.10 kB
+dist/rect.js                1.12 kB │ gzip: 0.45 kB │ map:  2.68 kB
+dist/keybinds.js            1.78 kB │ gzip: 0.57 kB │ map:  3.37 kB
+dist/svg.js                 2.12 kB │ gzip: 0.59 kB │ map:  4.52 kB
+dist/input-Cvi9e0Nf.js      2.30 kB │ gzip: 0.79 kB │ map:  4.59 kB
+dist/viewport-XCdCEv4z.js   4.75 kB │ gzip: 1.27 kB │ map:  9.38 kB
+dist/audio-Cwwi9c8m.js      6.41 kB │ gzip: 1.85 kB │ map: 11.94 kB
+dist/index.js              12.56 kB │ gzip: 2.93 kB │ map: 22.20 kB
+dist/note-BapyeAcs.js      14.28 kB │ gzip: 3.06 kB │ map: 27.46 kB
+dist/axis-mPWX3U0x.js      15.76 kB │ gzip: 3.82 kB │ map: 30.92 kB
+✓ built in 136ms
+```
