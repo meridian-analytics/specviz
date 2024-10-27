@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "check": "bun --filter '*' check",
+    "test": "bun --filter '*' test",
     "tsc": "bun --filter '*' tsc"
   },
   "workspaces": ["examples/*", "packages/*"]

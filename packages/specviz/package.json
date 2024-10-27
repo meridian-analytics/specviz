@@ -85,7 +85,7 @@
   "scripts": {
     "build": "vite build && tsc --project tsconfig.build.json",
     "check": "biome check --write .",
-    "test": "bun run --bun vitest run",
+    "test": "vitest run",
     "tsc": "tsc"
   },
   "type": "module",
