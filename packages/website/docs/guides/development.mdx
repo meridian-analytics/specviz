@@ -190,3 +190,32 @@ dist/note-BapyeAcs.js      14.28 kB │ gzip: 3.06 kB │ map: 27.46 kB
 dist/axis-mPWX3U0x.js      15.76 kB │ gzip: 3.82 kB │ map: 30.92 kB
 ✓ built in 136ms
 ```
+
+### Release
+
+The Specviz package is released using the following process.
+
+|Step|Description|Command|
+|---|---|---|
+|1.|Run the linter and formatter|`bun run check`|
+|2.|Run the Specviz build script|`bun run --cwd packages/specviz build`|
+|3.|Run the package tests|`bun run test`|
+|4.|Run the TypeScript compiler|`bun run tsc`|
+|5.|Update the version field|`vim packages/specviz/package.json`|
+|6.|Commit the changes|`git commit -m "version X.Y.Z"`|
+|7.|Tag the commit with version|`git tag X.Y.Z`|
+|8.|Push the commit and tag|`git push && git push --tags`|
+|9.|Run the [bun pm pack](https://bun.sh/docs/cli/pm) command|`bun pm --cwd packages/specviz pack`|
+|10.|Run the [bun publish](https://bun.sh/docs/cli/publish) command|`bun publish packages/specviz/meridiancfi-specviz-X.Y.Z.tgz`|
+
+To publish, you will need to be logged into npm.
+
+```sh
+$ bunx npm login
+```
+
+To see the current logged in user:
+
+```sh
+$ bun pm whoami
+```
