@@ -18,7 +18,7 @@
   "name": "@meridiancfi/specviz-example-basic-audio",
   "scripts": {
     "check": "biome check --write .",
-    "dev": "bun run --bun vite",
+    "dev": "vite",
     "tsc": "tsc"
   },
   "type": "module",
