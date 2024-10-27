@@ -1,7 +1,7 @@
 // types
-export { type EncoderProps } from "./encoder"
-export { type NavigatorProps } from "./navigator"
-export { type VisualizationProps } from "./visualization"
+export type { EncoderProps } from "./encoder"
+export type { NavigatorProps } from "./navigator"
+export type { VisualizationProps } from "./visualization"
 
 // components
 export { default as Encoder } from "./encoder"
