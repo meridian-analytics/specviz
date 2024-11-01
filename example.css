@@ -1,0 +1,1 @@
+body{background-color:#f5fffa;color:#555;margin:0}body,button{font-family:monospace}button{background-color:#eee;border:1px solid #aaa;cursor:pointer;padding:.5rem}:disabled{opacity:.5}#root{margin:0 auto;max-width:960px;width:100%}@media (min-width:1200px){#root{max-width:1200px}}

@@ -1,8 +1,0 @@
-/src
-/test
-.gitignore
-.npmignore
-biome.json
-tsconfig.build.json
-tsconfig.json
-vite.config.ts
