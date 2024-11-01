@@ -1,4 +1,4 @@
-import * as Specviz from "@meridiancfi/specviz"
+import * as Specviz from "@meridian-analytics/specviz"
 import * as React from "react"
 
 type Props = {

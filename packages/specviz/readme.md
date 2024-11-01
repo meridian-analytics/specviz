@@ -1,1 +1,1 @@
-# @meridiancfi/specviz
+# @meridian-analytics/specviz

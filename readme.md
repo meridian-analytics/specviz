@@ -1,4 +1,4 @@
-# @meridiancfi/specviz-monorepo
+# @meridian-analytics/specviz-monorepo
 
 ## Intro
 

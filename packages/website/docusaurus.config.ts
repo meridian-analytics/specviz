@@ -36,7 +36,7 @@ const themeConfig: Preset.ThemeConfig = {
       { to: "docs/category/api", label: "API", position: "left" },
       { to: "docs/category/examples", label: "Examples", position: "left" },
       {
-        href: "https://github.com/meridianCFI/specviz",
+        href: "https://github.com/meridian-analytics/specviz",
         label: "GitHub",
         position: "right",
       },
@@ -85,7 +85,7 @@ const themeConfig: Preset.ThemeConfig = {
         items: [
           {
             label: "GitHub",
-            href: "https://github.com/meridianCFI/specviz",
+            href: "https://github.com/meridian-analytics/specviz",
           },
         ],
       },
@@ -104,14 +104,14 @@ const config: Config = {
   i18n: { defaultLocale: "en", locales: ["en"] },
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  organizationName: "meridiancfi",
+  organizationName: "meridian-analytics",
   presets: [["classic", preset]],
   projectName: "specviz",
   staticDirectories: ["static"],
   tagline: "Visualize and annotate pre-computed spectrograms and waveforms",
   themeConfig,
   title: "Specviz",
-  url: "https://meridiancfi.github.io",
+  url: "https://meridian-analytics.github.io",
 }
 
 export default config

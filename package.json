@@ -1,5 +1,5 @@
 {
-  "name": "@meridiancfi/specviz-monorepo",
+  "name": "@meridian-analytics/specviz-monorepo",
   "type": "module",
   "scripts": {
     "check": "bun --filter '*' check",
