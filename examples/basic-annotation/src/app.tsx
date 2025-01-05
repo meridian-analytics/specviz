@@ -1,5 +1,7 @@
 import * as Specviz from "@meridian-analytics/specviz"
 import * as Format from "@meridian-analytics/specviz/format"
+import * as Rect from "@meridian-analytics/specviz/rect"
+
 import * as React from "react"
 
 type UserData = {
@@ -126,19 +128,26 @@ function Visualizer() {
   )
   const select: Specviz.Action.Handler["onClick"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
-      note.selectPoint(abs, Specviz.Note.selectionMode(event))
+      note.selectPoint(abs, Specviz.Note.selectionMode(event), xaxis, yaxis)
     },
     [note.selectPoint],
   )
   const move: Specviz.Action.Handler["onDrag"] = React.useCallback(
-    ({ dx, dy, event }) => {
+    ({ dx, dy, event, xaxis, yaxis }) => {
       if (note.selection.size > 0)
-        note.moveSelection(
-          dx / viewport.state.zoom.x,
-          dy / viewport.state.zoom.y,
+        note.move(
+          note.selection,
+          rect =>
+            Rect.move(
+              rect,
+              dx / viewport.state.zoom.x,
+              dy / viewport.state.zoom.y,
+            ),
+          xaxis,
+          yaxis,
         )
     },
-    [note.moveSelection, note.selection, viewport.state.zoom],
+    [note.move, note.selection, viewport.state.zoom],
   )
   const seek: Specviz.Action.Handler["onContextMenu"] = React.useCallback(
     ({ unit, rel, abs, xaxis, yaxis, event }) => {
@@ -225,13 +234,13 @@ function Controls() {
       <Button
         children="Clear Selection"
         disabled={note.selection.size == 0}
-        onClick={() => note.setSelection(new Set())}
+        onClick={() => note.deselect()}
         title="Escape"
       />
       <Button
         children="Delete"
         disabled={note.selection.size == 0}
-        onClick={() => note.deleteSelection()}
+        onClick={() => note.delete(note.selection)}
         title="Backspace"
       />
       <div style={{ flexGrow: 1 }} />
@@ -301,7 +310,7 @@ function AnnotationTable() {
                 type="checkbox"
                 checked={note.selection.has(region.id)}
                 onChange={event =>
-                  note.setSelection(prev => {
+                  note.select(prev => {
                     const next = new Set(prev)
                     if (event.target.checked) next.add(region.id)
                     else next.delete(region.id)
@@ -315,7 +324,7 @@ function AnnotationTable() {
               <select
                 value={region.properties?.label ?? "🤷🏽"}
                 onChange={event =>
-                  note.updateRegionProperties(region.id, p => ({
+                  note.updateProperties(new Set([region.id]), p => ({
                     ...p,
                     label: event.target.value as Label,
                   }))

@@ -8,7 +8,6 @@ import * as Viewport from "./viewport"
 export type NavigatorProps = {
   children?: typeof Note.Annotation
   id?: string
-  ignoreRegionTransform?: boolean
   src: string
   svgProps?: React.SVGProps<SVGSVGElement>
 }
@@ -53,25 +52,16 @@ export default function Navigator(props: NavigatorProps) {
         height="100%"
         preserveAspectRatio="none"
       />
-      {Array.from(
-        (props.ignoreRegionTransform
-          ? note.regions
-          : note.transformedRegions
-        ).values(),
-        region => (
-          <Note.Annotation
-            children={props.children}
-            dimensions={dimensions}
-            key={region.id}
-            region={region}
-            selected={(props.ignoreRegionTransform
-              ? note.selection
-              : note.transformedSelection
-            ).has(region.id)}
-            viewerId={props.id}
-          />
-        ),
-      )}
+      {Array.from(note.regions.values(), region => (
+        <Note.Annotation
+          children={props.children}
+          dimensions={dimensions}
+          key={region.id}
+          region={region}
+          selected={note.selection.has(region.id)}
+          viewerId={props.id}
+        />
+      ))}
       <path ref={maskRef} className="mask" d={maskPath} />
       <Playhead />
     </svg>

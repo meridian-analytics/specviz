@@ -1,5 +1,6 @@
 import * as Specviz from "@meridian-analytics/specviz"
 import * as Format from "@meridian-analytics/specviz/format"
+import * as Rect from "@meridian-analytics/specviz/rect"
 import * as React from "react"
 
 type UserData = {
@@ -194,7 +195,7 @@ function AnnotationTable() {
                 note.selection.size != note.regions.size
               }
               onChange={event =>
-                note.setSelection(
+                note.select(
                   event.target.checked
                     ? new Set(note.regions.keys())
                     : new Set(),
@@ -239,7 +240,7 @@ function AnnotationRow(props: { region: Specviz.Note.Region<UserData> }) {
         <Checkbox
           checked={note.selection.has(props.region.id)}
           onChange={event =>
-            note.setSelection(prev => {
+            note.select(prev => {
               const next = new Set(prev)
               if (event.target.checked) next.add(props.region.id)
               else next.delete(props.region.id)
@@ -253,13 +254,13 @@ function AnnotationRow(props: { region: Specviz.Note.Region<UserData> }) {
         <select
           value={props.region.properties?.label ?? "-"}
           onChange={event =>
-            note.updateRegionProperties(props.region.id, p => ({
-              ...p,
-              label:
-                event.target.value == "-"
-                  ? undefined
-                  : (event.target.value as Label),
-            }))
+            note.updateProperty(
+              new Set([props.region.id]),
+              "label",
+              event.target.value == "-"
+                ? undefined
+                : (event.target.value as Label),
+            )
           }
           style={{ fontSize: "1rem" }}
         >
@@ -273,10 +274,11 @@ function AnnotationRow(props: { region: Specviz.Note.Region<UserData> }) {
         <input
           value={props.region.properties?.comment ?? ""}
           onChange={event =>
-            note.updateRegionProperties(props.region.id, p => ({
-              ...p,
-              comment: event.target.value,
-            }))
+            note.updateProperty(
+              new Set([props.region.id]),
+              "comment",
+              event.target.value,
+            )
           }
           style={{ width: "90%" }}
         />
@@ -532,7 +534,12 @@ function VisualizationToolProvider(props: {
       case Tool.Annotate:
         return {
           onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-            note.selectPoint(abs, Specviz.Note.selectionMode(event))
+            note.selectPoint(
+              abs,
+              Specviz.Note.selectionMode(event),
+              xaxis,
+              yaxis,
+            )
           },
           onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
             note.create(
@@ -558,10 +565,20 @@ function VisualizationToolProvider(props: {
       case Tool.Select:
         return {
           onClick: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-            note.selectPoint(abs, Specviz.Note.selectionMode(event))
+            note.selectPoint(
+              abs,
+              Specviz.Note.selectionMode(event),
+              xaxis,
+              yaxis,
+            )
           },
           onRect: ({ unit, rel, abs, xaxis, yaxis, event }) => {
-            note.selectArea(abs, Specviz.Note.selectionMode(event))
+            note.selectArea(
+              abs,
+              Specviz.Note.selectionMode(event),
+              xaxis,
+              yaxis,
+            )
           },
           onWheel,
         }
@@ -582,13 +599,20 @@ function VisualizationToolProvider(props: {
         }
       case Tool.Move:
         return {
-          onDrag: ({ dx, dy, event }) => {
+          onDrag: ({ dx, dy, event, xaxis, yaxis }) => {
             if (note.selection.size == 0) {
               viewport.scroll(-dx, -dy)
             } else {
-              note.moveSelection(
-                dx / viewport.state.zoom.x,
-                dy / viewport.state.zoom.y,
+              note.move(
+                note.selection,
+                rect =>
+                  Rect.move(
+                    rect,
+                    dx / viewport.state.zoom.x,
+                    dy / viewport.state.zoom.y,
+                  ),
+                xaxis,
+                yaxis,
               )
             }
           },
@@ -599,7 +623,7 @@ function VisualizationToolProvider(props: {
     onWheel,
     app.tool,
     note.create,
-    note.moveSelection,
+    note.move,
     note.selectArea,
     note.selectPoint,
     note.selection,
@@ -651,28 +675,28 @@ function Keybinds() {
         bind="ArrowLeft"
         onKeyDown={e => {
           e.preventDefault()
-          note.moveSelection(-0.01, 0)
+          note.move(note.selection, rect => Rect.move(rect, -0.01, 0))
         }}
       />
       <Specviz.Keypress
         bind="ArrowRight"
         onKeyDown={e => {
           e.preventDefault()
-          note.moveSelection(0.01, 0)
+          note.move(note.selection, rect => Rect.move(rect, 0.01, 0))
         }}
       />
       <Specviz.Keypress
         bind="ArrowUp"
         onKeyDown={e => {
           e.preventDefault()
-          note.moveSelection(0, -0.03)
+          note.move(note.selection, rect => Rect.move(rect, 0, -0.03))
         }}
       />
       <Specviz.Keypress
         bind="ArrowDown"
         onKeyDown={e => {
           e.preventDefault()
-          note.moveSelection(0, 0.03)
+          note.move(note.selection, rect => Rect.move(rect, 0, 0.03))
         }}
       />
     </Specviz.Bindings>

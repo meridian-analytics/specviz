@@ -13,7 +13,6 @@ import * as Viewport from "./viewport"
 export type VisualizationProps = {
   children?: typeof Note.Annotation
   id?: string
-  ignoreRegionTransform?: boolean
   showSelection?: boolean
   src: string
   svgProps?: React.SVGProps<SVGSVGElement>
@@ -72,25 +71,16 @@ export default function Visualization(props: VisualizationProps) {
             width="100%"
             height="100%"
           />
-          {Array.from(
-            (props.ignoreRegionTransform
-              ? note.regions
-              : note.transformedRegions
-            ).values(),
-            r => (
-              <Note.Annotation
-                key={r.id}
-                children={props.children}
-                dimensions={dimensions}
-                region={r}
-                selected={(props.ignoreRegionTransform
-                  ? note.selection
-                  : note.transformedSelection
-                ).has(r.id)}
-                viewerId={props.id}
-              />
-            ),
-          )}
+          {Array.from(note.regions.values(), r => (
+            <Note.Annotation
+              key={r.id}
+              children={props.children}
+              dimensions={dimensions}
+              region={r}
+              selected={note.selection.has(r.id)}
+              viewerId={props.id}
+            />
+          ))}
           {props.showSelection && <Selection />}
           <Playhead />
         </g>

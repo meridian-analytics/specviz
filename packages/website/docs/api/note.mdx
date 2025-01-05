@@ -10,7 +10,6 @@ The note module enables interactive annotations, selection, modification, and fi
 
 ```ts
 function Provider(props: ProviderProps): JSX.Element
-function Transform(props: TransformProps): JSX.Element
 ```
 
 ### Functions
@@ -41,10 +40,9 @@ type AnnotationProps<T = Properties> = {
 
 type Context<T = Properties> = {
   canCreate: boolean
+  count: number
   regions: RegionState<T>
   selection: SelectionState
-  transformedRegions: RegionState<T>
-  transformedSelection: SelectionState
   canDelete: (region: Region<T>) => boolean
   canRead: (region: Region<T>) => boolean
   canUpdate: (region: Region<T>) => boolean
@@ -54,28 +52,52 @@ type Context<T = Properties> = {
       autoSelect?: boolean
     },
   ) => void
-  deleteSelection: () => void
+  delete: (selection: SelectionState) => void
   deselect: () => void
-  moveSelection: (dx: number, dy: number) => void
-  render?: (props: AnnotationProps<T>) => JSX.Element
-  selectArea: (rect: Rect.Rect, selectionMode?: SelectionMode) => void
-  selectId: (id: string, selectionMode?: SelectionMode) => void
-  selectPoint: (pt: Vector2.Vector2, selectionMode?: SelectionMode) => void
-  setRectX: (region: Region<T>, dx: number) => void
-  setRectX1: (region: Region<T>, dx: number) => void
-  setRectX2: (region: Region<T>, dx: number) => void
-  setRectY: (region: Region<T>, dy: number) => void
-  setRectY1: (region: Region<T>, dy: number) => void
-  setRectY2: (region: Region<T>, dy: number) => void
-  setRegions: R.Dispatch<R.SetStateAction<RegionState<T>>>
-  setSelection: R.Dispatch<R.SetStateAction<SelectionState>>
-  updateRegion: (id: string, fn: R.SetStateAction<Region<T>>) => void
-  updateRegionProperties: (
-    id: string,
-    fn: R.SetStateAction<undefined | T>,
+  move: (
+    selection: SelectionState,
+    moveFn: R.SetStateAction<Rect.Rect>,
+    xaxis?: Axis.Axis,
+    yaxis?: Axis.Axis,
   ) => void
-  updateSelectedRegions: (fn: R.SetStateAction<Region<T>>) => void
+  redo?: () => void
+  render?: (props: AnnotationProps<T>) => JSX.Element
+  reset: (value: RegionState<T>) => void
+  select: (
+    selectFn: R.SetStateAction<SelectionState>,
+    selectionMode?: SelectionMode,
+  ) => void
+  selectArea: (
+    rect: Rect.Rect,
+    selectionMode?: SelectionMode,
+    xaxis?: Axis.Axis,
+    yaxis?: Axis.Axis,
+  ) => void
+  selectPoint: (
+    pt: Vector2.Vector2,
+    selectionMode?: SelectionMode,
+    xaxis?: Axis.Axis,
+    yaxis?: Axis.Axis,
+  ) => void
+  undo?: () => void
+  update: (
+    selection: SelectionState,
+    updateFn: R.SetStateAction<Region<T>>,
+  ) => void
+  updateProperties: (
+    selection: SelectionState,
+    updateFn: R.SetStateAction<T>,
+  ) => void
+  updateProperty: <K extends keyof T>(
+    selection: SelectionState,
+    key: K,
+    updateFn: R.SetStateAction<T[K]>,
+  ) => void
 }
+
+type FilterFn<T = Properties> = (region: Region<T>) => boolean
+
+type InitialState<T> = T | (() => T)
 
 type Properties = Record<string, unknown>
 
@@ -87,6 +109,7 @@ type ProviderProps = {
   children: React.ReactNode
   initRegions?: InitialState<Context["regions"]>
   initSelection?: InitialState<Context["selection"]>
+  filterFn?: FilterFn
   render?: Context["render"]
 }
 
@@ -104,9 +127,4 @@ type Region<T = Properties> = {
 type RegionState<T = Properties> = Map<Region["id"], Region<T>>
 
 type SelectionState = Set<Region["id"]>
-
-type TransformProps = {
-  children: React.ReactNode
-  fn: (regionState: RegionState) => RegionState
-}
 ```

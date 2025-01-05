@@ -1,9 +1,10 @@
 import * as R from "react"
 import * as Axis from "./axis"
-import * as Input from "./input"
-import * as Mathx from "./math"
+import * as Func from "./func"
+import * as IMap from "./imap"
 import * as Plane from "./plane"
 import * as Rect from "./rect"
+import * as Undo from "./undo"
 import type * as Vector2 from "./vector2"
 import * as Viewport from "./viewport"
 
@@ -31,29 +32,13 @@ export enum SelectionMode {
   subtract = "subtract",
 }
 
-function concatSelection(
-  prev: SelectionState,
-  next: SelectionState,
-  selectionMode: SelectionMode,
-) {
-  switch (selectionMode) {
-    case SelectionMode.invert:
-      return prev.symmetricDifference(next)
-    case SelectionMode.add:
-      return prev.union(next)
-    case SelectionMode.subtract:
-      return prev.difference(next)
-    case SelectionMode.replace:
-      return next
-  }
-}
+export type FilterFn<T = Properties> = (region: Region<T>) => boolean
 
 export type Context<T = Properties> = {
   canCreate: boolean
+  count: number
   regions: RegionState<T>
   selection: SelectionState
-  transformedRegions: RegionState<T>
-  transformedSelection: SelectionState
   canDelete: (region: Region<T>) => boolean
   canRead: (region: Region<T>) => boolean
   canUpdate: (region: Region<T>) => boolean
@@ -63,118 +48,63 @@ export type Context<T = Properties> = {
       autoSelect?: boolean
     },
   ) => void
-  deleteSelection: () => void
+  delete: (selection: SelectionState) => void
   deselect: () => void
-  moveSelection: (dx: number, dy: number) => void
-  render?: (props: AnnotationProps<T>) => JSX.Element
-  selectArea: (rect: Rect.Rect, selectionMode?: SelectionMode) => void
-  selectId: (id: string, selectionMode?: SelectionMode) => void
-  selectPoint: (pt: Vector2.Vector2, selectionMode?: SelectionMode) => void
-  setRectX: (region: Region<T>, dx: number) => void
-  setRectX1: (region: Region<T>, dx: number) => void
-  setRectX2: (region: Region<T>, dx: number) => void
-  setRectY: (region: Region<T>, dy: number) => void
-  setRectY1: (region: Region<T>, dy: number) => void
-  setRectY2: (region: Region<T>, dy: number) => void
-  setRegions: R.Dispatch<R.SetStateAction<RegionState<T>>>
-  setSelection: R.Dispatch<R.SetStateAction<SelectionState>>
-  updateRegion: (id: string, fn: R.SetStateAction<Region<T>>) => void
-  updateRegionProperties: (
-    id: string,
-    fn: R.SetStateAction<undefined | T>,
+  move: (
+    selection: SelectionState,
+    moveFn: R.SetStateAction<Rect.Rect>,
+    xaxis?: Axis.Axis,
+    yaxis?: Axis.Axis,
   ) => void
-  updateSelectedRegions: (fn: R.SetStateAction<Region<T>>) => void
+  redo?: () => void
+  render?: (props: AnnotationProps<T>) => JSX.Element
+  reset: (value: RegionState<T>) => void
+  select: (
+    selectFn: R.SetStateAction<SelectionState>,
+    selectionMode?: SelectionMode,
+  ) => void
+  selectArea: (
+    rect: Rect.Rect,
+    selectionMode?: SelectionMode,
+    xaxis?: Axis.Axis,
+    yaxis?: Axis.Axis,
+  ) => void
+  selectPoint: (
+    pt: Vector2.Vector2,
+    selectionMode?: SelectionMode,
+    xaxis?: Axis.Axis,
+    yaxis?: Axis.Axis,
+  ) => void
+  undo?: () => void
+  update: (
+    selection: SelectionState,
+    updateFn: R.SetStateAction<Region<T>>,
+  ) => void
+  updateProperties: (
+    selection: SelectionState,
+    updateFn: R.SetStateAction<T>,
+  ) => void
+  updateProperty: <K extends keyof T>(
+    selection: SelectionState,
+    key: K,
+    updateFn: R.SetStateAction<T[K]>,
+  ) => void
 }
-
-const defaultContext: Context = {
-  canCreate: true,
-  regions: new Map(),
-  selection: new Set(),
-  transformedRegions: new Map(),
-  transformedSelection: new Set(),
-  create() {
-    throw Error("annotate called outside of context")
-  },
-  canDelete() {
-    return true
-  },
-  canRead() {
-    return true
-  },
-  canUpdate() {
-    return true
-  },
-  deleteSelection() {
-    throw Error("delete called outside of context")
-  },
-  deselect() {
-    throw Error("deselect called outside of context")
-  },
-  moveSelection() {
-    throw Error("moveSelection called outside of context")
-  },
-  selectArea() {
-    throw Error("selectArea called outside of context")
-  },
-  selectId() {
-    throw Error("selectId called outside of context")
-  },
-  selectPoint() {
-    throw Error("selectPoint called outside of context")
-  },
-  setRectX() {
-    throw Error("setRectX called outside of context")
-  },
-  setRectX1() {
-    throw Error("setRectX1 called outside of context")
-  },
-  setRectX2() {
-    throw Error("setRectX2 called outside of context")
-  },
-  setRectY() {
-    throw Error("setRectY called outside of context")
-  },
-  setRectY1() {
-    throw Error("setRectY1 called outside of context")
-  },
-  setRectY2() {
-    throw Error("setRectY2 called outside of context")
-  },
-  setRegions() {
-    throw Error("setRegions called outside of context")
-  },
-  setSelection() {
-    throw Error("setSelection called outside of context")
-  },
-  updateRegion() {
-    throw Error("updateRegion called outside of context")
-  },
-  updateRegionProperties() {
-    throw Error("updateRegionProperties called outside of context")
-  },
-  updateSelectedRegions() {
-    throw Error("updateSelectedRegions called outside of context")
-  },
-}
-
-const Context = R.createContext(defaultContext)
-
-type InitialState<T> = T | (() => T)
 
 export type ProviderProps = {
   canCreate?: Context["canCreate"]
   children: R.ReactNode
-  initRegions?: InitialState<Context["regions"]>
-  initSelection?: InitialState<Context["selection"]>
+  initRegions?: Func.InitialState<Context["regions"]>
+  initSelection?: Func.InitialState<Context["selection"]>
   canDelete?: Context["canDelete"]
   canRead?: Context["canRead"]
   canUpdate?: Context["canUpdate"]
+  filterFn?: FilterFn
   render?: Context["render"]
 }
 
 export function Provider(props: ProviderProps) {
   // contexts
-  const { input } = Input.useContext()
   const axis = Axis.useContext()
 
   // access control
@@ -184,286 +114,198 @@ export function Provider(props: ProviderProps) {
   const canUpdate = props.canUpdate ?? defaultContext.canUpdate
 
   // state
-  const [regions, setRegions] = R.useState(
-    props.initRegions ?? defaultContext.regions,
-  )
-  const [selection, setSelection] = R.useState(
-    props.initSelection ?? defaultContext.selection,
+  const { state, setState, undo, redo, reset } = useNoteState(() => ({
+    regions:
+      Func.applyInitialState(props.initRegions) ?? defaultContext.regions,
+    selection:
+      Func.applyInitialState(props.initSelection) ?? defaultContext.selection,
+  }))
+
+  // filter state
+  const filteredState = R.useMemo(() => {
+    return applyFilter(concatFilter(canRead, props.filterFn), state)
+  }, [canRead, state, props.filterFn])
+
+  // commands
+  const update: Context["update"] = R.useCallback(
+    (selection, fn) => {
+      setState(StateMutation.update, prev => {
+        return {
+          regions: IMap.update(prev.regions, selection, region =>
+            canUpdate(region) ? Func.applySetState(fn, region) : region,
+          ),
+          selection,
+        }
+      })
+    },
+    [canUpdate, setState],
   )
 
-  // computed state
-  const transformedRegions = R.useMemo(() => {
-    const next = new Map()
-    for (const [id, region] of regions) {
-      if (canRead(region)) next.set(id, region)
-    }
-    return next
-  }, [canRead, regions])
-
-  const transformedSelection = R.useMemo(
-    () => new Set(selection).intersection(transformedRegions),
-    [selection, transformedRegions],
+  const updateProperties: Context["updateProperties"] = R.useCallback(
+    (selection, fn) => {
+      update(selection, region => ({
+        ...region,
+        properties: Func.applySetState(fn, region.properties ?? {}),
+      }))
+    },
+    [update],
   )
 
-  // helpers
-  const selectHelper = R.useCallback(
-    (selectFn: (rect: Rect.Rect) => boolean, selectionMode?: SelectionMode) => {
-      setSelection(prev => {
+  const updateProperty: Context["updateProperty"] = R.useCallback(
+    (selection, key, value) => {
+      updateProperties(selection, prev => ({
+        ...prev,
+        [key]: value,
+      }))
+    },
+    [updateProperties],
+  )
+
+  const create: Context["create"] = R.useCallback(
+    (region, options) => {
+      setState(StateMutation.create, prev => {
+        if (!canCreate) return prev
+        const existing = prev.regions.get(region.id)
+        if (existing && !canUpdate(existing)) return prev
+        return {
+          regions: IMap.set(prev.regions, region.id, region),
+          selection: options?.autoSelect
+            ? new Set([region.id])
+            : prev.selection,
+        }
+      })
+    },
+    [canCreate, canUpdate, setState],
+  )
+
+  const delete_: Context["delete"] = R.useCallback(
+    selection => {
+      setState(StateMutation.delete, prev => {
+        if (selection.size == 0) return prev
+        return {
+          regions: IMap.filter(
+            prev.regions,
+            region => !canDelete(region) || !selection.has(region.id),
+          ),
+          selection: defaultContext.selection,
+        }
+      })
+    },
+    [canDelete, setState],
+  )
+
+  const deselect: Context["deselect"] = R.useCallback(() => {
+    setState(StateMutation.select, prev => {
+      if (prev.selection.size == 0) return prev
+      return {
+        regions: prev.regions,
+        selection: defaultContext.selection,
+      }
+    })
+  }, [setState])
+
+  const move: Context["move"] = R.useCallback(
+    (selection, moveFn, xaxis, yaxis) => {
+      update(selection, region => {
+        const px = xaxis == null || xaxis.unit == region.xunit
+        const py = yaxis == null || yaxis.unit == region.yunit
+        if (!px && !py) return region
+        const ax = axis[region.xunit]
+        const ay = axis[region.yunit]
+        if (ax == null) throw Error(`axis not found: ${region.xunit}`)
+        if (ay == null) throw Error(`axis not found: ${region.yunit}`)
+        const rect = Rect.logical2(
+          region,
+          moveInUnitSpace(region, moveFn, ax, ay),
+          px,
+          py,
+        )
+        if (Rect.equal(rect, region)) return region
+        return { ...region, ...rect }
+      })
+    },
+    [axis, update],
+  )
+
+  const select: Context["select"] = R.useCallback(
+    (selection, selectionMode) => {
+      setState(StateMutation.select, prev => {
+        const filtered = applyFilter(props.filterFn, prev)
+        return {
+          regions: prev.regions,
+          selection: concatSelection(
+            filtered.selection,
+            Func.applySetState(selection, filtered.selection),
+            selectionMode ?? SelectionMode.replace,
+          ),
+        }
+      })
+    },
+    [props.filterFn, setState],
+  )
+
+  const selectByRect = R.useCallback(
+    (
+      selectFn: (rect: Rect.Rect) => boolean,
+      selectionMode?: SelectionMode,
+      xaxis?: Axis.Axis,
+      yaxis?: Axis.Axis,
+    ) => {
+      setState(StateMutation.select, prev => {
+        const filtered = applyFilter(props.filterFn, prev)
         const next: SelectionState = new Set()
-        for (const r of regions.values()) {
-          const u = computeRectInverse(r, axis)
+        for (const region of filtered.regions.values()) {
+          const x = axis[region.xunit]
+          const y = axis[region.yunit]
+          if (x == null) throw Error(`axis not found: ${region.xunit}`)
+          if (y == null) throw Error(`axis not found: ${region.yunit}`)
           if (
             selectFn(
               Rect.logical(
-                u,
-                input.xaxis?.unit == r.xunit,
-                input.yaxis?.unit == r.yunit,
+                Axis.computeRectInverse(x, y, region),
+                xaxis?.unit == region.xunit,
+                yaxis?.unit == region.yunit,
               ),
             )
           ) {
-            next.add(r.id)
+            next.add(region.id)
           }
         }
-        return concatSelection(
-          prev,
-          next,
-          selectionMode ?? SelectionMode.replace,
-        )
+        return {
+          regions: prev.regions,
+          selection: concatSelection(
+            filtered.selection,
+            next,
+            selectionMode ?? SelectionMode.replace,
+          ),
+        }
       })
     },
-    [axis, input, regions],
-  )
-
-  const updateRegionRect = R.useCallback(
-    (p: Region, func: (prev: Rect.Rect) => Rect.Rect) => {
-      const x = axis[p.xunit]
-      const y = axis[p.yunit]
-      if (x == null) throw Error(`axis not found: ${p.xunit}`)
-      if (y == null) throw Error(`axis not found: ${p.yunit}`)
-      return {
-        ...p,
-        ...Axis.computeRect(x, y, func(Axis.computeRectInverse(x, y, p))),
-      }
-    },
-    [axis],
-  )
-
-  // commands
-  const create: Context["create"] = R.useCallback(
-    (region, options) => {
-      if (!canCreate) return
-      setRegions(prev => new Map(prev).set(region.id, region))
-      if (options?.autoSelect) setSelection(new Set([region.id]))
-    },
-    [canCreate],
-  )
-
-  const deleteSelection: Context["deleteSelection"] = R.useCallback(() => {
-    setRegions(prev => {
-      const next = new Map()
-      for (const [id, region] of prev) {
-        if (!selection.has(id) || !canDelete(region)) {
-          next.set(id, region)
-        }
-      }
-      return next
-    })
-    setSelection(new Set())
-  }, [canDelete, selection])
-
-  const deselect: Context["deselect"] = R.useCallback(() => {
-    setSelection(new Set())
-  }, [])
-
-  const moveSelection: Context["moveSelection"] = R.useCallback(
-    (dx, dy) => {
-      setRegions(
-        prev =>
-          new Map(
-            Array.from(prev, ([id, region]) => {
-              if (!selection.has(id) || !canUpdate(region)) return [id, region]
-              return [
-                id,
-                updateRegionRect(region, rect => ({
-                  x: Mathx.clamp(
-                    rect.x + (input.xaxis?.unit == region.xunit ? dx : 0),
-                    0,
-                    1 - rect.width,
-                  ),
-                  y: Mathx.clamp(
-                    rect.y + (input.yaxis?.unit == region.yunit ? dy : 0),
-                    0,
-                    1 - rect.height,
-                  ),
-                  width: rect.width,
-                  height: rect.height,
-                })),
-              ]
-            }),
-          ),
-      )
-    },
-    [canUpdate, input, selection, updateRegionRect],
+    [axis, props.filterFn, setState],
   )
 
   const selectArea: Context["selectArea"] = R.useCallback(
-    (area, selectionMode) => {
-      selectHelper(
+    (area, selectionMode, xaxis, yaxis) => {
+      selectByRect(
         rect => Rect.intersectRect(rect, area) != null,
         selectionMode,
+        xaxis,
+        yaxis,
       )
     },
-    [selectHelper],
+    [selectByRect],
   )
-
-  const selectId: Context["selectId"] = R.useCallback((id, selectionMode) => {
-    setSelection(prev => {
-      const next = new Set([id])
-      return concatSelection(prev, next, selectionMode ?? SelectionMode.replace)
-    })
-  }, [])
 
   const selectPoint: Context["selectPoint"] = R.useCallback(
-    (pt, selectionMode) => {
-      selectHelper(rect => Rect.intersectPoint(rect, pt), selectionMode)
-    },
-    [selectHelper],
-  )
-
-  const setRectX: Context["setRectX"] = R.useCallback(
-    (region, dx) => {
-      if (!canUpdate(region)) return
-      setRegions(prev =>
-        new Map(prev).set(
-          region.id,
-          updateRegionRect(region, rect => ({
-            x: Mathx.clamp(rect.x + dx, 0, 1 - rect.width),
-            y: rect.y,
-            width: rect.width,
-            height: rect.height,
-          })),
-        ),
+    (pt, selectionMode, xaxis, yaxis) => {
+      selectByRect(
+        rect => Rect.intersectPoint(rect, pt),
+        selectionMode,
+        xaxis,
+        yaxis,
       )
     },
-    [canUpdate, updateRegionRect],
-  )
-  const setRectX1: Context["setRectX1"] = R.useCallback(() => {
-    // todo: implement
-  }, [])
-
-  const setRectX2: Context["setRectX2"] = R.useCallback(
-    (region, dx) => {
-      if (!canUpdate(region)) return
-      setRegions(prev =>
-        new Map(prev).set(
-          region.id,
-          updateRegionRect(region, rect => ({
-            x: rect.x,
-            y: rect.y,
-            width: Mathx.clamp(rect.width + dx, 0.01, 1 - rect.x),
-            height: rect.height,
-          })),
-        ),
-      )
-    },
-    [canUpdate, updateRegionRect],
-  )
-
-  const setRectY: Context["setRectY"] = R.useCallback(
-    (region, dy) => {
-      if (!canUpdate(region)) return
-      setRegions(prev =>
-        new Map(prev).set(
-          region.id,
-          updateRegionRect(region, rect => ({
-            x: rect.x,
-            y: Mathx.clamp(rect.y + dy, 0, 1 - rect.height),
-            width: rect.width,
-            height: rect.height,
-          })),
-        ),
-      )
-    },
-    [canUpdate, updateRegionRect],
-  )
-
-  const setRectY1: Context["setRectY1"] = R.useCallback(
-    (region, dy) => {
-      if (!canUpdate(region)) return
-      setRegions(prev =>
-        new Map(prev).set(
-          region.id,
-          updateRegionRect(region, rect => ({
-            x: rect.x,
-            y: Mathx.clamp(rect.y + dy, 0, rect.y + rect.height - 0.01),
-            width: rect.width,
-            height: Mathx.clamp(
-              rect.height - Math.max(dy, -rect.y),
-              0.01,
-              1 - rect.y,
-            ),
-          })),
-        ),
-      )
-    },
-    [canUpdate, updateRegionRect],
-  )
-
-  const setRectY2: Context["setRectY2"] = R.useCallback(
-    (region, dy) => {
-      if (!canUpdate(region)) return
-      setRegions(prev =>
-        new Map(prev).set(
-          region.id,
-          updateRegionRect(region, rect => ({
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: Mathx.clamp(rect.height + dy, 0.01, 1 - rect.y),
-          })),
-        ),
-      )
-    },
-    [canUpdate, updateRegionRect],
-  )
-
-  const updateRegion: Context["updateRegion"] = R.useCallback(
-    (id, fn) => {
-      setRegions(prev => {
-        const region = prev.get(id)
-        if (!region) return prev
-        if (!canUpdate(region)) return prev
-        return new Map(prev).set(id, typeof fn === "function" ? fn(region) : fn)
-      })
-    },
-    [canUpdate],
-  )
-
-  const updateRegionProperties: Context["updateRegionProperties"] =
-    R.useCallback(
-      (id, fn) => {
-        updateRegion(id, region => ({
-          ...region,
-          properties: typeof fn === "function" ? fn(region.properties) : fn,
-        }))
-      },
-      [updateRegion],
-    )
-
-  const updateSelectedRegions: Context["updateSelectedRegions"] = R.useCallback(
-    fn => {
-      setRegions(prev => {
-        const next = new Map(prev)
-        for (const id of transformedSelection) {
-          const region = prev.get(id)
-          if (!region) continue
-          if (!canUpdate(region)) continue
-          next.set(id, typeof fn === "function" ? fn(region) : fn)
-        }
-        return next
-      })
-    },
-    [canUpdate, transformedSelection],
+    [selectByRect],
   )
 
   return (
@@ -471,32 +313,26 @@ export function Provider(props: ProviderProps) {
       children={props.children}
       value={{
         canCreate,
-        regions,
-        selection,
-        transformedRegions,
-        transformedSelection,
+        count: state.regions.size,
+        regions: filteredState.regions,
+        selection: filteredState.selection,
         canDelete,
         canRead,
         canUpdate,
         create,
-        deleteSelection,
+        delete: delete_,
         deselect,
-        moveSelection,
+        move,
+        redo,
         render: props.render,
+        reset,
+        select,
         selectArea,
-        selectId,
         selectPoint,
-        setRectX,
-        setRectX1,
-        setRectX2,
-        setRectY,
-        setRectY1,
-        setRectY2,
-        setRegions,
-        setSelection,
-        updateRegion,
-        updateRegionProperties,
-        updateSelectedRegions,
+        undo,
+        update,
+        updateProperties,
+        updateProperty,
       }}
     />
   )
@@ -525,27 +361,6 @@ export function selectionMode(event: R.MouseEvent): SelectionMode {
     default:
       return SelectionMode.replace
   }
-}
-
-export type TransformProps = {
-  children: R.ReactNode
-  fn: (regionState: RegionState) => RegionState
-}
-
-export function Transform(props: TransformProps) {
-  const prev = useContext()
-  const next: Context = R.useMemo(() => {
-    const transformedRegions = props.fn(prev.regions)
-    const transformedSelection = new Set(prev.selection).intersection(
-      transformedRegions,
-    )
-    return {
-      ...prev,
-      transformedRegions,
-      transformedSelection,
-    }
-  }, [prev, props.fn])
-  return <Context.Provider children={props.children} value={next} />
 }
 
 export type AnnotationProps<T = Properties> = {
@@ -600,4 +415,183 @@ export function Annotation(props: AnnotationProps): JSX.Element {
     viewport.state.zoom,
   ])
   return <>{svgProps && render?.({ ...props, svgProps })}</>
+}
+
+// internals
+type State<T = Properties> = {
+  regions: RegionState<T>
+  selection: SelectionState
+}
+
+type UseNoteState<T> = {
+  state: State<T>
+  setState: (key: StateMutation, fn: R.SetStateAction<State<T>>) => void
+  undo?: () => void
+  redo?: () => void
+  reset: (value: RegionState<T>) => void
+}
+
+enum StateMutation {
+  create = "create",
+  delete = "delete",
+  select = "select",
+  update = "update",
+}
+
+const defaultContext: Context = {
+  canCreate: true,
+  count: 0,
+  regions: new Map(),
+  selection: new Set(),
+  create() {
+    throw Error("annotate called outside of context")
+  },
+  canDelete() {
+    return true
+  },
+  canRead() {
+    return true
+  },
+  canUpdate() {
+    return true
+  },
+  delete() {
+    throw Error("delete called outside of context")
+  },
+  deselect() {
+    throw Error("deselect called outside of context")
+  },
+  move() {
+    throw Error("move called outside of context")
+  },
+  reset() {
+    throw Error("render called outside of context")
+  },
+  select() {
+    throw Error("select called outside of context")
+  },
+  selectArea() {
+    throw Error("selectArea called outside of context")
+  },
+  selectPoint() {
+    throw Error("selectPoint called outside of context")
+  },
+  update() {
+    throw Error("update called outside of context")
+  },
+  updateProperties() {
+    throw Error("updateProperties called outside of context")
+  },
+  updateProperty() {
+    throw Error("updateProperty called outside of context")
+  },
+}
+
+const Context = R.createContext(defaultContext)
+
+function applyFilter<T = Properties>(
+  filterFn: undefined | FilterFn<T>,
+  state: State<T>,
+) {
+  if (filterFn == null) return state
+  const regions = IMap.filter(state.regions, filterFn)
+  return {
+    regions,
+    selection: new Set(state.selection).intersection(regions),
+  }
+}
+
+function concatFilter<T = Properties>(
+  f: FilterFn<T>,
+  g?: FilterFn<T>,
+): FilterFn<T> {
+  if (g == null) return f
+  return r => f(r) && g(r)
+}
+
+function concatSelection(
+  prev: SelectionState,
+  next: SelectionState,
+  selectionMode: SelectionMode,
+) {
+  switch (selectionMode) {
+    case SelectionMode.invert:
+      return prev.symmetricDifference(next)
+    case SelectionMode.add:
+      return prev.union(next)
+    case SelectionMode.subtract:
+      return prev.difference(next)
+    case SelectionMode.replace:
+      return next
+  }
+}
+
+function equalFn<T>(p: State<T>, q: State<T>) {
+  return Object.is(p.regions, q.regions) && Object.is(p.selection, q.selection)
+}
+
+function moveInUnitSpace(
+  region: Region<Properties>,
+  moveFn: R.SetStateAction<Rect.Rect>,
+  xaxis: Axis.Axis,
+  yaxis: Axis.Axis,
+) {
+  return Axis.computeRect(
+    xaxis,
+    yaxis,
+    moveFn instanceof Function
+      ? moveFn(Axis.computeRectInverse(xaxis, yaxis, region))
+      : moveFn,
+  )
+}
+
+function useNoteState<T>(
+  initState: Func.InitialState<State<T>>,
+): UseNoteState<T> {
+  const [internalState, setInternalState] = R.useState(() =>
+    Undo.init(initState, equalFn),
+  )
+  const timeRef = R.useRef(0)
+  const keyRef = R.useRef("")
+  const setState: UseNoteState<T>["setState"] = R.useCallback((key, fn) => {
+    const now = Date.now()
+    const isSelectAction = key == StateMutation.select
+    const threshold = isSelectAction ? 5000 : 1000
+    const isBelowThreshold = now - timeRef.current < threshold
+    const isSameAction = key == keyRef.current
+    const preserveUndo = isSameAction && isBelowThreshold
+    const preserveRedo = isSelectAction
+    timeRef.current = now
+    keyRef.current = key
+    setInternalState(prev =>
+      Undo.setState(
+        prev,
+        Func.applySetState(fn, prev.state),
+        preserveUndo ? prev.undo : undefined,
+        preserveRedo ? prev.redo : undefined,
+      ),
+    )
+  }, [])
+  const reset: UseNoteState<T>["reset"] = R.useCallback(
+    fn =>
+      setInternalState(
+        Undo.init(
+          {
+            regions: Func.applyInitialState(fn),
+            selection: defaultContext.selection,
+          },
+          equalFn,
+        ),
+      ),
+    [],
+  )
+  const undo = R.useCallback(() => setInternalState(Undo.undo), [])
+  const redo = R.useCallback(() => setInternalState(Undo.redo), [])
+  return {
+    state: internalState.state,
+    setState,
+    undo: internalState.undo ? undo : undefined,
+    redo: internalState.redo ? redo : undefined,
+    reset,
+  }
 }
