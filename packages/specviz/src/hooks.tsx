@@ -177,6 +177,8 @@ export type UseMouseMoveHandler = (useMouseEvent: {
   dx: number
   dy: number
   event: React.MouseEvent
+  xaxis: Axis.Axis
+  yaxis: Axis.Axis
 }) => void
 
 export type UseMouseWheelHandler = (useMouseEvent: {
@@ -202,10 +204,16 @@ export function useMouse(props: UseMouseProps) {
         if (input.input.buttons & 1) {
           const dx = event.movementX / event.currentTarget.clientWidth
           const dy = event.movementY / event.currentTarget.clientHeight
-          props.onDrag?.({ dx, dy, event })
+          props.onDrag?.({
+            dx,
+            dy,
+            event,
+            xaxis: plane.xaxis,
+            yaxis: plane.yaxis,
+          })
         }
       },
-      [input.input, props.onDrag],
+      [input.input, plane.xaxis, plane.yaxis, props.onDrag],
     ),
     onMouseUp: R.useCallback<R.MouseEventHandler>(
       event => {
