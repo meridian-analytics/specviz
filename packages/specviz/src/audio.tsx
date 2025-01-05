@@ -1,5 +1,6 @@
 import * as React from "react"
 import * as Format from "./format"
+import * as Func from "./func"
 import * as Hooks from "./hooks"
 import { clamp } from "./math"
 
@@ -99,13 +100,10 @@ export function Provider(props: ProviderProps) {
       seek: fn => {
         setState(prev => {
           const seek = clamp(
-            typeof fn === "function"
-              ? fn(
-                  prev.pause
-                    ? prev.seek
-                    : audioContext.currentTime - prev.timecode,
-                )
-              : fn,
+            Func.applySetState(
+              fn,
+              prev.pause ? prev.seek : audioContext.currentTime - prev.timecode,
+            ),
             0,
             props.buffer.duration,
           )
