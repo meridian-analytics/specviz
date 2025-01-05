@@ -1,3 +1,4 @@
+import * as Mathx from "./math"
 import type * as Vector2 from "./vector2"
 
 export type Rect = {
@@ -5,6 +6,12 @@ export type Rect = {
   y: number
   width: number
   height: number
+}
+
+export const unit: Rect = { x: 0, y: 0, width: 1, height: 1 }
+
+export function equal(a: Rect, b: Rect): boolean {
+  return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height
 }
 
 export function diagonal(t: Rect): number {
@@ -38,11 +45,22 @@ export function intersectRect(a: Rect, b: Rect): null | Rect {
 }
 
 export function logical(t: Rect, x: boolean, y: boolean): Rect {
+  return logical2(unit, t, x, y)
+}
+
+export function logical2(prev: Rect, next: Rect, x: boolean, y: boolean): Rect {
+  if (x && y) return next
+  if (x) return { x: next.x, y: prev.y, width: next.width, height: prev.height }
+  if (y) return { x: prev.x, y: next.y, width: prev.width, height: next.height }
+  return prev
+}
+
+export function move(rect: Rect, dx: number, dy: number): Rect {
   return {
-    x: x ? t.x : 0,
-    y: y ? t.y : 0,
-    width: x ? t.width : 1,
-    height: y ? t.height : 1,
+    x: Mathx.clamp(rect.x + dx, 0, 1 - rect.width),
+    y: Mathx.clamp(rect.y + dy, 0, 1 - rect.height),
+    width: rect.width,
+    height: rect.height,
   }
 }
 
@@ -52,5 +70,59 @@ export function normalize(t: Rect): Rect {
     y: Math.min(t.y, t.y + t.height),
     width: Math.abs(t.width),
     height: Math.abs(t.height),
+  }
+}
+
+export function setX(rect: Rect, dx: number): Rect {
+  return {
+    x: Mathx.clamp(rect.x + dx, 0, 1 - rect.width),
+    y: rect.y,
+    width: rect.width,
+    height: rect.height,
+  }
+}
+
+export function setX1(rect: Rect, dx: number): Rect {
+  return {
+    x: Mathx.clamp(rect.x + dx, 0, rect.x + rect.width - 0.01),
+    y: rect.y,
+    width: Mathx.clamp(rect.width - Math.max(dx, -rect.x), 0.01, 1 - rect.x),
+    height: rect.height,
+  }
+}
+
+export function setX2(rect: Rect, dx: number): Rect {
+  return {
+    x: rect.x,
+    y: rect.y,
+    width: Mathx.clamp(rect.width + dx, 0.01, 1 - rect.x),
+    height: rect.height,
+  }
+}
+
+export function setY(rect: Rect, dy: number): Rect {
+  return {
+    x: rect.x,
+    y: Mathx.clamp(rect.y + dy, 0, 1 - rect.height),
+    width: rect.width,
+    height: rect.height,
+  }
+}
+
+export function setY1(rect: Rect, dy: number): Rect {
+  return {
+    x: rect.x,
+    y: Mathx.clamp(rect.y + dy, 0, rect.y + rect.height - 0.01),
+    width: rect.width,
+    height: Mathx.clamp(rect.height - Math.max(dy, -rect.y), 0.01, 1 - rect.y),
+  }
+}
+
+export function setY2(rect: Rect, dy: number): Rect {
+  return {
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: Mathx.clamp(rect.height + dy, 0.01, 1 - rect.y),
   }
 }
