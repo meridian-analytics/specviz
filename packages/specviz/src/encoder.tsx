@@ -99,6 +99,25 @@ Encoder.X = function EncoderX(props: FieldEncoderProps) {
   )
 }
 
+Encoder.X1 = function EncoderX1(props: FieldEncoderProps) {
+  const axis = Axis.useContext()
+  const note = Note.useContext()
+  const rect = Note.computeRectInverse(props.region, axis)
+  return (
+    <Encoder
+      direction={props.direction}
+      format={props.format}
+      label={props.label}
+      setState={v =>
+        note.move(new Set([props.region.id]), rect => Rect.setX1(rect, v))
+      }
+      state={rect.x}
+      unit={props.region.xunit}
+      value={props.region.x}
+    />
+  )
+}
+
 Encoder.X2 = function EncoderX2(props: FieldEncoderProps) {
   const axis = Axis.useContext()
   const note = Note.useContext()
@@ -114,6 +133,25 @@ Encoder.X2 = function EncoderX2(props: FieldEncoderProps) {
       state={rect.width}
       unit={props.region.xunit}
       value={props.region.width}
+    />
+  )
+}
+
+Encoder.Y = function EncoderY(props: FieldEncoderProps) {
+  const axis = Axis.useContext()
+  const note = Note.useContext()
+  const rect = Note.computeRectInverse(props.region, axis)
+  return (
+    <Encoder
+      direction={props.direction}
+      format={props.format}
+      label={props.label}
+      setState={v =>
+        note.move(new Set([props.region.id]), rect => Rect.setY(rect, v))
+      }
+      state={1 - rect.y - rect.height}
+      unit={props.region.yunit}
+      value={props.region.y}
     />
   )
 }
