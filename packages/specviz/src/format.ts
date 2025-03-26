@@ -11,7 +11,7 @@ export function percent(percent: number) {
 
 export function timestamp(time: number) {
   const minutes = Math.floor(time / 60)
-  const seconds = time - minutes
+  const seconds = time - minutes * 60
   return `${minutes}:${seconds.toFixed(3).padStart(2, "0")}`
 }
 
