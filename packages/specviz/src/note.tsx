@@ -414,7 +414,24 @@ export function Annotation(props: AnnotationProps): JSX.Element {
     props.selected,
     viewport.state.zoom,
   ])
-  return <>{svgProps && render?.({ ...props, svgProps })}</>
+
+  if (!svgProps) return <></>
+
+  // Create a unique key based on the actual width and height of the annotation and zoom
+  const svgKey = `${props.region.id}-${props.region.width}-${props.region.height}-${viewport.state.zoom.x}-${viewport.state.zoom.y}`
+
+  // Wrap the render result to add the key
+  const wrappedRender = (props: AnnotationProps) => {
+    const result = render?.(props)
+    if (!result) return null
+    // If the result is an SVG, add a key to force remount
+    if (result.type === 'svg') {
+      return R.cloneElement(result, { key: svgKey })
+    }
+    return result
+  }
+
+  return <>{wrappedRender({ ...props, svgProps })}</>
 }
 
 // internals
