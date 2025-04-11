@@ -73,7 +73,7 @@ export default function Visualization(props: VisualizationProps) {
           />
           {Array.from(note.regions.values(), r => (
             <Note.Annotation
-              key={r.id}
+              key={Note.annotationKey(r, viewport)}
               children={props.children}
               dimensions={dimensions}
               region={r}
