@@ -372,6 +372,11 @@ export type AnnotationProps<T = Properties> = {
   viewerId?: string
 }
 
+// SVG should use a unique key to avoid Chrome cache
+export function annotationKey(region: Region, viewport: Viewport.Context) {
+  return `${region.id}-${region.x}-${region.y}-${region.width}-${region.height}-${viewport.state.zoom.x}-${viewport.state.zoom.y}`
+}
+
 export function Annotation(props: AnnotationProps): JSX.Element {
   const note = useContext()
   const plane = Plane.useContext()

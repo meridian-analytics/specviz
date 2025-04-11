@@ -56,7 +56,7 @@ export default function Navigator(props: NavigatorProps) {
         <Note.Annotation
           children={props.children}
           dimensions={dimensions}
-          key={region.id}
+          key={Note.annotationKey(region, viewport)}
           region={region}
           selected={note.selection.has(region.id)}
           viewerId={props.id}
